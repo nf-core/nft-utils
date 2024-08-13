@@ -5,11 +5,11 @@
 
 	<groupId>com.nf-core</groupId>
 	<artifactId>nft-utils</artifactId>
-	<version>0.4.0dev</version>
+	<version>0.0.1dev</version>
 	<packaging>jar</packaging>
 
 	<name>nft-utils</name>
-	<description>nf-test plugin to support SAM/BAM/CRAM formats</description>
+	<description>nf-test plugin that adds commonly used utility functions</description>
 	<url>https://github.com/nf-core/nft-utils</url>
 
 	<licenses>
@@ -36,13 +36,6 @@
 	</properties>
 
 
-	<dependencies>
-        <dependency>
-			<groupId>com.github.samtools</groupId>
-			<artifactId>htsjdk</artifactId>
-			<version>${htsjdk.version}</version>
-		</dependency>
-	</dependencies>
 
   <build>
     <plugins>
