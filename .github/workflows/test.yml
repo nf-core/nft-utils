@@ -1,0 +1,43 @@
+name: Run plugin tests
+on:
+  push:
+  pull_request:
+    branches: [main]
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        JAVA_VERSION: ["11", "17", "21"]
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+
+      - name: Setup Java ${{ matrix.JAVA_VERSION }}
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
+        with:
+          distribution: "temurin"
+          java-version: "${{ matrix.JAVA_VERSION }}"
+      - name: Setup Nextflow
+        uses: nf-core/setup-nextflow@v2
+
+      - name: Install nf-test
+        uses: nf-core/setup-nf-test@v1
+
+      - name: Build plugin
+        run: ./build.sh
+
+      - name: Test the plugin
+        env:
+          NFT_DIFF: "pdiff"
+          NFT_DIFF_ARGS: "--line-numbers --width 120 --expand-tabs=2"
+        run: |
+          ./test.sh
+
+      - name: Clean up
+        if: always()
+        run: |
+          sudo rm -rf /home/ubuntu/tests/
