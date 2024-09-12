@@ -17,6 +17,6 @@ public class Methods {
     }
 
     // Static (global) things useful for supplying to getAllFilesFromDir()
-    static List<String> exclusionRegexesForUnstableFileNames = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]
-    static List<String> snapshottablePatterns = [/.*\.(txt|json|tsv)$/]
+    static List<String> unstableFilenamesRegex = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]  // e.g. date strings
+    static List<String> plainTextFormatsRegex = [/.*\.(txt|json|tsv)$/]                       // Common plain text formats
 }
