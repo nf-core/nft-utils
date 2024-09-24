@@ -28,6 +28,9 @@ hs_err_pid*
 /.nextflow/
 /.nf-test/
 /.nextflow.log*
+null/
+results/
+work/
 
 # generated test data
 tests/no_index.fasta.fai
