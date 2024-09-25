@@ -1,4 +1,4 @@
-package nf_core.nf.test;
+package nf_core.nf.test.utils;
 
 import org.yaml.snakeyaml.Yaml;
 
