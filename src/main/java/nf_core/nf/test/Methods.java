@@ -1,19 +1,16 @@
-package nf_core.nf.test.utils;
+package nf_core.nf.test;
 
 import org.yaml.snakeyaml.Yaml;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
+import java.util.Map;
 
 public class Methods {
 
   // Remove Nextflow version from pipeline_software_mqc_versions.yml
-  public static removeNextflowVersion(Path softwareVersions) {
-    final Yaml softwareVersionsYaml = path(softwareVersions);
-    if (softwareVersionsYaml.containsKey("Workflow")) {
-      softwareVersionsYaml.Workflow.remove("Nextflow");
-    }
-    return removeNextflowVersion(softwareVersionsYaml);
+  public static String removeNextflowVersion(String softwareVersionsFile) {
+    final Map<String, Object> softwareVersionsMap = new Yaml().load(softwareVersionsFile);
+    softwareVersionsMap.remove("Workflow", "Nextflow");
+
+    return softwareVersionsMap.toString();
   }
 
 }
