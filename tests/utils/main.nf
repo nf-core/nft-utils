@@ -1,4 +1,3 @@
-
 workflow {
 
     ch_version = Channel.of(
