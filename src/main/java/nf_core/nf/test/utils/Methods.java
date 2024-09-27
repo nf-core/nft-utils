@@ -21,7 +21,7 @@ public class Methods {
   }
 
   // Remove Nextflow version from pipeline_software_mqc_versions.yml
-  public Map<String, Object> yaml(CharSequence versionFile)
+  public Map<String, Object> removeNextflowVersion(CharSequence versionFile)
       throws URISyntaxException, MalformedURLException, IOException {
 
     final Map<String, Object> softwareVersionsMap = LoadYAML(versionFile.toString());
