@@ -20,17 +20,15 @@
 *.rar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-/target/
-/.classpath
-/.project
-/.settings/
-/.nextflow/
-/.nf-test/
-/.nextflow.log*
+target/
+.classpath
+.project
+.settings/
+
+# Nextflow + nf-test
+.nextflow.log*
+.nextflow/
+.nf-test/
 null/
 results/
 work/
-
-# generated test data
-tests/no_index.fasta.fai
