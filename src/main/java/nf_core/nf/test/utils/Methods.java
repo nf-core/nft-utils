@@ -1,32 +1,35 @@
 package nf_core.nf.test.utils;
 
 import org.yaml.snakeyaml.Yaml;
-
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 public class Methods {
-
-  // Load YAML and return MAP
-  public Map<String, Object> LoadYAML(String yamlFile) {
+  public static Map<String, Map<String, Object>> readYamlFile(String filePath) {
     Yaml yaml = new Yaml();
-    InputStream inputStream = this.getClass()
-        .getClassLoader()
-        .getResourceAsStream(yamlFile.toString());
-    Map<String, Object> mapYaml = yaml.load(inputStream);
-    return mapYaml;
+
+    System.err.println(filePath);
+
+    try (FileReader reader = new FileReader(filePath)) {
+      Map<String, Map<String, Object>> data = yaml.load(reader);
+      return data;
+    } catch (IOException e) {
+      System.err.println("Error reading YAML file: " + e.getMessage());
+      return null;
+    }
   }
 
-  // Remove Nextflow version from pipeline_software_mqc_versions.yml
-  public Map<String, Object> removeNextflowVersion(CharSequence versionFile)
-      throws URISyntaxException, MalformedURLException, IOException {
+  public static Map<String, Map<String, Object>> removeNextflowVersion(CharSequence versionFile) {
+    String yamlFilePath = versionFile.toString();
+    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
 
-    final Map<String, Object> softwareVersionsMap = LoadYAML(versionFile.toString());
-    softwareVersionsMap.remove("Workflow", "Nextflow");
-
-    return softwareVersionsMap;
+    if (yamlData != null) {
+      // Access and use the YAML data
+      if (yamlData.containsKey("Workflow")) {
+        yamlData.get("Workflow").remove("Nextflow");
+      }
+    }
+    return yamlData;
   }
 }
