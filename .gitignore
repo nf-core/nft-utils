@@ -21,12 +21,15 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/target/
-/.classpath
-/.project
-/.settings/
-/.nextflow/
-/.nf-test/
+target/
+.classpath
+.project
+.settings/
 
-# generated test data
-tests/no_index.fasta.fai
+# Nextflow + nf-test
+.nextflow.log*
+.nextflow/
+.nf-test/
+null/
+results/
+work/
