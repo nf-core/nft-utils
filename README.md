@@ -71,4 +71,4 @@ assert snapshot(
 ).match()
 ```
 
-First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore, and the forth is a file containing a list of glob patterns to ignore.
+First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore, and the fourth is a file containing a list of glob patterns to ignore.
