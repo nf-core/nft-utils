@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class Methods {
 
   // Read a Version YAML file and return a Map of Map
-  public static Map<String, Map<String, Object>> readVersionYamlFile(String filePath) {
+  public static Map<String, Map<String, Object>> readYamlFile(String filePath) {
     Yaml yaml = new Yaml();
     try (FileReader reader = new FileReader(filePath)) {
       Map<String, Map<String, Object>> data = yaml.load(reader);
@@ -29,7 +29,7 @@ public class Methods {
   // within the input Version YAML file
   public static Map<String, Map<String, Object>> removeNextflowVersion(CharSequence versionFile) {
     String yamlFilePath = versionFile.toString();
-    Map<String, Map<String, Object>> yamlData = readVersionYamlFile(yamlFilePath);
+    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
 
     if (yamlData != null) {
       // Access and use the YAML data
