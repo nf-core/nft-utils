@@ -8,9 +8,9 @@ import java.util.Map;
 
 public class Methods {
 
-  public static Map<String, Map<String, Object>> readYamlFile(String filePath) {
+  // Read a Version YAML file and return a Map of Map
+  public static Map<String, Map<String, Object>> readVersionYamlFile(String filePath) {
     Yaml yaml = new Yaml();
-
     try (FileReader reader = new FileReader(filePath)) {
       Map<String, Map<String, Object>> data = yaml.load(reader);
       return data;
@@ -20,9 +20,11 @@ public class Methods {
     }
   }
 
+  // Removed the Nextflow entry from the Workflow entry
+  // within the input Version YAML file
   public static Map<String, Map<String, Object>> removeNextflowVersion(CharSequence versionFile) {
     String yamlFilePath = versionFile.toString();
-    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
+    Map<String, Map<String, Object>> yamlData = readVersionYamlFile(yamlFilePath);
 
     if (yamlData != null) {
       // Access and use the YAML data
@@ -33,9 +35,9 @@ public class Methods {
     return yamlData;
   }
 
-  // Recursively list all files in a directory and its sub-directories, matching
-  // or not matching supplied regexes
-  public static getAllFilesFromDir(dir, List<String> includeRegexes = null, List<String> excludeRegexes = null) {
+  // Recursively list all files in a directory and its sub-directories
+  // matching or not matching supplied regexes
+  public static List<String> getAllFilesFromDir(CharSequence dir, List<String> includeRegexes, List<String> excludeRegexes) {
         def output = []
         new File(dir).eachFileRecurse() { file ->
             boolean matchesInclusion = (includeRegexes == null || includeRegexes.any { regex -> file.name.toString() ==~ regex })
@@ -44,9 +46,7 @@ public class Methods {
             if (matchesInclusion && matchesExclusion) {
                 output.add(file)
             }
-        }return output.sort
-
-  { it.name }}
+        }return output.sort{ it.name }}
 
   // Static (global) things useful for supplying to getAllFilesFromDir()
   static List<String> unstableFilenamesRegex = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]  // e.g. date strings
