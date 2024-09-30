@@ -20,7 +20,7 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/nf-core/nft-utils/tree/master</url>
+		<url>https://github.com/nf-core/nft-utils/tree/main</url>
 		<connection>scm:git:https://github.com/nf-core/nft-utils</connection>
 		<developerConnection>scm:git:ssh://github.com:nf-core/nft-utils.git</developerConnection>
 	</scm>
@@ -35,24 +35,31 @@
 		<additionalparam>-Xdoclint:none</additionalparam>
 	</properties>
 
+	<!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+	<dependencies>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>2.3</version>
+		</dependency>
+	</dependencies>
 
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.2</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<plugins>
+			<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<version>3.5.2</version>
+			<executions>
+				<execution>
+				<phase>package</phase>
+				<goals>
+					<goal>shade</goal>
+				</goals>
+				</execution>
+			</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
