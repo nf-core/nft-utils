@@ -33,7 +33,7 @@ Usage:
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_rnaseq_software_mqc_versions.yml")).match()
 ```
 
-Only argument is path to the file.
+The only argument is path to the file which must be a versions file in YAML format as per the nf-core standard.
 
 ## `getAllFilesFromDir()`
 
