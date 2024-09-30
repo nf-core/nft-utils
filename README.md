@@ -60,11 +60,11 @@ results/
 In this example, 1 file is stable with stable content (`stable_content.txt`), and 1 file is stable with a stable name (`stable_name.txt`).
 The last file has no stable content (`execution_trace_2024-09-30_13-10-16.txt`) as its name is based on the date and time of the pipeline execution.
 
-For this example, we want to snapshot the files that have stable content, and the names of files and folders that are stable. `stable_name` is a list of every file and folder except those matching the glob `**/execution_trace*.txt`. `stable_content` is a list of every file except those matching the two globs `**/execution_trace*.txt` and `**/stable_name.txt`.  By using `stable_name*.name`, we extract the name of every file in `stable_name` and add them to the snapshot. `stable_content` can be used in the snapshot directly to include the hash of the file contents.
+For this example, we want to snapshot the files that have stable content, and the names of files and folders that are stable. `stable_name` is a list of every file and folder except those matching the glob `pipeline_info/execution_*.{html,txt}`. `stable_content` is a list of every file except those matching the two globs `pipeline_info/execution_*.{html,txt}` and `**/stable_name.txt` which is contained in the `tests/getAllFilesFromDir/.nftignore` file.  By using `stable_name*.name`, we extract the name of every file in `stable_name` and add them to the snapshot. `stable_content` can be used in the snapshot directly to include the hash of the file contents.
 
 ```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/execution_trace*.txt'], null )
-def stable_content = getAllFilesFromDir(params.outdir, false, ['**/execution_trace*.txt', '**/stable_name.txt'], null )
+def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
+def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore' )
 assert snapshot(
   stable_name*.name,
   stable_content
