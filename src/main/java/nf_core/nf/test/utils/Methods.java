@@ -2,6 +2,7 @@ package nf_core.nf.test.utils;
 
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -50,35 +51,40 @@ public class Methods {
 
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
-  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs,
-      String ignoreGlobFile) throws IOException {
+  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, Object ignorePatterns)
+      throws IOException {
     List<File> output = new ArrayList<>();
-    Path directory = Paths.get(outdir).toAbsolutePath();
+    Path directory = Paths.get(outdir);
 
-    List<PathMatcher> excludeMatchers = getExcludeMatchers(ignoreGlobs, ignoreGlobFile);
+    List<String> ignoreGlobs = getIgnoreGlobs(ignorePatterns);
+
+    List<PathMatcher> excludeMatchers = new ArrayList<>();
+    if (ignoreGlobs != null && !ignoreGlobs.isEmpty()) {
+      for (String glob : ignoreGlobs) {
+        excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
+      }
+    }
 
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
       @Override
-      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (dir.getFileName().toString().equals("output")) {
-          return FileVisitResult.SKIP_SUBTREE;
-        }
-        if (includeDir && !isExcluded(dir)) {
-          output.add(dir.toFile());
-        }
-        return FileVisitResult.CONTINUE;
-      }
-
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         if (!isExcluded(file)) {
           output.add(file.toFile());
         }
         return FileVisitResult.CONTINUE;
       }
 
+      @Override
+      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        // Exclude output which is the root output folder from nf-test
+        if (includeDir && (!isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
+          output.add(dir.toFile());
+        }
+        return FileVisitResult.CONTINUE;
+      }
+
       private boolean isExcluded(Path path) {
-        return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(path));
+        return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
       }
     });
 
@@ -87,28 +93,29 @@ public class Methods {
         .collect(Collectors.toList());
   }
 
-  private static List<PathMatcher> getExcludeMatchers(List<String> ignoreGlobs, String ignoreGlobFile)
-      throws IOException {
-    List<String> allIgnoreGlobs = new ArrayList<>();
-
-    // Add globs from the list
-    if (ignoreGlobs != null) {
-      allIgnoreGlobs.addAll(ignoreGlobs);
+  private static List<String> getIgnoreGlobs(Object ignorePatterns) throws IOException {
+    if (ignorePatterns instanceof List) {
+      return (List<String>) ignorePatterns;
+    } else if (ignorePatterns instanceof File) {
+      return readGlobsFromFile((File) ignorePatterns);
+    } else if (ignorePatterns instanceof String) {
+      return readGlobsFromFile(new File((String) ignorePatterns));
+    } else {
+      throw new IllegalArgumentException("ignorePatterns must be a List<String>, File, or String (file path)");
     }
+  }
 
-    // Add globs from the file
-    if (ignoreGlobFile != null && !ignoreGlobFile.isEmpty()) {
-      Path path = Paths.get(ignoreGlobFile);
-      if (Files.exists(path) && Files.isRegularFile(path)) {
-        allIgnoreGlobs.addAll(Files.readAllLines(path));
-      } else {
-        throw new IllegalArgumentException(
-            "Specified exclude glob file does not exist or is not a regular file: " + ignoreGlobFile);
+  private static List<String> readGlobsFromFile(File file) throws IOException {
+    List<String> globs = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        line = line.trim();
+        if (!line.isEmpty()) {
+          globs.add(line);
+        }
       }
     }
-
-    return allIgnoreGlobs.stream()
-        .map(glob -> FileSystems.getDefault().getPathMatcher("glob:" + glob))
-        .collect(Collectors.toList());
+    return globs;
   }
 }
