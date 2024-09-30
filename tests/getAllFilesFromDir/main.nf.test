@@ -1,0 +1,24 @@
+nextflow_pipeline {
+
+    name "Test getAllFilesFromDir"
+    script "./main.nf"
+    tag "getAllFilesFromDir"
+
+    test("getAllFilesFromDir") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+          def timestamp      = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]
+          def stable_name    = getAllFilesFromDir(params.outdir, false, timestamp)
+          def stable_content = getAllFilesFromDir(params.outdir, false, timestamp + [/stable_name\.txt/] )
+          assert snapshot(
+            stable_name*.name,
+            stable_content
+          ).match()
+        }
+    }
+}
