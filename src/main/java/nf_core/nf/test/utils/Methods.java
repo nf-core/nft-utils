@@ -9,7 +9,6 @@ public class Methods {
   public static Map<String, Map<String, Object>> readYamlFile(String filePath) {
     Yaml yaml = new Yaml();
 
-    System.err.println(filePath);
 
     try (FileReader reader = new FileReader(filePath)) {
       Map<String, Map<String, Object>> data = yaml.load(reader);
