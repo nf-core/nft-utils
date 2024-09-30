@@ -1,7 +1,6 @@
 package nf_core.nf.test.utils;
 
-import org.yaml.snakeyaml.Yaml;
-
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.yaml.snakeyaml.Yaml;
 
 public class Methods {
 
@@ -50,16 +50,23 @@ public class Methods {
 
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
-  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs)
+  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs,
+      String ignoreFilePath)
       throws IOException {
     List<File> output = new ArrayList<>();
     Path directory = Paths.get(outdir);
 
+    List<String> allIgnoreGlobs = new ArrayList<>();
+    if (ignoreGlobs != null) {
+      allIgnoreGlobs.addAll(ignoreGlobs);
+    }
+    if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
+      allIgnoreGlobs.addAll(readGlobsFromFile(ignoreFilePath));
+    }
+
     List<PathMatcher> excludeMatchers = new ArrayList<>();
-    if (ignoreGlobs != null && !ignoreGlobs.isEmpty()) {
-      for (String glob : ignoreGlobs) {
-        excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
-      }
+    for (String glob : allIgnoreGlobs) {
+      excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
     }
 
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
@@ -88,5 +95,19 @@ public class Methods {
     return output.stream()
         .sorted(Comparator.comparing(File::getPath))
         .collect(Collectors.toList());
+  }
+
+  private static List<String> readGlobsFromFile(String filePath) throws IOException {
+    List<String> globs = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        line = line.trim();
+        if (!line.isEmpty()) {
+          globs.add(line);
+        }
+      }
+    }
+    return globs;
   }
 }
