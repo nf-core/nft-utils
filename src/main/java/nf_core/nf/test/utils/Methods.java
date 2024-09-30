@@ -1,7 +1,5 @@
 package nf_core.nf.test.utils;
 
-import org.yaml.snakeyaml.Yaml;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -19,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.yaml.snakeyaml.Yaml;
 
 public class Methods {
 
