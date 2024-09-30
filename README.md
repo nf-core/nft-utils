@@ -18,6 +18,7 @@ UNTAR:
 Workflow:
     nf-core/rnaseq: v3.16.0dev
     Nextflow: 24.04.4
+```
 
 This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
 
@@ -59,7 +60,6 @@ In this example, 1 file is stable with stable content (`stable_content.txt`), an
 The last file has no stable content (`execution_trace_2024-09-30_13-10-16.txt`) as its name is based on the date and time of the pipeline execution.
 
 For this example, we want to snapshot the files that have stable content, and the filenames that have stable names.
-
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/execution_trace*.txt'] )
