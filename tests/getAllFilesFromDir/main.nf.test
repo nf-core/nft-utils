@@ -12,11 +12,14 @@ nextflow_pipeline {
         }
 
         then {
-          def timestamp      = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]
-          def stable_name    = getAllFilesFromDir(params.outdir, false, timestamp)
-          def stable_content = getAllFilesFromDir(params.outdir, false, timestamp + [/stable_name\.txt/] )
+          // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
+          def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/*[0-9]*.txt'] )
+          // Use getAllFilesFromDir() to get a list of all files from the output directory, minus the non-stable files
+          def stable_content = getAllFilesFromDir(params.outdir, false, ['**/*[0-9]*.txt', '**/stable_name.txt'] )
           assert snapshot(
+            // Only snapshot name
             stable_name*.name,
+            // Snapshot content
             stable_content
           ).match()
         }
