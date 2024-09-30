@@ -13,9 +13,9 @@ nextflow_pipeline {
 
         then {
           // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
-          def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/*[0-9]*.txt'] )
+          def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/*[0-9]*.txt'], null )
           // Use getAllFilesFromDir() to get a list of all files from the output directory, minus the non-stable files
-          def stable_content = getAllFilesFromDir(params.outdir, false, 'tests/getAllFilesFromDir/.nftignore' )
+          def stable_content = getAllFilesFromDir(params.outdir, false, ['**/*[0-9]*.txt'], 'tests/getAllFilesFromDir/.nftignore' )
           assert snapshot(
             // Only snapshot name
             stable_name*.name,

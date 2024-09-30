@@ -51,18 +51,23 @@ public class Methods {
 
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
-  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, Object ignorePatterns)
+  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs,
+      String ignoreFilePath)
       throws IOException {
     List<File> output = new ArrayList<>();
     Path directory = Paths.get(outdir);
 
-    List<String> ignoreGlobs = getIgnoreGlobs(ignorePatterns);
+    List<String> allIgnoreGlobs = new ArrayList<>();
+    if (ignoreGlobs != null) {
+      allIgnoreGlobs.addAll(ignoreGlobs);
+    }
+    if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
+      allIgnoreGlobs.addAll(readGlobsFromFile(ignoreFilePath));
+    }
 
     List<PathMatcher> excludeMatchers = new ArrayList<>();
-    if (ignoreGlobs != null && !ignoreGlobs.isEmpty()) {
-      for (String glob : ignoreGlobs) {
-        excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
-      }
+    for (String glob : allIgnoreGlobs) {
+      excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
     }
 
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
@@ -93,21 +98,9 @@ public class Methods {
         .collect(Collectors.toList());
   }
 
-  private static List<String> getIgnoreGlobs(Object ignorePatterns) throws IOException {
-    if (ignorePatterns instanceof List) {
-      return (List<String>) ignorePatterns;
-    } else if (ignorePatterns instanceof File) {
-      return readGlobsFromFile((File) ignorePatterns);
-    } else if (ignorePatterns instanceof String) {
-      return readGlobsFromFile(new File((String) ignorePatterns));
-    } else {
-      throw new IllegalArgumentException("ignorePatterns must be a List<String>, File, or String (file path)");
-    }
-  }
-
-  private static List<String> readGlobsFromFile(File file) throws IOException {
+  private static List<String> readGlobsFromFile(String filePath) throws IOException {
     List<String> globs = new ArrayList<>();
-    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
       String line;
       while ((line = reader.readLine()) != null) {
         line = line.trim();
