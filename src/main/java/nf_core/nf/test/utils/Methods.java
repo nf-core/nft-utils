@@ -1,10 +1,15 @@
 package nf_core.nf.test.utils;
 
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Methods {
 
@@ -35,20 +40,45 @@ public class Methods {
     return yamlData;
   }
 
+  // Return all files in a directory and its sub-directories
+  // matching or not matching supplied regexes
+  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> excludeRegexes) {
+    List<File> output = new ArrayList<>();
+    File directory = new File(outdir);
+
+    getAllFilesRecursively(directory, includeDir, excludeRegexes, output);
+
+    Collections.sort(output);
+    return output;
+  }
+
   // Recursively list all files in a directory and its sub-directories
   // matching or not matching supplied regexes
-  public static List<String> getAllFilesFromDir(CharSequence dir, List<String> includeRegexes, List<String> excludeRegexes) {
-        def output = []
-        new File(dir).eachFileRecurse() { file ->
-            boolean matchesInclusion = (includeRegexes == null || includeRegexes.any { regex -> file.name.toString() ==~ regex })
-            boolean matchesExclusion = (excludeRegexes == null || !excludeRegexes.any { regex -> file.name.toString() ==~ regex })
+  private static void getAllFilesRecursively(File directory, boolean includeDir, List<String> excludeRegexes,
+      List<File> output) {
+    File[] files = directory.listFiles();
+    if (files != null) {
+      for (File file : files) {
+        boolean matchesInclusion = includeDir || file.isFile();
+        boolean matchesExclusion = false;
 
-            if (matchesInclusion && matchesExclusion) {
-                output.add(file)
+        if (excludeRegexes != null) {
+          for (String regex : excludeRegexes) {
+            if (Pattern.matches(regex, file.getName())) {
+              matchesExclusion = true;
+              break;
             }
-        }return output.sort{ it.name }}
+          }
+        }
 
-  // Static (global) things useful for supplying to getAllFilesFromDir()
-  static List<String> unstableFilenamesRegex = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]  // e.g. date strings
-  static List<String> plainTextFormatsRegex = [/.*\.(txt|json|tsv)$/]                       // Common plain text formats
+        if (matchesInclusion && !matchesExclusion) {
+          output.add(file);
+        }
+
+        if (file.isDirectory()) {
+          getAllFilesRecursively(file, includeDir, excludeRegexes, output);
+        }
+      }
+    }
+  }
 }
