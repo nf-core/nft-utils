@@ -62,8 +62,8 @@ The last file has no stable content (`execution_trace_2024-09-30_13-10-16.txt`) 
 For this example, we want to snapshot the files that have stable content, and the filenames that have stable names.
 
 ```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/execution_trace*.txt'] )
-def stable_content = getAllFilesFromDir(params.outdir, false, ['**/execution_trace*.txt', '**/stable_name.txt'] )
+def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/execution_trace*.txt'], null )
+def stable_content = getAllFilesFromDir(params.outdir, false, ['**/execution_trace*.txt', '**/stable_name.txt'], null )
 assert snapshot(
   // Only snapshot name as content is not stable
   stable_name*.name,
@@ -72,4 +72,4 @@ assert snapshot(
 ).match()
 ```
 
-First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore.
+First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore, and the forth is a file containing a list of glob patterns to ignore.
