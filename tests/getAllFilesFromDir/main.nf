@@ -19,5 +19,5 @@ workflow {
     """
     I DO NOT HAVE STABLE NAME
     """.stripIndent().trim())
-    .collectFile(storeDir: "${params.outdir}/not_stable", name: "${trace_timestamp}.txt", sort: true, newLine: true)
+    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: "execution_trace_${trace_timestamp}.txt", sort: true, newLine: true)
 }

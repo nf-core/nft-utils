@@ -57,18 +57,41 @@ Only argument is path to the file.
 
 ## `getAllFilesFromDir()`
 
-Get all files (can include folders too) from a directory, not matching a regex pattern.
+Files produced by a pipeline can be compared to a snapshot.
+This function produces a list of all the content of a directory, and can exclude some files based on a glob pattern.
+From there one can get just filenames and snapshot only the names when content is not stable.
+Or snapshot the whole list of files that have stable content.
+
+In this example, these are the files produced by a pipeline:
+
+```bash
+results/
+├── pipeline_info
+│   └── execution_trace_2024-09-30_13-10-16.txt
+└── stable
+    ├── stable_content.txt
+    └── stable_name.txt
+
+2 directories, 3 files
+```
+
+In this example, 1 file is stable with stable content (`stable_content.txt`), and 1 file is stable with a stable name (`stable_name.txt`).
+The last file has no stable content (`execution_trace_2024-09-30_13-10-16.txt`) as its name is based on the date and time of the pipeline execution.
+
+For this example, we want to snapshot the files that have stable content, and the filenames that have stable names.
+
 
 ```groovy
-def timestamp      = [/.*\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.*/]
-def stable_name    = getAllFilesFromDir(params.outdir, false, timestamp)
-def stable_content = getAllFilesFromDir(params.outdir, false, timestamp + [/stable_name\.txt/] )
+// Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus non stable files
+def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/execution_trace*.txt'] )
+// Use getAllFilesFromDir() to get a list of all files from the output directory, minus the non stable files
+def stable_content = getAllFilesFromDir(params.outdir, false, ['**/execution_trace*.txt', '**/stable_name.txt'] )
 assert snapshot(
-  // Only snapshot name
+  // Only snapshot name as content is not stable
   stable_name*.name,
   // Snapshot content
   stable_content
 ).match()
 ```
 
-First argument is the directory path, second is a boolean to include folders, and the third is a list of regex patterns to exclude.
+First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore.
