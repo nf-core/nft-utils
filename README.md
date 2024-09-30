@@ -13,37 +13,11 @@ nf-core pipelines create a yml file listing all the versions of the software use
 Here is an example of this file coming from the rnaseq pipeline.
 
 ```yaml
-BBMAP_BBSPLIT:
-  bbmap: 39.01
-CAT_FASTQ:
-  cat: 8.3
-CUSTOM_CATADDITIONALFASTA:
-  python: 3.9.5
-CUSTOM_GETCHROMSIZES:
-  getchromsizes: 1.2
-FASTQC:
-  fastqc: 0.12.1
-GTF2BED:
-  perl: 5.26.2
-GTF_FILTER:
-  python: 3.9.5
-GUNZIP_ADDITIONAL_FASTA:
-  gunzip: 1.1
-GUNZIP_GTF:
-  gunzip: 1.1
-STAR_GENOMEGENERATE:
-  star: 2.7.10a
-  samtools: 1.18
-  gawk: 5.1.0
-TRIMGALORE:
-  trimgalore: 0.6.7
-  cutadapt: 3.4
-UNTAR_SALMON_INDEX:
+UNTAR:
   untar: 1.34
 Workflow:
     nf-core/rnaseq: v3.16.0dev
     Nextflow: 24.04.4
-```
 
 This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot.
 
