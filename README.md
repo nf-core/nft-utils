@@ -19,7 +19,13 @@ Workflow:
     nf-core/rnaseq: v3.16.0dev
     Nextflow: 24.04.4
 
-This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot.
+This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
+
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow:
+    nf-core/rnaseq: v3.16.0dev
 
 Usage:
 
