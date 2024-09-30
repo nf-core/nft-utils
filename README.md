@@ -62,9 +62,7 @@ For this example, we want to snapshot the files that have stable content, and th
 
 
 ```groovy
-// Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus non stable files
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['**/execution_trace*.txt'] )
-// Use getAllFilesFromDir() to get a list of all files from the output directory, minus the non stable files
 def stable_content = getAllFilesFromDir(params.outdir, false, ['**/execution_trace*.txt', '**/stable_name.txt'] )
 assert snapshot(
   // Only snapshot name as content is not stable
