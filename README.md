@@ -16,8 +16,8 @@ Here is an example of this file coming from the rnaseq pipeline.
 UNTAR:
   untar: 1.34
 Workflow:
-    nf-core/rnaseq: v3.16.0dev
-    Nextflow: 24.04.4
+  nf-core/rnaseq: v3.16.0dev
+  Nextflow: 24.04.4
 ```
 
 This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
@@ -26,7 +26,7 @@ This function remove the Nextflow version from this yml file, as it is not relev
 UNTAR:
   untar: 1.34
 Workflow:
-    nf-core/rnaseq: v3.16.0dev
+  nf-core/rnaseq: v3.16.0dev
 ```
 
 Usage:
@@ -60,7 +60,11 @@ results/
 In this example, 1 file is stable with stable content (`stable_content.txt`), and 1 file is stable with a stable name (`stable_name.txt`).
 The last file has no stable content (`execution_trace_2024-09-30_13-10-16.txt`) as its name is based on the date and time of the pipeline execution.
 
-For this example, we want to snapshot the files that have stable content, and the names of files and folders that are stable. `stable_name` is a list of every file and folder except those matching the glob `pipeline_info/execution_*.{html,txt}`. `stable_content` is a list of every file except those matching the two globs `pipeline_info/execution_*.{html,txt}` and `**/stable_name.txt` which is contained in the `tests/getAllFilesFromDir/.nftignore` file.  By using `stable_name*.name`, we extract the name of every file in `stable_name` and add them to the snapshot. `stable_content` can be used in the snapshot directly to include the hash of the file contents.
+For this example, we want to snapshot the files that have stable content, and the names of files and folders that are stable.
+`stable_name` is a list of every file and folder except those matching the glob `pipeline_info/execution_*.{html,txt}`.
+`stable_content` is a list of every file except those matching the two globs `pipeline_info/execution_*.{html,txt}` and `**/stable_name.txt` which is contained in the `tests/getAllFilesFromDir/.nftignore` file.
+By using `stable_name*.name`, we extract the name of every file in `stable_name` and add them to the snapshot.
+`stable_content` can be used in the snapshot directly to include the hash of the file contents.
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
@@ -72,3 +76,16 @@ assert snapshot(
 ```
 
 First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore, and the fourth is a file containing a list of glob patterns to ignore.
+
+## Credits
+
+nft-utils was created by the nf-core community.
+
+We'd like to thank the following people:
+
+- [Adam Talbot](https://github.com/adamrtalbot)
+- [Edmund Miller](https://github.com/edmundmiller)
+- [Jonathan Manning](https://github.com/pinin4fjords)
+- [Matthias Zepper](https://github.com/MatthiasZepper)
+- [Nicolas Vannieuwkerke](https://github.com/nvnieuwk)
+- [Sateesh Peri](https://github.com/sateeshperi)
