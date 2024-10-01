@@ -4,6 +4,9 @@ tasks:
     command: |
       pre-commit install --install-hooks
       nextflow self-update
+  - name: Install maven
+    command: |
+      conda install -y -c conda-forge maven
   - name: conda update
     command: |
       conda update --all --yes
