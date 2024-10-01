@@ -19,7 +19,7 @@ It's a good idea to specify a version which you can do using the `@` symbol, how
 ```groovy title="nf-test.config"
 config {
     plugins {
-        load "nft-utils@0.1.0"
+        load "nft-utils@0.0.2"
     }
 }
 ```
