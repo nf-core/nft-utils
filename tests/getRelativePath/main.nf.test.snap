@@ -1,0 +1,21 @@
+{
+    "getRelativePath": {
+        "content": [
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.0",
+            "nextflow": "24.04.4"
+        },
+        "timestamp": "2024-10-01T18:20:38.379963"
+    }
+}

@@ -110,4 +110,15 @@ public class Methods {
     }
     return globs;
   }
+
+  public static List<String> getRelativePath(List<File> filePaths, String baseDir) {
+    Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
+
+    return filePaths.stream()
+        .map(filePath -> {
+          Path path = Paths.get(filePath.toURI()).toAbsolutePath().normalize();
+          return basePath.relativize(path).toString();
+        })
+        .collect(Collectors.toList());
+  }
 }
