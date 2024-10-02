@@ -1,4 +1,22 @@
 {
+    "getAllFilesFromDir with named params": {
+        "content": [
+            [
+                "pipeline_info",
+                "stable",
+                "stable_content.txt",
+                "stable_name.txt"
+            ],
+            [
+                "stable_content.txt:md5,f6d73f703cda1c725ea78369a6c3a48d"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.0",
+            "nextflow": "24.07.0"
+        },
+        "timestamp": "2024-10-02T10:15:47.491035"
+    },
     "getAllFilesFromDir": {
         "content": [
             [

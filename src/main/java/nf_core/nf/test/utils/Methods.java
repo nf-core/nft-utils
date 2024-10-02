@@ -12,10 +12,7 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
@@ -46,6 +43,33 @@ public class Methods {
       }
     }
     return yamlData;
+  }
+
+  //wrapper functions for getAllFilesFromDir with default options
+  public static List getAllFilesFromDir(String path) throws IOException {
+    return getAllFilesFromDir(new LinkedHashMap<String, Object>(), path);
+  }
+
+  //wrapper functions for getAllFilesFromDir with named options
+  public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String path) throws IOException {
+    if (path == null || path.isEmpty()) {
+      throw new IllegalArgumentException("The 'path' parameter is required.");
+    }
+    //TODO: check if path exists
+
+    // Extract optional parameters from the map (use defaults if not provided)
+    Boolean includeDir = (Boolean) options.getOrDefault("includeDir", true);
+    List<String> ignoreGlobs = (List<String>) options.getOrDefault("ignore", new ArrayList<String>());
+    String ignoreFilePath = (String) options.get("ignoreFile");
+    Boolean relative = (Boolean) options.getOrDefault("relative", false);
+
+    List<File> files = getAllFilesFromDir(path, includeDir, ignoreGlobs, ignoreFilePath);
+
+    if (relative) {
+      return getRelativePath(files, path);
+    } else {
+      return files;
+    }
   }
 
   // Return all files in a directory and its sub-directories

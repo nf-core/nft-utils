@@ -24,4 +24,28 @@ nextflow_pipeline {
           ).match()
         }
     }
+
+    test("getAllFilesFromDir with named params") {
+            when {
+                params {
+                    outdir = "$outputDir"
+                }
+            }
+
+            then {
+              //with default params and relative
+              println(getAllFilesFromDir(params.outdir))
+              println(getAllFilesFromDir(params.outdir, relative: true))
+              // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
+              def stable_name  = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+              // works also with spaces.
+              def stable_content = getAllFilesFromDir params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore'
+              assert snapshot(
+                // Only snapshot name
+                stable_name*.name,
+                // Snapshot content
+                stable_content
+              ).match()
+            }
+        }
 }
