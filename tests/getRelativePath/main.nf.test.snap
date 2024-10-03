@@ -1,4 +1,23 @@
 {
+    "getAllFilesFromDir & getRelativePath combined": {
+        "content": [
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.0",
+            "nextflow": "24.09.0"
+        },
+        "timestamp": "2024-10-03T20:14:09.332332"
+    },
     "getRelativePath": {
         "content": [
             [

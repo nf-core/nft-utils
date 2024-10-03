@@ -22,4 +22,22 @@ nextflow_pipeline {
           ).match()
         }
     }
+
+    test("getAllFilesFromDir & getRelativePath combined") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+          // Use getAllFilesFromDir() with named params to get a list of all files and folders from the output directory, minus the timestamped files
+          def stable_name = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
+          def stable_file = getAllFilesFromDir(params.outdir, relative: true, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'] )
+          assert snapshot(
+            stable_name,
+            stable_file
+          ).match()
+        }
+    }
 }

@@ -80,7 +80,6 @@ def stable_name    = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/e
 def stable_content = getAllFilesFromDir(params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore')
 ```
 
-
 ## `getRelativePath()`
 
 This function is used to get the relative path from a list of files compared to a given directory.
@@ -150,5 +149,6 @@ While only a flat structure would be generated without using `getRelativePath()`
 `getAllFilesFromDir()` named parameters `relative` can also be used to combine the two functions:
 
 ```groovy
-def relative_path = getAllFilesFromDir(params.outdir, relative: true)
+def stable_name = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
+def stable_file = getAllFilesFromDir(params.outdir, relative: true, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'] )
 ```
