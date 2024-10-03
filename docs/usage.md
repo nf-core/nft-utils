@@ -73,6 +73,14 @@ assert snapshot(
 
 First argument is the pipeline `outdir` directory path, second is a boolean to include folders, and the third is a list of glob patterns to ignore, and the fourth is a file containing a list of glob patterns to ignore.
 
+`getAllFilesFromDir()` also supports named parameters:
+
+```groovy
+def stable_name    = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def stable_content = getAllFilesFromDir(params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore')
+```
+
+
 ## `getRelativePath()`
 
 This function is used to get the relative path from a list of files compared to a given directory.
@@ -137,4 +145,10 @@ While only a flat structure would be generated without using `getRelativePath()`
         "stable_name.txt"
     ]
 ]
+```
+
+`getAllFilesFromDir()` named parameters `relative` can also be used to combine the two functions:
+
+```groovy
+def relative_path = getAllFilesFromDir(params.outdir, relative: true)
 ```
