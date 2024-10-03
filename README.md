@@ -3,6 +3,8 @@
 This repository contains utility functions for nf-test.
 These functions are used to help capture level tests using nf-test.
 
+Please read the [documentation](./docs) for more information.
+
 ## Credits
 
 nft-utils was created by the nf-core community.
