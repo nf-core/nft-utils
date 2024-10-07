@@ -51,19 +51,19 @@ public class Methods {
   }
 
   // wrapper functions for getAllFilesFromDir with named options
-  public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String path) throws IOException {
-    if (path == null || path.isEmpty()) {
-      throw new IllegalArgumentException("The 'path' parameter is required.");
+  public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String outdir) throws IOException {
+    if (outdir == null || outdir.isEmpty()) {
+      throw new IllegalArgumentException("The 'outdir' parameter is required.");
     }
     // Check if path exists
-    Path dirPath = Paths.get(path);
+    Path dirPath = Paths.get(outdir);
     if (!Files.exists(dirPath)) {
-      throw new IllegalArgumentException("The specified path does not exist: " + path);
+      throw new IllegalArgumentException("The specified path does not exist: " + outdir);
     }
 
     // Check if it's a directory
     if (!Files.isDirectory(dirPath)) {
-      throw new IllegalArgumentException("The specified path is not a directory: " + path);
+      throw new IllegalArgumentException("The specified path is not a directory: " + outdir);
     }
 
     // Extract optional parameters from the map (use defaults if not provided)
@@ -71,11 +71,12 @@ public class Methods {
     List<String> ignoreGlobs = (List<String>) options.getOrDefault("ignore", new ArrayList<String>());
     String ignoreFilePath = (String) options.get("ignoreFile");
     Boolean relative = (Boolean) options.getOrDefault("relative", false);
+    List<String> includeGlobs = (List<String>) options.getOrDefault("include", new ArrayList<String>());
 
-    List<File> files = getAllFilesFromDir(path, includeDir, ignoreGlobs, ignoreFilePath);
+    List<File> files = getAllFilesFromDir(outdir, includeDir, ignoreGlobs, ignoreFilePath);
 
     if (relative) {
-      return getRelativePath(files, path);
+      return getRelativePath(files, outdir);
     } else {
       return files;
     }
