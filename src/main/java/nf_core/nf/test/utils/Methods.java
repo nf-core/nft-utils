@@ -45,17 +45,26 @@ public class Methods {
     return yamlData;
   }
 
-  //wrapper functions for getAllFilesFromDir with default options
+  // wrapper functions for getAllFilesFromDir with default options
   public static List getAllFilesFromDir(String path) throws IOException {
     return getAllFilesFromDir(new LinkedHashMap<String, Object>(), path);
   }
 
-  //wrapper functions for getAllFilesFromDir with named options
+  // wrapper functions for getAllFilesFromDir with named options
   public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String path) throws IOException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException("The 'path' parameter is required.");
     }
-    //TODO: check if path exists
+    // Check if path exists
+    Path dirPath = Paths.get(path);
+    if (!Files.exists(dirPath)) {
+      throw new IllegalArgumentException("The specified path does not exist: " + path);
+    }
+
+    // Check if it's a directory
+    if (!Files.isDirectory(dirPath)) {
+      throw new IllegalArgumentException("The specified path is not a directory: " + path);
+    }
 
     // Extract optional parameters from the map (use defaults if not provided)
     Boolean includeDir = (Boolean) options.getOrDefault("includeDir", true);
