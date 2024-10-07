@@ -53,8 +53,8 @@ public class Methods {
 
     if (yamlData != null) {
       // Access and use the YAML data
-      if (yamlData.containsKey("Key1")) {
-        yamlData.get("Key1").remove("Key2");
+      if (yamlData.containsKey(Key1)) {
+        yamlData.get(Key1).remove(Key2);
       }
     }
     return yamlData;

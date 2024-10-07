@@ -3,8 +3,7 @@
         "content": [
             {
                 "Workflow": {
-                    "Pipeline": "1.0.0",
-                    "Nextflow": "24.09.0-edge"
+                    "Pipeline": "1.0.0"
                 }
             }
         ],
@@ -12,6 +11,6 @@
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
         },
-        "timestamp": "2024-10-07T13:00:09.562381"
+        "timestamp": "2024-10-07T17:00:34.208865"
     }
 }
