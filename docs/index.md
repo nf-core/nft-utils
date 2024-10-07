@@ -1,20 +1,11 @@
 # nft-utils
 
-nft-utils is an nf-test plugin to provide additional functions and assertions that fall outside of the typical nf-test features. They were primarily developed by the nf-core community but should be applicable to any nf-tests.
+nft-utils is an nf-test plugin to provide additional functions and assertions that fall outside of the typical nf-test features.
+They were primarily developed by the nf-core community but should be applicable to any nf-tests.
 
 ## Start using the plugin
 
 To start using the plugin please add it to your `nf-test.config` file:
-
-```groovy title="nf-test.config"
-config {
-    plugins {
-        load "nft-utils"
-    }
-}
-```
-
-It's a good idea to specify a version which you can do using the `@` symbol, however currently there are no releases:
 
 ```groovy title="nf-test.config"
 config {
