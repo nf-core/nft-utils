@@ -13,7 +13,7 @@ nextflow_pipeline {
 
         then {
           // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
-          def stable_name = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, [''])
+          def stable_name = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['**'])
           assert snapshot(
             // Use getRelativePath to get the relative path starting from outputDir
             getRelativePath(stable_name, outputDir)
