@@ -21,7 +21,7 @@ nextflow_pipeline {
         }
     }
 
-    test("getAllFilesFromDir & getRelativePath combined") {
+    test("getRelativePath - Used from getAllFilesFromDir with the named parameter relative") {
         when {
             params {
                 outdir = "$outputDir"

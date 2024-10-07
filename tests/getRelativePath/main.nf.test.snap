@@ -1,5 +1,5 @@
 {
-    "getRelativePath - Used from named parameters from getAllFilesFromDir": {
+    "getRelativePath - Used from getAllFilesFromDir with the named parameter relative": {
         "content": [
             [
                 "stable/stable_content.txt",
@@ -10,7 +10,7 @@
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
         },
-        "timestamp": "2024-10-07T16:06:44.9653"
+        "timestamp": "2024-10-07T17:40:15.046091"
     },
     "getRelativePath": {
         "content": [
