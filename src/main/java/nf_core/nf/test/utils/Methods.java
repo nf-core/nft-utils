@@ -45,17 +45,32 @@ public class Methods {
     return yamlData;
   }
 
-  //wrapper functions for getAllFilesFromDir with default options
+  // Removed the Key2 entry from the Key1 entry
+  // within the input Version YAML file
+  public static Map<String, Map<String, Object>> removeFromYaml(CharSequence versionFile, String Key1, String Key2) {
+    String yamlFilePath = versionFile.toString();
+    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
+
+    if (yamlData != null) {
+      // Access and use the YAML data
+      if (yamlData.containsKey("Key1")) {
+        yamlData.get("Key1").remove("Key2");
+      }
+    }
+    return yamlData;
+  }
+
+  // wrapper functions for getAllFilesFromDir with default options
   public static List getAllFilesFromDir(String path) throws IOException {
     return getAllFilesFromDir(new LinkedHashMap<String, Object>(), path);
   }
 
-  //wrapper functions for getAllFilesFromDir with named options
+  // wrapper functions for getAllFilesFromDir with named options
   public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String path) throws IOException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException("The 'path' parameter is required.");
     }
-    //TODO: check if path exists
+    // TODO: check if path exists
 
     // Extract optional parameters from the map (use defaults if not provided)
     Boolean includeDir = (Boolean) options.getOrDefault("includeDir", true);

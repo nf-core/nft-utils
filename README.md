@@ -37,6 +37,35 @@ assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_rnaseq_s
 
 The only argument is path to the file which must be a versions file in YAML format as per the nf-core standard.
 
+## `removeFromYaml()`
+
+Remove any key from a YAML file.
+
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow:
+  nf-core/rnaseq: v3.16.0dev
+  Nextflow: 24.04.4
+```
+
+This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
+
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow:
+  nf-core/rnaseq: v3.16.0dev
+```
+
+Usage:
+
+```groovy
+assert snapshot(removeFromYaml("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow", "Nextflow")).match()
+```
+
+The first argument is path to the YAML file, the second and third arguments are the key and subkey to remove.
+
 ## `getAllFilesFromDir()`
 
 Files produced by a pipeline can be compared to a snapshot.

@@ -1,0 +1,18 @@
+nextflow_pipeline {
+
+    name "Test removeFromYaml"
+    script "./main.nf"
+    tag "removeFromYaml"
+
+    test("removeFromYaml") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assert snapshot(removeFromYaml("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow", "Nextflow")).match()
+        }
+    }
+}
