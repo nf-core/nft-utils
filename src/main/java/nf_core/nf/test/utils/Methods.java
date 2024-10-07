@@ -67,13 +67,13 @@ public class Methods {
     }
 
     // Extract optional parameters from the map (use defaults if not provided)
-    Boolean includeDir = (Boolean) options.getOrDefault("includeDir", true);
+    Boolean includeDir = (Boolean) options.getOrDefault("includeDir", false);
     List<String> ignoreGlobs = (List<String>) options.getOrDefault("ignore", new ArrayList<String>());
     String ignoreFilePath = (String) options.get("ignoreFile");
     Boolean relative = (Boolean) options.getOrDefault("relative", false);
     List<String> includeGlobs = (List<String>) options.getOrDefault("include", new ArrayList<String>());
 
-    List<File> files = getAllFilesFromDir(outdir, includeDir, ignoreGlobs, ignoreFilePath);
+    List<File> files = getAllFilesFromDir(outdir, includeDir, ignoreGlobs, ignoreFilePath, includeGlobs);
 
     if (relative) {
       return getRelativePath(files, outdir);
@@ -85,7 +85,7 @@ public class Methods {
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
   public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs,
-      String ignoreFilePath)
+      String ignoreFilePath, List<String> includeGlobs)
       throws IOException {
     List<File> output = new ArrayList<>();
     Path directory = Paths.get(outdir);
