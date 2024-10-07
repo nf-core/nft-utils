@@ -47,7 +47,7 @@ public class Methods {
 
   // Removed the Key2 entry from the Key1 entry
   // within the input Version YAML file
-  public static Map<String, Map<String, Object>> removeFromYaml(CharSequence versionFile, String Key1, String Key2) {
+  public static Map<String, Map<String, Object>> removeFromYamlMap(CharSequence versionFile, String Key1, String Key2) {
     String yamlFilePath = versionFile.toString();
     Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
 
