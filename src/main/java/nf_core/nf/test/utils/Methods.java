@@ -71,7 +71,7 @@ public class Methods {
     List<String> ignoreGlobs = (List<String>) options.getOrDefault("ignore", new ArrayList<String>());
     String ignoreFilePath = (String) options.get("ignoreFile");
     Boolean relative = (Boolean) options.getOrDefault("relative", false);
-    List<String> includeGlobs = (List<String>) options.getOrDefault("include", new ArrayList<String>());
+    List<String> includeGlobs = (List<String>) options.getOrDefault("include", Arrays.asList("*", "**/*"));
 
     List<File> files = getAllFilesFromDir(outdir, includeDir, ignoreGlobs, ignoreFilePath, includeGlobs);
 
@@ -103,10 +103,20 @@ public class Methods {
       excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
     }
 
+    List<String> allIncludeGlobs = new ArrayList<>();
+    if (includeGlobs != null) {
+      allIncludeGlobs.addAll(includeGlobs);
+    }
+
+    List<PathMatcher> includeMatchers = new ArrayList<>();
+    for (String glob : allIncludeGlobs) {
+      includeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
+    }
+
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        if (!isExcluded(file)) {
+        if (isIncluded(file) && !isExcluded(file)) {
           output.add(file.toFile());
         }
         return FileVisitResult.CONTINUE;
@@ -115,7 +125,7 @@ public class Methods {
       @Override
       public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         // Exclude output which is the root output folder from nf-test
-        if (includeDir && (!isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
+        if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
           output.add(dir.toFile());
         }
         return FileVisitResult.CONTINUE;
@@ -123,6 +133,10 @@ public class Methods {
 
       private boolean isExcluded(Path path) {
         return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+      }
+
+      private boolean isIncluded(Path path) {
+        return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
       }
     });
 
