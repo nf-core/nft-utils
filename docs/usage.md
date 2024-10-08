@@ -90,8 +90,8 @@ By using `stable_name*.name`, we extract the name of every file in `stable_name`
 `stable_content` can be used in the snapshot directly to include the hash of the file contents.
 
 ```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
-def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore' )
+def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
+def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 assert snapshot(
   stable_name*.name,
   stable_content
@@ -102,12 +102,14 @@ assert snapshot(
 • The second argument is a boolean indicating whether to include folders.
 • The third argument is a list of glob patterns to ignore.
 • The fourth argument is a file containing additional glob patterns to ignore.
+• The fifth argument is a list of glob patterns to include.
 
 `getAllFilesFromDir()` also supports named parameters:
 
 ```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
-def stable_content = getAllFilesFromDir(params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore')
+def stable_name       = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def stable_name_again = getAllFilesFromDir(params.outdir, include: ['stable/*'])
+def stable_content    = getAllFilesFromDir(params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore')
 ```
 
 ## `getRelativePath()`
@@ -179,6 +181,6 @@ Without using `getRelativePath()` and by using `*.name` to capture the file name
 `getAllFilesFromDir()` named parameters `relative` can also be used to combine the two functions:
 
 ```groovy
-def stable_name = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
-def stable_file = getAllFilesFromDir(params.outdir, relative: true, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'] )
+def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
+def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
 ```

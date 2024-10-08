@@ -66,22 +66,32 @@ public class Methods {
   }
 
   // wrapper functions for getAllFilesFromDir with named options
-  public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String path) throws IOException {
-    if (path == null || path.isEmpty()) {
-      throw new IllegalArgumentException("The 'path' parameter is required.");
+  public static List getAllFilesFromDir(LinkedHashMap<String, Object> options, String outdir) throws IOException {
+    if (outdir == null || outdir.isEmpty()) {
+      throw new IllegalArgumentException("The 'outdir' parameter is required.");
     }
-    // TODO: check if path exists
+    // Check if path exists
+    Path dirPath = Paths.get(outdir);
+    if (!Files.exists(dirPath)) {
+      throw new IllegalArgumentException("The specified path does not exist: " + outdir);
+    }
+
+    // Check if it's a directory
+    if (!Files.isDirectory(dirPath)) {
+      throw new IllegalArgumentException("The specified path is not a directory: " + outdir);
+    }
 
     // Extract optional parameters from the map (use defaults if not provided)
-    Boolean includeDir = (Boolean) options.getOrDefault("includeDir", true);
+    Boolean includeDir = (Boolean) options.getOrDefault("includeDir", false);
     List<String> ignoreGlobs = (List<String>) options.getOrDefault("ignore", new ArrayList<String>());
     String ignoreFilePath = (String) options.get("ignoreFile");
     Boolean relative = (Boolean) options.getOrDefault("relative", false);
+    List<String> includeGlobs = (List<String>) options.getOrDefault("include", Arrays.asList("*", "**/*"));
 
-    List<File> files = getAllFilesFromDir(path, includeDir, ignoreGlobs, ignoreFilePath);
+    List<File> files = getAllFilesFromDir(outdir, includeDir, ignoreGlobs, ignoreFilePath, includeGlobs);
 
     if (relative) {
-      return getRelativePath(files, path);
+      return getRelativePath(files, outdir);
     } else {
       return files;
     }
@@ -90,7 +100,7 @@ public class Methods {
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
   public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs,
-      String ignoreFilePath)
+      String ignoreFilePath, List<String> includeGlobs)
       throws IOException {
     List<File> output = new ArrayList<>();
     Path directory = Paths.get(outdir);
@@ -108,10 +118,20 @@ public class Methods {
       excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
     }
 
+    List<String> allIncludeGlobs = new ArrayList<>();
+    if (includeGlobs != null) {
+      allIncludeGlobs.addAll(includeGlobs);
+    }
+
+    List<PathMatcher> includeMatchers = new ArrayList<>();
+    for (String glob : allIncludeGlobs) {
+      includeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
+    }
+
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        if (!isExcluded(file)) {
+        if (isIncluded(file) && !isExcluded(file)) {
           output.add(file.toFile());
         }
         return FileVisitResult.CONTINUE;
@@ -120,7 +140,7 @@ public class Methods {
       @Override
       public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         // Exclude output which is the root output folder from nf-test
-        if (includeDir && (!isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
+        if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
           output.add(dir.toFile());
         }
         return FileVisitResult.CONTINUE;
@@ -128,6 +148,10 @@ public class Methods {
 
       private boolean isExcluded(Path path) {
         return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+      }
+
+      private boolean isIncluded(Path path) {
+        return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
       }
     });
 

@@ -1,12 +1,6 @@
 {
-    "getAllFilesFromDir & getRelativePath combined": {
+    "getRelativePath - Used from getAllFilesFromDir with the named parameter relative": {
         "content": [
-            [
-                "pipeline_info",
-                "stable",
-                "stable/stable_content.txt",
-                "stable/stable_name.txt"
-            ],
             [
                 "stable/stable_content.txt",
                 "stable/stable_name.txt"
@@ -16,7 +10,7 @@
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
         },
-        "timestamp": "2024-10-03T20:14:09.332332"
+        "timestamp": "2024-10-07T17:40:15.046091"
     },
     "getRelativePath": {
         "content": [
@@ -25,16 +19,12 @@
                 "stable",
                 "stable/stable_content.txt",
                 "stable/stable_name.txt"
-            ],
-            [
-                "stable/stable_content.txt",
-                "stable/stable_name.txt"
             ]
         ],
         "meta": {
             "nf-test": "0.9.0",
-            "nextflow": "24.04.4"
+            "nextflow": "24.09.0"
         },
-        "timestamp": "2024-10-01T18:20:38.379963"
+        "timestamp": "2024-10-07T16:03:43.069945"
     }
 }
