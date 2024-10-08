@@ -45,6 +45,21 @@ public class Methods {
     return yamlData;
   }
 
+  // Removed the Key2 entry from the Key1 entry
+  // within the input Version YAML file
+  public static Map<String, Map<String, Object>> removeFromYamlMap(CharSequence versionFile, String Key1, String Key2) {
+    String yamlFilePath = versionFile.toString();
+    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
+
+    if (yamlData != null) {
+      // Access and use the YAML data
+      if (yamlData.containsKey(Key1)) {
+        yamlData.get(Key1).remove(Key2);
+      }
+    }
+    return yamlData;
+  }
+
   // wrapper functions for getAllFilesFromDir with default options
   public static List getAllFilesFromDir(String path) throws IOException {
     return getAllFilesFromDir(new LinkedHashMap<String, Object>(), path);

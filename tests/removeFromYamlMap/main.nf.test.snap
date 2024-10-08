@@ -1,0 +1,16 @@
+{
+    "removeFromYamlMap": {
+        "content": [
+            {
+                "Workflow": {
+                    "Pipeline": "1.0.0"
+                }
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.0",
+            "nextflow": "24.09.0"
+        },
+        "timestamp": "2024-10-07T17:32:04.309756"
+    }
+}
