@@ -13,14 +13,19 @@ nextflow_pipeline {
 
         then {
           // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
-          def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
+          def stable_name       = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['**'])
+          // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
+          def stable_name_again = getAllFilesFromDir(params.outdir, true, [''], null, ['stable/*'])
           // Use getAllFilesFromDir() to get a list of all files from the output directory, minus the non-stable files
-          def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore' )
+          def stable_content    = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['**'])
           assert snapshot(
             // Only snapshot name
             stable_name*.name,
+            // Only snapshot name again
+            stable_name_again*.name,
             // Snapshot content
-            stable_content
+            stable_content,
+            // Capture file with includeGlobs
           ).match()
         }
     }
@@ -33,16 +38,21 @@ nextflow_pipeline {
             }
 
             then {
-              //with default params and relative
+              //with default params
               println(getAllFilesFromDir(params.outdir))
+              //with default params and relative
               println(getAllFilesFromDir(params.outdir, relative: true))
               // Use getAllFilesFromDir() to get a list of all files and folders from the output directory, minus the timestamped files
-              def stable_name  = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+              def stable_name        = getAllFilesFromDir(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+              // Use getAllFilesFromDir() to get a list of all files and folders from the stable folder within the output dir
+              def stable_name_again  = getAllFilesFromDir(params.outdir, includeDir: true, include: ['stable/*'])
               // works also with spaces.
-              def stable_content = getAllFilesFromDir params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore'
+              def stable_content     = getAllFilesFromDir params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore'
               assert snapshot(
                 // Only snapshot name
                 stable_name*.name,
+                // Only snapshot name again
+                stable_name_again*.name,
                 // Snapshot content
                 stable_content
               ).match()
