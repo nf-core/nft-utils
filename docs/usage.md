@@ -71,6 +71,7 @@ This function generates a list of all the contents within a directory (and subdi
 - The third argument is a _list_ of glob patterns to exclude.
 - The fourth argument is a _file_ containing additional glob patterns to exclude.
 - The fifth argument is a _list_ of glob patterns to include.
+- The sixth argument is a boolean indicating whether to output relative paths.
 
 In this example, below are the files produced by a pipeline:
 
