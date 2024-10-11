@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -489,7 +489,15 @@
 </span></code></pre></div>
 <p>The first argument is path to the YAML file, the second and third arguments are the key and subkey to remove.</p>
 <h2 id="getallfilesfromdir"><code>getAllFilesFromDir()</code></h2>
-<p>This function generates a list of all the contents within a directory, allowing for the exclusion of specific files using a glob pattern. It can be used to obtain filenames alone, enabling snapshotting of just the names when the content is not stable. Alternatively, it can snapshot the entire list of files with stable content.</p>
+<p>This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.</p>
+<ul>
+<li>The first argument is the directory path to screen for file paths (e.g. a  pipeline’s <code>outdir</code> ).</li>
+<li>The second argument is a boolean indicating whether to include subdirectory names in the list.</li>
+<li>The third argument is a <em>list</em> of glob patterns to exclude.</li>
+<li>The fourth argument is a <em>file</em> containing additional glob patterns to exclude.</li>
+<li>The fifth argument is a <em>list</em> of glob patterns to include.</li>
+<li>The sixth argument is a boolean indicating whether to output relative paths.</li>
+</ul>
 <p>In this example, below are the files produced by a pipeline:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>results/
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>├──<span class="w"> </span>pipeline_info
@@ -500,80 +508,83 @@
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
 </span></code></pre></div>
-<p>In this example, 1 file is stable with stable content (<code>stable_content.txt</code>), and 1 file is stable with a stable name (<code>stable_name.txt</code>).
-The last file has no stable content (<code>execution_trace_2024-09-30_13-10-16.txt</code>) as its name is based on the date and time of the pipeline execution.</p>
-<p>In this example, we aim to snapshot files with stable content, along with the names of files and folders that are stable.</p>
-<p>•<code>stable_name</code> is a list of all files and folders, excluding those matching the glob pattern <code>pipeline_info/execution_*.{html,txt}</code>.
-•<code>stable_content</code> is a list of all files, excluding those that match the two glob patterns: <code>pipeline_info/execution_*.{html,txt}</code> and <code>**/stable_name.txt</code>. The latter is specified in the <code>tests/getAllFilesFromDir/.nftignore</code> file.
-By using <code>stable_name*.name</code>, we extract the name of every file in <code>stable_name</code> and add them to the snapshot.
-<code>stable_content</code> can be used in the snapshot directly to include the hash of the file contents.</p>
+<p>One file has stable content and a stable name (<code>stable_content.txt</code>), and one file has unstable contents but a stable name (<code>stable_name.txt</code>).
+The last file (<code>execution_trace_2024-09-30_13-10-16.txt</code>) has no stable content nor a stable name, as its name is based on the date and time of the pipeline execution.</p>
+<p>We aim to snapshot files with stable content, and stable names (for both files and directories), but excluding the completely unstable file.</p>
+<p>First, we will specify the following two variables that we will pass to the nf-test snapshot function:</p>
+<ul>
+<li>The <code>stable_name</code> variable contains a list of all files and directories, excluding those matching the glob pattern <code>pipeline_info/execution_*.{html,txt}</code> (i.e., the unstable file).</li>
+<li>The <code>stable_content</code> variable contains a list of all files, excluding those that match the two glob patterns: <code>pipeline_info/execution_*.{html,txt}</code> and <code>**/stable_name.txt</code>.</li>
+<li>The latter is specified in the <code>tests/getAllFilesFromDir/.nftignore</code> file.</li>
+</ul>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="n">stable_name</span><span class="o">*.</span><span class="na">name</span><span class="o">,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="n">stable_content</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
-<p>• The first argument is the pipeline’s <code>outdir</code> directory path.
-• The second argument is a boolean indicating whether to include folders.
-• The third argument is a list of glob patterns to ignore.
-• The fourth argument is a file containing additional glob patterns to ignore.
-• The fifth argument is a list of glob patterns to include.</p>
+<p>Secondly, we need to supply these two variables to the nf-test snapshot assrtion.
+The list of files in <code>stable_content</code> can be supplied to the snapshot directly, and nf-test will include the md5sum hash of the file contents.
+For the list of stable file names with unstable contents, we can use <code>stable_name*.name</code>, to just extract just <em>name</em> of every file in the list for comparison (i.e., without generating the md5sum hash).</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="n">stable_content</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="n">stable_name</span><span class="o">*.</span><span class="na">name</span><span class="o">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+</span></code></pre></div>
 <p><code>getAllFilesFromDir()</code> also supports named parameters:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">])</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">])</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">includeDir:</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="nl">ignoreFile:</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">)</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">])</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">])</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">includeDir:</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="nl">ignoreFile:</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">)</span>
 </span></code></pre></div>
 <h2 id="getrelativepath"><code>getRelativePath()</code></h2>
 <p>This function is used to get the relative path from a list of files compared to a given directory.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>results/
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>├──<span class="w"> </span>pipeline_info
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>└──<span class="w"> </span>stable
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span>├──<span class="w"> </span>stable_content.txt
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span>└──<span class="w"> </span>stable_name.txt
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>results/
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>├──<span class="w"> </span>pipeline_info
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>└──<span class="w"> </span>stable
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>├──<span class="w"> </span>stable_content.txt
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>└──<span class="w"> </span>stable_name.txt
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
 </span></code></pre></div>
 <p>Following the previous example, we want to get the relative path of the stable paths in the <code>results</code> directory.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">)</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">)</span>
 </span></code></pre></div>
 <p>The <code>stable_name</code> variable contains the list of stable files and folders in the <code>results</code> directory.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="n">getRelativePath</span><span class="o">(</span><span class="n">stable_name</span><span class="o">,</span><span class="w"> </span><span class="n">outputDir</span><span class="o">)</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="n">getRelativePath</span><span class="o">(</span><span class="n">stable_name</span><span class="o">,</span><span class="w"> </span><span class="n">outputDir</span><span class="o">)</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
 <p>By using <code>getRelativePath()</code> we generate in the snapshot:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>&quot;content&quot;: [
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    [
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>        &quot;pipeline_info&quot;,
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        &quot;stable&quot;,
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>        &quot;stable/stable_content.txt&quot;,
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        &quot;stable/stable_name.txt&quot;
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    ]
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>]
-</span></code></pre></div>
-<p>A reduced list can be generated by using <code>getAllFilesFromDir()</code> without including the folders in the output.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>&quot;content&quot;: [
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    [
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        &quot;stable/stable_content.txt&quot;,
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>        &quot;stable/stable_name.txt&quot;
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    ]
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>]
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        &quot;pipeline_info&quot;,
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>        &quot;stable&quot;,
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>        &quot;stable/stable_content.txt&quot;,
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>        &quot;stable/stable_name.txt&quot;
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    ]
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>]
 </span></code></pre></div>
-<p>Without using <code>getRelativePath()</code> and by using <code>*.name</code> to capture the file names, only a flat structure would be generated, as shown below:</p>
+<p>A reduced list can be generated by using <code>getAllFilesFromDir()</code> without including the folders in the output.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>&quot;content&quot;: [
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    [
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        &quot;pipeline_info&quot;,
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>        &quot;stable&quot;,
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>        &quot;stable_content.txt&quot;,
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>        &quot;stable_name.txt&quot;
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    ]
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>]
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        &quot;stable/stable_content.txt&quot;,
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>        &quot;stable/stable_name.txt&quot;
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    ]
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>]
+</span></code></pre></div>
+<p>Without using <code>getRelativePath()</code> and by using <code>*.name</code> to capture the file names, only a flat structure would be generated, as shown below:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>&quot;content&quot;: [
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    [
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        &quot;pipeline_info&quot;,
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>        &quot;stable&quot;,
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        &quot;stable_content.txt&quot;,
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        &quot;stable_name.txt&quot;
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    ]
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>]
 </span></code></pre></div>
 <p><code>getAllFilesFromDir()</code> named parameters <code>relative</code> can also be used to combine the two functions:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
 </span></code></pre></div>
 
 
