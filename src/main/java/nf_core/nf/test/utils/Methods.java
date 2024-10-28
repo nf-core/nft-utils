@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -15,6 +16,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
+
+import com.twmacinta.util.MD5;
 
 public class Methods {
 
@@ -183,5 +186,14 @@ public class Methods {
           return basePath.relativize(path).toString();
         })
         .collect(Collectors.toList());
+  }
+
+  public static String listToMD5(ArrayList<Object> input) throws UnsupportedEncodingException {
+    MD5 md5 = new MD5();
+    Iterator<Object> inputIterator = input.iterator();
+    while(inputIterator.hasNext()) {
+      md5.Update(inputIterator.next().toString(), null);
+    }
+    return md5.asHex();
   }
 }
