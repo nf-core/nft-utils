@@ -4,7 +4,7 @@
 
 ### New features
 
-The first release of nft-utils
+- Added the `listToMD5` function
 
 ### Fixes
 
