@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.45">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -361,6 +361,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#listtomd5" class="md-nav__link">
+    <span class="md-ellipsis">
+      listToMD5()
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -426,6 +435,15 @@
   <a href="#getrelativepath" class="md-nav__link">
     <span class="md-ellipsis">
       getRelativePath()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#listtomd5" class="md-nav__link">
+    <span class="md-ellipsis">
+      listToMD5()
     </span>
   </a>
   
@@ -586,6 +604,9 @@ For the list of stable file names with unstable contents, we can use <code>stabl
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
 </span></code></pre></div>
+<h2 id="listtomd5"><code>listToMD5()</code></h2>
+<p>This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.</p>
+<p>A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.</p>
 
 
 
@@ -665,7 +686,7 @@ For the list of stable file names with unstable contents, we can use <code>stabl
     <script id="__config" type="application/json">{"base": "..", "features": ["content.code.annotate", "content.code.copy", "navigation.instant", "navigation.top", "navigation.tracking", "navigation.sections", "navigation.footer", "search.share", "toc.follow"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>
