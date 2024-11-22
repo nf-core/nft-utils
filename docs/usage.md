@@ -196,3 +196,9 @@ Without using `getRelativePath()` and by using `*.name` to capture the file name
 def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
 def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
 ```
+
+## `listToMD5()`
+
+This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.
+
+A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.

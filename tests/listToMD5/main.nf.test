@@ -1,0 +1,18 @@
+nextflow_workflow {
+
+    name "Test Workflow TEST"
+    script "./main.nf"
+    workflow "TEST"
+
+    tag "listToMD5"
+
+    test("Should run without failures") {
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.lines_out.collect { listToMD5(it) }).match()
+        }
+
+    }
+
+}
