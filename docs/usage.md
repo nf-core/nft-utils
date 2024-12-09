@@ -111,7 +111,7 @@ For the list of stable file names with unstable contents, we can use `stable_nam
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
 def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 assert snapshot(
-  stable_content
+  stable_content,
   stable_name*.name,
 ).match()
 ```
