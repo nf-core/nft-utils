@@ -1,0 +1,21 @@
+{
+    "unzip": {
+        "content": [
+            [
+                [
+                    "stable_content.txt:md5,f6d73f703cda1c725ea78369a6c3a48d"
+                ],
+                "stable_content.txt:md5,f6d73f703cda1c725ea78369a6c3a48d",
+                "stable_content.zip:md5,ba7d71d2c8e3cd2a47fa1b498da44e99",
+                [
+
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.2"
+        },
+        "timestamp": "2024-12-16T17:57:07.994203269"
+    }
+}

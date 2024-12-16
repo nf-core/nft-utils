@@ -1,0 +1,26 @@
+import nf_core.nf.test.utils.ZipUtilsWrapper
+
+nextflow_pipeline {
+
+    name "Test unzip"
+    script "./main.nf"
+    tag "unzip"
+
+    test("unzip") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+          ZipUtilsWrapper.zip("${params.outdir}/stable/stable_content.txt", "${params.outdir}/stable_content.zip")
+          ZipUtilsWrapper.unzip("${params.outdir}/stable_content.zip", "${params.outdir}/stable_content_unzipped/")
+          def stable_name = getAllFilesFromDir(params.outdir, true, [''], null, ['**'])
+          assert snapshot(
+            stable_name
+          ).match()
+        }
+    }
+}
+
