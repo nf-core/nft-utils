@@ -124,6 +124,8 @@ def stable_name_again = getAllFilesFromDir(params.outdir, include: ['stable/*'])
 def stable_content    = getAllFilesFromDir(params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore')
 ```
 
+![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
+
 ## `getRelativePath()`
 
 This function is used to get the relative path from a list of files compared to a given directory.
