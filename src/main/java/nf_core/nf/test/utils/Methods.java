@@ -50,6 +50,7 @@ public class Methods {
 
   // Removed the Key2 entry from the Key1 entry
   // within the input Version YAML file
+  // If Key2 is null or empty, clears all content from Key1
   public static Map<String, Map<String, Object>> removeFromYamlMap(CharSequence versionFile, String Key1, String Key2) {
     String yamlFilePath = versionFile.toString();
     Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
@@ -57,10 +58,21 @@ public class Methods {
     if (yamlData != null) {
       // Access and use the YAML data
       if (yamlData.containsKey(Key1)) {
-        yamlData.get(Key1).remove(Key2);
+        if (Key2 == null || Key2.isEmpty()) {
+          // Remove the entire Key1 entry
+          yamlData.remove(Key1);
+        } else {
+          // Remove only the specific Key2 from Key1
+          yamlData.get(Key1).remove(Key2);
+        }
       }
     }
     return yamlData;
+  }
+
+  // Overloaded method for clearing all content from Key1
+  public static Map<String, Map<String, Object>> removeFromYamlMap(CharSequence versionFile, String Key1) {
+    return removeFromYamlMap(versionFile, Key1, null);
   }
 
   // wrapper functions for getAllFilesFromDir with default options
@@ -191,7 +203,7 @@ public class Methods {
   public static String listToMD5(ArrayList<Object> input) throws UnsupportedEncodingException {
     MD5 md5 = new MD5();
     Iterator<Object> inputIterator = input.iterator();
-    while(inputIterator.hasNext()) {
+    while (inputIterator.hasNext()) {
       md5.Update(inputIterator.next().toString(), null);
     }
     return md5.asHex();
