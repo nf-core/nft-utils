@@ -13,11 +13,11 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
-
-import com.twmacinta.util.MD5;
 
 public class Methods {
 
@@ -192,11 +192,26 @@ public class Methods {
   }
 
   public static String listToMD5(ArrayList<Object> input) throws UnsupportedEncodingException {
-    MD5 md5 = new MD5();
-    Iterator<Object> inputIterator = input.iterator();
-    while (inputIterator.hasNext()) {
-      md5.Update(inputIterator.next().toString(), null);
+    try {
+      MessageDigest md5 = MessageDigest.getInstance("MD5");
+      Iterator<Object> inputIterator = input.iterator();
+      while (inputIterator.hasNext()) {
+        md5.update(inputIterator.next().toString().getBytes("UTF-8"));
+      }
+      byte[] digest = md5.digest();
+
+      // Convert byte array to hex string
+      StringBuilder hexString = new StringBuilder();
+      for (byte b : digest) {
+        String hex = Integer.toHexString(0xff & b);
+        if (hex.length() == 1) {
+          hexString.append('0');
+        }
+        hexString.append(hex);
+      }
+      return hexString.toString();
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("MD5 algorithm not available", e);
     }
-    return md5.asHex();
   }
 }
