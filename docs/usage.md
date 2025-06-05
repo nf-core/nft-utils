@@ -31,12 +31,29 @@ Usage:
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_rnaseq_software_mqc_versions.yml")).match()
 ```
 
-The only argument is path to the file which must be a versions file in YAML format as per the nf-core standard.
+The function also supports wildcard patterns in file paths, which is useful when the exact filename may vary:
+
+```groovy
+assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
+```
+
+The only argument is the path to the file (or wildcard pattern) which must match a versions file in YAML format as per the nf-core standard. When using wildcards, all matching files will be processed and their results merged together.
+
+**Note:** The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
 ## `removeFromYamlMap()`
 
-Remove any key from a YAML file.
+Remove any key or entire section from a YAML file. This function supports two usage patterns and also supports wildcard patterns in file paths.
 
+### Remove a specific subkey (3 arguments)
+
+Remove a specific subkey from within a section:
+
+```groovy
+removeFromYamlMap("file.yml", "Workflow", "Nextflow")
+```
+
+**Example input:**
 ```yaml
 UNTAR:
   untar: 1.34
@@ -45,8 +62,7 @@ Workflow:
   Nextflow: 24.04.4
 ```
 
-This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
-
+**Result:** Only the "Nextflow" subkey is removed from "Workflow"
 ```yaml
 UNTAR:
   untar: 1.34
@@ -54,19 +70,72 @@ Workflow:
   nf-core/rnaseq: v3.16.0dev
 ```
 
-Usage:
+### Remove an entire section (2 arguments)
+
+Remove an entire top-level section:
 
 ```groovy
-assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow", "Nextflow")).match()
+removeFromYamlMap("file.yml", "Workflow")
 ```
 
-The first argument is path to the YAML file, the second and third arguments are the key and subkey to remove.
+**Example input:**
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow:
+  nf-core/rnaseq: v3.16.0dev
+  Nextflow: 24.04.4
+Workflow2:
+  some: value
+```
+
+**Result:** The entire "Workflow" section is removed
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow2:
+  some: value
+```
+
+### Wildcard support
+
+Both usage patterns support wildcard patterns in the file path:
+
+```groovy
+// Remove specific subkey with wildcard
+removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow", "Nextflow")
+
+// Remove entire section with wildcard
+removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow")
+```
+
+### Usage in tests
+
+```groovy
+// Remove specific subkey
+assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow", "Nextflow")).match()
+
+// Remove entire section
+assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow2")).match()
+
+// Using wildcards
+assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow", "Nextflow")).match()
+```
+
+**Arguments:**
+- First argument: Path to the YAML file (supports wildcard patterns like `*` and `?`)
+- Second argument: The top-level key (section name)
+- Third argument (optional): The subkey to remove. If omitted, the entire section is removed.
+
+**Notes:**
+- When using wildcard patterns, all matching files will be processed and their results merged together.
+- The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
 ## `getAllFilesFromDir()`
 
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
 
-- The first argument is the directory path to screen for file paths (e.g. a  pipeline’s `outdir` ).
+- The first argument is the directory path to screen for file paths (e.g. a  pipeline's `outdir` ).
 - The second argument is a boolean indicating whether to include subdirectory names in the list.
 - The third argument is a _list_ of glob patterns to exclude.
 - The fourth argument is a _file_ containing additional glob patterns to exclude.
