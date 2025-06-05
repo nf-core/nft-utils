@@ -350,6 +350,48 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="removeFromYamlMap()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remove-a-specific-subkey-3-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove a specific subkey (3 arguments)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-an-entire-section-2-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove an entire section (2 arguments)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wildcard-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wildcard support
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-in-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage in tests
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -429,6 +471,48 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="removeFromYamlMap()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remove-a-specific-subkey-3-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove a specific subkey (3 arguments)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-an-entire-section-2-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove an entire section (2 arguments)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wildcard-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wildcard support
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-in-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage in tests
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -497,29 +581,78 @@
 <p>Usage:</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeNextflowVersion</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/nf_core_rnaseq_software_mqc_versions.yml&quot;</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
-<p>The only argument is path to the file which must be a versions file in YAML format as per the nf-core standard.</p>
+<p>The function also supports wildcard patterns in file paths, which is useful when the exact filename may vary:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeNextflowVersion</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/*_versions.yml&quot;</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span></code></pre></div>
+<p>The only argument is the path to the file (or wildcard pattern) which must match a versions file in YAML format as per the nf-core standard. When using wildcards, all matching files will be processed and their results merged together.</p>
+<p><strong>Note:</strong> The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.</p>
 <h2 id="removefromyamlmap"><code>removeFromYamlMap()</code></h2>
-<p>Remove any key from a YAML file.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">UNTAR</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">untar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.34</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nt">Workflow</span><span class="p">:</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">nf-core/rnaseq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.16.0dev</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">Nextflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24.04.4</span>
+<p>Remove any key or entire section from a YAML file. This function supports two usage patterns and also supports wildcard patterns in file paths.</p>
+<h3 id="remove-a-specific-subkey-3-arguments">Remove a specific subkey (3 arguments)</h3>
+<p>Remove a specific subkey from within a section:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;file.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Nextflow&quot;</span><span class="o">)</span>
 </span></code></pre></div>
-<p>This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">UNTAR</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">untar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.34</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">Workflow</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">nf-core/rnaseq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.16.0dev</span>
+<p><strong>Example input:</strong>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">UNTAR</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">untar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.34</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nt">Workflow</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">nf-core/rnaseq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.16.0dev</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">Nextflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24.04.4</span>
+</span></code></pre></div></p>
+<p><strong>Result:</strong> Only the "Nextflow" subkey is removed from "Workflow"
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">UNTAR</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">untar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.34</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nt">Workflow</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">nf-core/rnaseq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.16.0dev</span>
+</span></code></pre></div></p>
+<h3 id="remove-an-entire-section-2-arguments">Remove an entire section (2 arguments)</h3>
+<p>Remove an entire top-level section:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;file.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">)</span>
 </span></code></pre></div>
-<p>Usage:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Nextflow&quot;</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+<p><strong>Example input:</strong>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">UNTAR</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">untar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.34</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nt">Workflow</span><span class="p">:</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">nf-core/rnaseq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.16.0dev</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">Nextflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24.04.4</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="nt">Workflow2</span><span class="p">:</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="nt">some</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+</span></code></pre></div></p>
+<p><strong>Result:</strong> The entire "Workflow" section is removed
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">UNTAR</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">untar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.34</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nt">Workflow2</span><span class="p">:</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">some</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+</span></code></pre></div></p>
+<h3 id="wildcard-support">Wildcard support</h3>
+<p>Both usage patterns support wildcard patterns in the file path:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1">// Remove specific subkey with wildcard</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/*_versions.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Nextflow&quot;</span><span class="o">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1">// Remove entire section with wildcard</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/*_versions.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">)</span>
 </span></code></pre></div>
-<p>The first argument is path to the YAML file, the second and third arguments are the key and subkey to remove.</p>
+<h3 id="usage-in-tests">Usage in tests</h3>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">// Remove specific subkey</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Nextflow&quot;</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1">// Remove entire section</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow2&quot;</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1">// Using wildcards</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">&quot;$outputDir/pipeline_info/*_versions.yml&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Workflow&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;Nextflow&quot;</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span></code></pre></div>
+<p><strong>Arguments:</strong>
+- First argument: Path to the YAML file (supports wildcard patterns like <code>*</code> and <code>?</code>)
+- Second argument: The top-level key (section name)
+- Third argument (optional): The subkey to remove. If omitted, the entire section is removed.</p>
+<p><strong>Notes:</strong>
+- When using wildcard patterns, all matching files will be processed and their results merged together.
+- The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.</p>
 <h2 id="getallfilesfromdir"><code>getAllFilesFromDir()</code></h2>
 <p>This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.</p>
 <ul>
-<li>The first argument is the directory path to screen for file paths (e.g. a  pipeline’s <code>outdir</code> ).</li>
+<li>The first argument is the directory path to screen for file paths (e.g. a  pipeline's <code>outdir</code> ).</li>
 <li>The second argument is a boolean indicating whether to include subdirectory names in the list.</li>
 <li>The third argument is a <em>list</em> of glob patterns to exclude.</li>
 <li>The fourth argument is a <em>file</em> containing additional glob patterns to exclude.</li>
@@ -527,14 +660,14 @@
 <li>The sixth argument is a boolean indicating whether to output relative paths.</li>
 </ul>
 <p>In this example, below are the files produced by a pipeline:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>results/
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>├──<span class="w"> </span>pipeline_info
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>└──<span class="w"> </span>stable
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span>├──<span class="w"> </span>stable_content.txt
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span>└──<span class="w"> </span>stable_name.txt
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>results/
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>├──<span class="w"> </span>pipeline_info
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>└──<span class="w"> </span>stable
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>├──<span class="w"> </span>stable_content.txt
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span>└──<span class="w"> </span>stable_name.txt
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
 </span></code></pre></div>
 <p>One file has stable content and a stable name (<code>stable_content.txt</code>), and one file has unstable contents but a stable name (<code>stable_name.txt</code>).
 The last file (<code>execution_trace_2024-09-30_13-10-16.txt</code>) has no stable content nor a stable name, as its name is based on the date and time of the pipeline execution.</p>
@@ -545,75 +678,75 @@ The last file (<code>execution_trace_2024-09-30_13-10-16.txt</code>) has no stab
 <li>The <code>stable_content</code> variable contains a list of all files, excluding those that match the two glob patterns: <code>pipeline_info/execution_*.{html,txt}</code> and <code>**/stable_name.txt</code>.</li>
 <li>The latter is specified in the <code>tests/getAllFilesFromDir/.nftignore</code> file.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
 </span></code></pre></div>
 <p>Secondly, we need to supply these two variables to the nf-test snapshot assrtion.
 The list of files in <code>stable_content</code> can be supplied to the snapshot directly, and nf-test will include the md5sum hash of the file contents.
 For the list of stable file names with unstable contents, we can use <code>stable_name*.name</code>, to just extract just <em>name</em> of every file in the list for comparison (i.e., without generating the md5sum hash).</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="n">stable_content</span><span class="o">,</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="n">stable_name</span><span class="o">*.</span><span class="na">name</span><span class="o">,</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;*&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;**/*&#39;</span><span class="o">])</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="n">stable_content</span><span class="o">,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="n">stable_name</span><span class="o">*.</span><span class="na">name</span><span class="o">,</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
 <p><code>getAllFilesFromDir()</code> also supports named parameters:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">])</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">])</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">includeDir:</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="nl">ignoreFile:</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">)</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">])</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">])</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_content</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">includeDir:</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="nl">ignoreFile:</span><span class="w"> </span><span class="s1">&#39;tests/getAllFilesFromDir/.nftignore&#39;</span><span class="o">)</span>
 </span></code></pre></div>
 <p><img alt="Drake not enjoying nft-csv and enjoying .nftignore" src="../images/nftignore_meme.png" /></p>
 <h2 id="getrelativepath"><code>getRelativePath()</code></h2>
 <p>This function is used to get the relative path from a list of files compared to a given directory.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>results/
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>├──<span class="w"> </span>pipeline_info
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>└──<span class="w"> </span>stable
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>├──<span class="w"> </span>stable_content.txt
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>└──<span class="w"> </span>stable_name.txt
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>results/
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>├──<span class="w"> </span>pipeline_info
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>└──<span class="w"> </span>stable
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span>├──<span class="w"> </span>stable_content.txt
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span>└──<span class="w"> </span>stable_name.txt
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="m">2</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
 </span></code></pre></div>
 <p>Following the previous example, we want to get the relative path of the stable paths in the <code>results</code> directory.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">)</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">],</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">)</span>
 </span></code></pre></div>
 <p>The <code>stable_name</code> variable contains the list of stable files and folders in the <code>results</code> directory.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="n">getRelativePath</span><span class="o">(</span><span class="n">stable_name</span><span class="o">,</span><span class="w"> </span><span class="n">outputDir</span><span class="o">)</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="n">getRelativePath</span><span class="o">(</span><span class="n">stable_name</span><span class="o">,</span><span class="w"> </span><span class="n">outputDir</span><span class="o">)</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
 <p>By using <code>getRelativePath()</code> we generate in the snapshot:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>&quot;content&quot;: [
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    [
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        &quot;pipeline_info&quot;,
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>        &quot;stable&quot;,
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>        &quot;stable/stable_content.txt&quot;,
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>        &quot;stable/stable_name.txt&quot;
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    ]
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>&quot;content&quot;: [
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    [
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>        &quot;pipeline_info&quot;,
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>        &quot;stable&quot;,
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        &quot;stable/stable_content.txt&quot;,
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>        &quot;stable/stable_name.txt&quot;
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    ]
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>]
 </span></code></pre></div>
 <p>A reduced list can be generated by using <code>getAllFilesFromDir()</code> without including the folders in the output.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>&quot;content&quot;: [
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    [
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        &quot;stable/stable_content.txt&quot;,
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>        &quot;stable/stable_name.txt&quot;
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    ]
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>&quot;content&quot;: [
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    [
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>        &quot;stable/stable_content.txt&quot;,
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>        &quot;stable/stable_name.txt&quot;
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    ]
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>]
 </span></code></pre></div>
 <p>Without using <code>getRelativePath()</code> and by using <code>*.name</code> to capture the file names, only a flat structure would be generated, as shown below:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>&quot;content&quot;: [
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    [
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        &quot;pipeline_info&quot;,
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>        &quot;stable&quot;,
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        &quot;stable_content.txt&quot;,
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        &quot;stable_name.txt&quot;
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    ]
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>&quot;content&quot;: [
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    [
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>        &quot;pipeline_info&quot;,
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>        &quot;stable&quot;,
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>        &quot;stable_content.txt&quot;,
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>        &quot;stable_name.txt&quot;
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    ]
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>]
 </span></code></pre></div>
 <p><code>getAllFilesFromDir()</code> named parameters <code>relative</code> can also be used to combine the two functions:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;pipeline_info/execution_*.{html,txt}&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_name_again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromDir</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;stable/*&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">)</span>
 </span></code></pre></div>
 <h2 id="listtomd5"><code>listToMD5()</code></h2>
 <p>This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.</p>
