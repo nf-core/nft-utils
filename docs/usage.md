@@ -35,8 +35,17 @@ The only argument is path to the file which must be a versions file in YAML form
 
 ## `removeFromYamlMap()`
 
-Remove any key from a YAML file.
+Remove any key or entire section from a YAML file. This function supports two usage patterns:
 
+### Remove a specific subkey (3 arguments)
+
+Remove a specific subkey from within a section:
+
+```groovy
+removeFromYamlMap("file.yml", "Workflow", "Nextflow")
+```
+
+**Example input:**
 ```yaml
 UNTAR:
   untar: 1.34
@@ -45,8 +54,7 @@ Workflow:
   Nextflow: 24.04.4
 ```
 
-This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
-
+**Result:** Only the "Nextflow" subkey is removed from "Workflow"
 ```yaml
 UNTAR:
   untar: 1.34
@@ -54,13 +62,47 @@ Workflow:
   nf-core/rnaseq: v3.16.0dev
 ```
 
-Usage:
+### Remove an entire section (2 arguments)
+
+Remove an entire top-level section:
 
 ```groovy
-assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow", "Nextflow")).match()
+removeFromYamlMap("file.yml", "Workflow")
 ```
 
-The first argument is path to the YAML file, the second and third arguments are the key and subkey to remove.
+**Example input:**
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow:
+  nf-core/rnaseq: v3.16.0dev
+  Nextflow: 24.04.4
+Workflow2:
+  some: value
+```
+
+**Result:** The entire "Workflow" section is removed
+```yaml
+UNTAR:
+  untar: 1.34
+Workflow2:
+  some: value
+```
+
+### Usage in tests
+
+```groovy
+// Remove specific subkey
+assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow", "Nextflow")).match()
+
+// Remove entire section
+assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow2")).match()
+```
+
+**Arguments:**
+- First argument: Path to the YAML file
+- Second argument: The top-level key (section name)
+- Third argument (optional): The subkey to remove. If omitted, the entire section is removed.
 
 ## `getAllFilesFromDir()`
 

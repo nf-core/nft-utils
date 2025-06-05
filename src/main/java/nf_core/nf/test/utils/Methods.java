@@ -36,16 +36,7 @@ public class Methods {
   // Removed the Nextflow entry from the Workflow entry
   // within the input Version YAML file
   public static Map<String, Map<String, Object>> removeNextflowVersion(CharSequence versionFile) {
-    String yamlFilePath = versionFile.toString();
-    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
-
-    if (yamlData != null) {
-      // Access and use the YAML data
-      if (yamlData.containsKey("Workflow")) {
-        yamlData.get("Workflow").remove("Nextflow");
-      }
-    }
-    return yamlData;
+    return removeFromYamlMap(versionFile, "Workflow", "Nextflow");
   }
 
   // Removed the Key2 entry from the Key1 entry
