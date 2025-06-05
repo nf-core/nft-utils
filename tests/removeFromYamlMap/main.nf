@@ -1,7 +1,7 @@
 workflow {
 
   ch_version = Channel.of(
-      """
+    """
     Workflow:
         Pipeline: 1.0.0
         Nextflow: ${workflow.nextflow.version}
