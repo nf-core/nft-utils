@@ -33,3 +33,6 @@ target/
 null/
 results/
 work/
+
+# Text editor
+.vscode
