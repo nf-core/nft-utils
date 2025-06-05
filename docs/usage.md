@@ -37,7 +37,9 @@ The function also supports wildcard patterns in file paths, which is useful when
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
 ```
 
-The only argument is path to the file (or wildcard pattern) which must match a versions file in YAML format as per the nf-core standard. When using wildcards, the first matching file will be used.
+The only argument is path to the file (or wildcard pattern) which must match a versions file in YAML format as per the nf-core standard. When using wildcards, all matching files will be processed and their results merged together.
+
+**Note:** The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
 ## `removeFromYamlMap()`
 
@@ -125,7 +127,9 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 - Second argument: The top-level key (section name)
 - Third argument (optional): The subkey to remove. If omitted, the entire section is removed.
 
-**Note:** When using wildcard patterns, the first matching file found will be used.
+**Notes:**
+- When using wildcard patterns, all matching files will be processed and their results merged together.
+- The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
 ## `getAllFilesFromDir()`
 
