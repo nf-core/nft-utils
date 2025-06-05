@@ -34,10 +34,10 @@ public class Methods {
   }
 
   // Helper method to resolve wildcard patterns to actual file paths
-  private static String resolveWildcardPath(String pathPattern) throws IOException {
-    // If no wildcard, return as is
+  private static List<String> resolveWildcardPaths(String pathPattern) throws IOException {
+    // If no wildcard, return single item list
     if (!pathPattern.contains("*") && !pathPattern.contains("?")) {
-      return pathPattern;
+      return Arrays.asList(pathPattern);
     }
 
     Path pattern = Paths.get(pathPattern);
@@ -58,18 +58,18 @@ public class Methods {
 
     // Find matching files in the parent directory
     try {
-      List<Path> matchingFiles = Files.list(parent)
+      List<String> matchingFiles = Files.list(parent)
           .filter(Files::isRegularFile)
           .filter(path -> matcher.matches(path.getFileName()))
           .sorted()
+          .map(path -> path.toAbsolutePath().toString())
           .collect(Collectors.toList());
 
       if (matchingFiles.isEmpty()) {
         throw new IOException("No files found matching pattern: " + pathPattern);
       }
 
-      // Return the first matching file (absolute path)
-      return matchingFiles.get(0).toAbsolutePath().toString();
+      return matchingFiles;
     } catch (IOException e) {
       throw new IOException("Error resolving wildcard pattern " + pathPattern + ": " + e.getMessage());
     }
@@ -84,32 +84,51 @@ public class Methods {
   // Removed the Key2 entry from the Key1 entry
   // within the input Version YAML file
   // If Key2 is null or empty, clears all content from Key1
+  // Processes all files matching wildcard patterns and merges results
   public static Map<String, Map<String, Object>> removeFromYamlMap(CharSequence versionFile, String Key1, String Key2) {
-    String yamlFilePath = versionFile.toString();
+    String yamlFilePattern = versionFile.toString();
+    Map<String, Map<String, Object>> mergedResult = new TreeMap<>();
 
     try {
-      // Resolve wildcard patterns if present
-      yamlFilePath = resolveWildcardPath(yamlFilePath);
+      // Resolve wildcard patterns if present - now returns all matching files
+      List<String> yamlFilePaths = resolveWildcardPaths(yamlFilePattern);
+
+      for (String yamlFilePath : yamlFilePaths) {
+        Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
+
+        if (yamlData != null) {
+          // Process each file's data
+          if (yamlData.containsKey(Key1)) {
+            if (Key2 == null || Key2.isEmpty()) {
+              // Remove the entire Key1 entry
+              yamlData.remove(Key1);
+            } else {
+              // Remove only the specific Key2 from Key1
+              yamlData.get(Key1).remove(Key2);
+            }
+          }
+
+          // Merge the processed data into the result
+          for (Map.Entry<String, Map<String, Object>> entry : yamlData.entrySet()) {
+            String key = entry.getKey();
+            Map<String, Object> value = entry.getValue();
+
+            if (mergedResult.containsKey(key)) {
+              // If key already exists, merge the inner maps
+              mergedResult.get(key).putAll(value);
+            } else {
+              // If key doesn't exist, add it (also sorted)
+              mergedResult.put(key, new TreeMap<>(value));
+            }
+          }
+        }
+      }
     } catch (IOException e) {
       System.err.println("Error resolving file path pattern: " + e.getMessage());
       return null;
     }
 
-    Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
-
-    if (yamlData != null) {
-      // Access and use the YAML data
-      if (yamlData.containsKey(Key1)) {
-        if (Key2 == null || Key2.isEmpty()) {
-          // Remove the entire Key1 entry
-          yamlData.remove(Key1);
-        } else {
-          // Remove only the specific Key2 from Key1
-          yamlData.get(Key1).remove(Key2);
-        }
-      }
-    }
-    return yamlData;
+    return mergedResult;
   }
 
   // Overloaded method for clearing all content from Key1
