@@ -15,4 +15,16 @@ nextflow_pipeline {
           assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match()
         }
     }
+
+    test("removeNextflowVersion with wildcard") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+          assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
+        }
+    }
 }

@@ -24,7 +24,7 @@ nextflow_pipeline {
         }
 
         then {
-            assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow")).match()
+            assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow")).match()
         }
     }
 }

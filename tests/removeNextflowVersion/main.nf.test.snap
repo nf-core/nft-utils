@@ -12,5 +12,13 @@
             "nextflow": "24.04.4"
         },
         "timestamp": "2024-09-27T19:17:42.066036"
+    },
+    "removeNextflowVersion with wildcard": {
+        "content": null,
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.2"
+        },
+        "timestamp": "2025-06-05T14:10:10.397107884"
     }
 }

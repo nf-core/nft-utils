@@ -33,6 +33,48 @@ public class Methods {
     }
   }
 
+  // Helper method to resolve wildcard patterns to actual file paths
+  private static String resolveWildcardPath(String pathPattern) throws IOException {
+    // If no wildcard, return as is
+    if (!pathPattern.contains("*") && !pathPattern.contains("?")) {
+      return pathPattern;
+    }
+
+    Path pattern = Paths.get(pathPattern);
+    Path parent = pattern.getParent();
+    String fileName = pattern.getFileName().toString();
+
+    // If parent is null, use current directory
+    if (parent == null) {
+      parent = Paths.get(".");
+    }
+
+    // Check if parent directory exists
+    if (!Files.exists(parent) || !Files.isDirectory(parent)) {
+      throw new IOException("Parent directory does not exist: " + parent);
+    }
+
+    PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + fileName);
+
+    // Find matching files in the parent directory
+    try {
+      List<Path> matchingFiles = Files.list(parent)
+          .filter(Files::isRegularFile)
+          .filter(path -> matcher.matches(path.getFileName()))
+          .sorted()
+          .collect(Collectors.toList());
+
+      if (matchingFiles.isEmpty()) {
+        throw new IOException("No files found matching pattern: " + pathPattern);
+      }
+
+      // Return the first matching file (absolute path)
+      return matchingFiles.get(0).toAbsolutePath().toString();
+    } catch (IOException e) {
+      throw new IOException("Error resolving wildcard pattern " + pathPattern + ": " + e.getMessage());
+    }
+  }
+
   // Removed the Nextflow entry from the Workflow entry
   // within the input Version YAML file
   public static Map<String, Map<String, Object>> removeNextflowVersion(CharSequence versionFile) {
@@ -44,6 +86,15 @@ public class Methods {
   // If Key2 is null or empty, clears all content from Key1
   public static Map<String, Map<String, Object>> removeFromYamlMap(CharSequence versionFile, String Key1, String Key2) {
     String yamlFilePath = versionFile.toString();
+
+    try {
+      // Resolve wildcard patterns if present
+      yamlFilePath = resolveWildcardPath(yamlFilePath);
+    } catch (IOException e) {
+      System.err.println("Error resolving file path pattern: " + e.getMessage());
+      return null;
+    }
+
     Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
 
     if (yamlData != null) {
