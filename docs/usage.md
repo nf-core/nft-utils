@@ -31,11 +31,17 @@ Usage:
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_rnaseq_software_mqc_versions.yml")).match()
 ```
 
-The only argument is path to the file which must be a versions file in YAML format as per the nf-core standard.
+The function also supports wildcard patterns in file paths, which is useful when the exact filename may vary:
+
+```groovy
+assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
+```
+
+The only argument is path to the file (or wildcard pattern) which must match a versions file in YAML format as per the nf-core standard. When using wildcards, the first matching file will be used.
 
 ## `removeFromYamlMap()`
 
-Remove any key or entire section from a YAML file. This function supports two usage patterns:
+Remove any key or entire section from a YAML file. This function supports two usage patterns and also supports wildcard patterns in file paths.
 
 ### Remove a specific subkey (3 arguments)
 
@@ -89,6 +95,18 @@ Workflow2:
   some: value
 ```
 
+### Wildcard support
+
+Both usage patterns support wildcard patterns in the file path:
+
+```groovy
+// Remove specific subkey with wildcard
+removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow", "Nextflow")
+
+// Remove entire section with wildcard
+removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow")
+```
+
 ### Usage in tests
 
 ```groovy
@@ -97,18 +115,23 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_sof
 
 // Remove entire section
 assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml", "Workflow2")).match()
+
+// Using wildcards
+assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow", "Nextflow")).match()
 ```
 
 **Arguments:**
-- First argument: Path to the YAML file
+- First argument: Path to the YAML file (supports wildcard patterns like `*` and `?`)
 - Second argument: The top-level key (section name)
 - Third argument (optional): The subkey to remove. If omitted, the entire section is removed.
+
+**Note:** When using wildcard patterns, the first matching file found will be used.
 
 ## `getAllFilesFromDir()`
 
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
 
-- The first argument is the directory path to screen for file paths (e.g. a  pipeline’s `outdir` ).
+- The first argument is the directory path to screen for file paths (e.g. a  pipeline's `outdir` ).
 - The second argument is a boolean indicating whether to include subdirectory names in the list.
 - The third argument is a _list_ of glob patterns to exclude.
 - The fourth argument is a _file_ containing additional glob patterns to exclude.
