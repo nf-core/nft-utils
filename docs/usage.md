@@ -1,8 +1,10 @@
 # Functions usage
 
+## Snapshot functions
+
 The plugin adds the following functions to assist with managing pipeline-level nf-test snapshots:
 
-## `removeNextflowVersion()`
+### `removeNextflowVersion()`
 
 nf-core pipelines create a yml file listing all the versions of the software used in the pipeline.
 
@@ -41,11 +43,11 @@ The only argument is the path to the file (or wildcard pattern) which must match
 
 **Note:** The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
-## `removeFromYamlMap()`
+### `removeFromYamlMap()`
 
 Remove any key or entire section from a YAML file. This function supports two usage patterns and also supports wildcard patterns in file paths.
 
-### Remove a specific subkey (3 arguments)
+#### Remove a specific subkey (3 arguments)
 
 Remove a specific subkey from within a section:
 
@@ -70,7 +72,7 @@ Workflow:
   nf-core/rnaseq: v3.16.0dev
 ```
 
-### Remove an entire section (2 arguments)
+#### Remove an entire section (2 arguments)
 
 Remove an entire top-level section:
 
@@ -97,7 +99,7 @@ Workflow2:
   some: value
 ```
 
-### Wildcard support
+#### Wildcard support
 
 Both usage patterns support wildcard patterns in the file path:
 
@@ -109,7 +111,7 @@ removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow", "Nextfl
 removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Workflow")
 ```
 
-### Usage in tests
+#### Usage in tests
 
 ```groovy
 // Remove specific subkey
@@ -131,7 +133,7 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 - When using wildcard patterns, all matching files will be processed and their results merged together.
 - The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
-## `getAllFilesFromDir()`
+### `getAllFilesFromDir()`
 
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
 
@@ -195,7 +197,7 @@ def stable_content    = getAllFilesFromDir(params.outdir, includeDir: false, ign
 
 ![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
 
-## `getRelativePath()`
+### `getRelativePath()`
 
 This function is used to get the relative path from a list of files compared to a given directory.
 
@@ -268,8 +270,107 @@ def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore
 def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
 ```
 
-## `listToMD5()`
+### `listToMD5()`
 
 This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.
 
 A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.
+
+## Dependency management
+
+The plugin also adds the following functions to manage dependences of tests on nf-core components, in situations where they may not otherwise be available (for example, writing tests for cross-organisational subworkflows in non-nf-core repositories).
+
+### `nfcoreSetup()` - set up a temporary nf-core library
+
+In a setup block, use the `nfcoreSetup()` function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is recommended to use a location inside `launchDir` as this will initialise a test-specific library.
+
+```groovy
+setup {
+    nfcoreSetup("${launchDir}/library")
+}
+```
+
+### `nfcoreInstall()` - Install modules to a temporary library
+
+Use the `nfcoreInstall()` function to install nf-core modules in a temporary library. This function takes the path to the library and a list of strings, each with an nf-core module name in `tool/subtool` format.
+
+```groovy
+setup {
+    nfcoreSetup("${launchDir}/library")
+    nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
+}
+```
+
+### `nfcoreLink()` - Link a temporary library to your modules directory
+
+Use the `nfcoreLink()` function to link a library to your module library. This function takes two arguments, the path to a temporary library, and the location where the modules in the library should be temporarily linked (e.g. `${baseDir}/modules/nf-core`):
+
+```groovy
+setup {
+    nfcoreSetup("${launchDir}/library")
+    nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
+    nfcoreLink("${launchDir}/library", "${baseDir}/modules/nf-core")
+}
+```
+
+This creates a symlink to the modules directory of your temporary library at `${baseDir}/modules/nf-core`. Using this location, you can refer to the nf-core modules as if they were installed as normal in your tests.
+
+### `nfcoreUnlink()` - Unlink a temporary library from your modules directory
+
+To unlink a temporary library after the test has completed, use the `nfcoreUnlink()` function. It takes the path to the symlink as an input.
+
+```groovy
+
+setup {
+    nfcoreSetup("${launchDir}/library")
+    nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
+    nfcoreLink("${launchDir}/library", "${baseDir}/modules/nf-core")
+
+    run("MINIMAP2_INDEX") {
+        script "${baseDir}/modules/nf-core/minimap2/index/main.nf
+        ...
+    }
+}
+
+when {
+    ...
+}
+
+then {
+    ...
+}
+
+cleanup {
+    nfcoreUnlink("${baseDir}/modules/nf-core")
+}
+```
+
+### `nfcoreDeleteLibrary()` - Completely delete a temporary library
+
+You can use the `nfcoreDeleteLibrary()` function to completely remove the temporary library, if desired.
+
+```groovy
+
+setup {
+    nfcoreSetup("${launchDir}/library")
+    nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
+    nfcoreLink("${launchDir}/library", "${baseDir}/modules/nf-core")
+
+    run("MINIMAP2_INDEX") {
+        script "${baseDir}/modules/nf-core/minimap2/index/main.nf
+        ...
+    }
+}
+
+when {
+    ...
+}
+
+then {
+    ...
+}
+
+cleanup {
+    nfcoreDeleteLibrary("${launchDir}/library")
+}
+```

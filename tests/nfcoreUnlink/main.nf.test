@@ -1,0 +1,30 @@
+nextflow_process {
+
+    name "Test Process TEST_MODULE"
+    script "./main.nf"
+    process "TEST_MODULE"
+
+    tag "test"
+
+    test("test plugin") {
+
+        setup {
+            nfcoreSetup("${launchDir}/library/")
+            nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
+            nfcoreLink("${launchDir}/library/", "${baseDir}/nf-core")
+            nfcoreUnlink("${baseDir}/nf-core")
+        }
+
+        then {
+            assertAll(
+                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/main.nf").exists()                 },
+                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/environment.yml").exists()         },
+                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/meta.yml").exists()                },
+                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/tests/main.nf.test").exists()      },
+                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/tests/main.nf.test.snap").exists() }
+            )
+        }
+
+    }
+
+}
