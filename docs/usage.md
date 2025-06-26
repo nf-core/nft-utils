@@ -280,13 +280,13 @@ A common use case for this function could be to read a file, remove all unstable
 
 The plugin also adds the following functions to manage dependences of tests on nf-core components, in situations where they may not otherwise be available (for example, writing tests for cross-organisational subworkflows in non-nf-core repositories).
 
-### `nfcoreSetup()` - set up a temporary nf-core library
+### `nfcoreInitialise()` - set up a temporary nf-core library
 
-In a setup block, use the `nfcoreSetup()` function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is recommended to use a location inside `launchDir` as this will initialise a test-specific library.
+In a setup block, use the `nfcoreInitialise()` function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is recommended to use a location inside `launchDir` as this will initialise a test-specific library.
 
 ```groovy
 setup {
-    nfcoreSetup("${launchDir}/library")
+    nfcoreInitialise("${launchDir}/library")
 }
 ```
 
@@ -296,7 +296,7 @@ Use the `nfcoreInstall()` function to install nf-core modules in a temporary lib
 
 ```groovy
 setup {
-    nfcoreSetup("${launchDir}/library")
+    nfcoreInitialise("${launchDir}/library")
     nfcoreInstall("${launchDir}/library", ["minimap2/index"])
     nfcoreInstall(
       "${launchDir}/library",
@@ -325,9 +325,9 @@ Use the `nfcoreLink()` function to link a library to your module library. This f
 
 ```groovy
 setup {
-    nfcoreSetup("${launchDir}/library")
+    nfcoreInitialise("${launchDir}/library")
     nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
-    nfcoreLink("${launchDir}/library", "${baseDir}/modules/nf-core")
+    nfcoreLink("${launchDir}/library", "${baseDir}/modules/")
 }
 ```
 
@@ -335,14 +335,14 @@ This creates a symlink to the modules directory of your temporary library at `${
 
 ### `nfcoreUnlink()` - Unlink a temporary library from your modules directory
 
-To unlink a temporary library after the test has completed, use the `nfcoreUnlink()` function. It takes the path to the symlink as an input.
+To unlink a temporary library after the test has completed, use the `nfcoreUnlink()` function. It takes the same arguments as `nfcoreLink()`, and recursively removes all symlinks pointing to the temporary library.
 
 ```groovy
 
 setup {
-    nfcoreSetup("${launchDir}/library")
+    nfcoreInitialise("${launchDir}/library")
     nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
-    nfcoreLink("${launchDir}/library", "${baseDir}/modules/nf-core")
+    nfcoreLink("${launchDir}/library", "${baseDir}/modules/")
 
     run("MINIMAP2_INDEX") {
         script "${baseDir}/modules/nf-core/minimap2/index/main.nf
@@ -359,7 +359,7 @@ then {
 }
 
 cleanup {
-    nfcoreUnlink("${baseDir}/modules/nf-core")
+  nfcoreUnlink("${launchDir}/library", "${baseDir}/modules/")
 }
 ```
 
@@ -370,9 +370,9 @@ You can use the `nfcoreDeleteLibrary()` function to completely remove the tempor
 ```groovy
 
 setup {
-    nfcoreSetup("${launchDir}/library")
+    nfcoreInitialise("${launchDir}/library")
     nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
-    nfcoreLink("${launchDir}/library", "${baseDir}/modules/nf-core")
+    nfcoreLink("${launchDir}/library", "${baseDir}/modules/")
 
     run("MINIMAP2_INDEX") {
         script "${baseDir}/modules/nf-core/minimap2/index/main.nf

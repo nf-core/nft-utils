@@ -19,6 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
@@ -299,198 +300,42 @@ public class Methods {
    * Creates the modules directory and .nf-core.yml configuration file
    * @param libDir The directory path to initialise an nf-core library at
    */
-  public static void nfcoreSetup(String libDir) {
-    System.out.println("\n");
-    System.out.println("Creating a temporary nf-core library at " + libDir);
-    try {
-      // Create modules directory
-      File modulesDir = new File(libDir + "/modules");
-      modulesDir.mkdirs();
-
-      // Create .nf-core.yml file
-      File nfcoreYml = new File(libDir + "/.nf-core.yml");
-      try (FileWriter writer = new FileWriter(nfcoreYml)) {
-        writer.write("repository_type: \"pipeline\"\n");
-        writer.write("template:\n");
-        writer.write("    name: test\n");
-      }
-    } catch (IOException e) {
-      System.err.println("Error setting up nf-core: " + e.getMessage());
-      throw new RuntimeException(e);
-    }
+  public static void nfcoreInitialise(String libDir) {
+    NfCoreUtils.nfcoreInitialise(libDir);
   }
 
   /**
    * Installs nf-core modules from a list
-   * @param libDir An nf-core library initialised by nfcoreSetup()
+   * @param libDir An nf-core library initialised by nfcoreInitialise()
    * @param modules List of module names (strings) or module maps with keys: name (required), sha (optional), remote (optional)
    */
-  @SuppressWarnings("unchecked")
   public static void nfcoreInstall(String libDir, List<?> modules) {
-    System.out.println("Installing nf-core modules...");
-
-    if (modules == null) {
-      throw new IllegalArgumentException("Modules list cannot be null");
-    }
-    if (modules.isEmpty()) {
-      throw new IllegalArgumentException("Modules list cannot be empty");
-    }
-
-    // Check the type of the first element to determine how to process the list
-    Object firstElement = modules.get(0);
-
-    if (firstElement instanceof String) {
-      // Handle list of strings
-      for (Object module : modules) {
-        if (module instanceof String) {
-          installModule(libDir, (String) module, null, null);
-        } else {
-          System.err.println("Error: Mixed types in module list - expected all strings");
-        }
-      }
-    } else if (firstElement instanceof LinkedHashMap || firstElement instanceof Map) {
-      // Handle list of maps
-      for (Object moduleObj : modules) {
-        if (moduleObj instanceof Map) {
-          Map<String, String> moduleMap = (Map<String, String>) moduleObj;
-          String name = moduleMap.get("name");
-          String sha = moduleMap.get("sha");
-          String remote = moduleMap.get("remote");
-
-          if (name == null || name.isEmpty()) {
-            System.err.println("Error: Module name is required");
-            continue;
-          }
-
-          installModule(libDir, name, sha, remote);
-        } else {
-          System.err.println("Error: Mixed types in module list - expected all maps");
-        }
-      }
-    } else {
-      System.err.println("Error: Unsupported module type. Expected String or Map.");
-    }
-  }
-
-  /**
-   * Private helper method to install a single nf-core module
-   * @param libDir The library directory
-   * @param name The module name (required)
-   * @param sha The SHA hash (optional)
-   * @param remote The remote repository (optional)
-   */
-  private static void installModule(String libDir, String name, String sha, String remote) {
-    try {
-      StringBuilder command = new StringBuilder("cd " + libDir + " && nf-core --verbose modules");
-
-      if (remote != null && !remote.isEmpty()) {
-        command.append(" --git-remote ").append(remote);
-      }
-
-      command.append(" install ").append(name);
-
-      if (sha != null && !sha.isEmpty()) {
-        command.append(" --sha ").append(sha);
-      }
-
-      ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
-      Process process = processBuilder.start();
-
-      // Capture stderr from nf-core tools
-      BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      StringBuilder stderr = new StringBuilder();
-      String line;
-      while ((line = stderrReader.readLine()) != null) {
-        stderr.append(line).append("\n");
-      }
-      int exitCode = process.waitFor();
-
-      // Spit out nf-core tools stderr if install fails
-      if (exitCode != 0) {
-        System.err.println("Error installing module " + name + ": exit code " + exitCode + "\n");
-        System.out.println("Installation command: \n" + command.toString());
-        System.err.println("nf-core tools output: \n");
-        System.err.println(stderr.toString());
-      } else {
-        System.out.println("Successfully installed module: " + name);
-      }
-    } catch (IOException | InterruptedException e) {
-      System.err.println("Error installing module " + name + ": " + e.getMessage());
-      if (e instanceof InterruptedException) {
-        Thread.currentThread().interrupt();
-      }
-    }
+    NfCoreUtils.nfcoreInstall(libDir, modules);
   }
 
   /**
    * Creates a symbolic link from the installed nf-core modules to the base directory
    * @param libDir An nf-core library initialised by nfcoreSetup()
-   * @param destPath Location to make the library available at
+   * @param modulesDir Location to make the library available at
    */
-  public static void nfcoreLink(String libDir, String destPath) {
-    try {
-      File sourceDir = new File(libDir + "/modules/nf-core");
-      File destination = new File(destPath);
-
-      Files.createSymbolicLink(destination.toPath(), sourceDir.toPath());
-      System.out.println("Linking temporary nf-core library: " + destPath + " -> " + sourceDir);
-    } catch (FileAlreadyExistsException e) {
-      System.out.println("Error: Symlink already exists: " + destPath);
-    } catch (IOException e) {
-      System.err.println("Error creating symlink: " + e.getMessage());
-      throw new RuntimeException(e);
-    }
+  public static void nfcoreLink(String libDir, String modulesDir) {
+    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "link");
   }
 
   /**
-   * Delete the temorary nf-core library
-   * @param libDir The launch directory path
-   * @param modulesDir The base directory path
+   * Remove all linked modules from a modules directory
+   * @param libDir An nf-core library initialised by nfcoreSetup()
+   * @param modulesDir Location to make the library available at
+   */
+  public static void nfcoreUnlink(String libDir, String modulesDir) {
+    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "unlink");
+  }
+
+  /**
+   * Delete the temporary nf-core library
+   * @param libDir The library directory path to delete
    */
   public static void nfcoreDeleteLibrary(String libDir) {
-    System.out.println("Deleting temporary nf-core library: " + libDir);
-
-    try {
-      // Delete modules directory
-      File modulesLibDir = new File(libDir);
-      deleteDirectory(modulesLibDir);
-    } catch (Exception e) {
-      System.err.println("Error during cleanup: " + e.getMessage());
-    }
-  }
-
-  /**
-   * Cleanup function to remove created directories and files
-   * @param linkPath Symlinked location
-   */
-  public static void nfcoreUnlink(String linkPath) {
-    System.out.println("Unlinking temporary nf-core library: " + linkPath);
-
-    try {
-      File nfcoreLink = new File(linkPath);
-      nfcoreLink.delete();
-    } catch (Exception e) {
-      System.err.println("Error during cleanup: " + e.getMessage());
-    }
-  }
-
-  /**
-   * Helper method to recursively delete a directory
-   * @param directory The directory to delete
-   */
-  private static void deleteDirectory(File directory) {
-    if (directory.exists()) {
-      File[] files = directory.listFiles();
-      if (files != null) {
-        for (File file : files) {
-          if (file.isDirectory()) {
-            deleteDirectory(file);
-          } else {
-            file.delete();
-          }
-        }
-      }
-      directory.delete();
-    }
+    NfCoreUtils.nfcoreDeleteLibrary(libDir);
   }
 }

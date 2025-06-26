@@ -9,23 +9,20 @@ nextflow_process {
     test("test plugin") {
 
         setup {
-            nfcoreSetup("${launchDir}/library/")
+            nfcoreInitialise("${launchDir}/library/")
             nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
-            nfcoreLink("${launchDir}/library/", "${baseDir}/nf-core")
+            nfcoreLink("${launchDir}/library/", baseDir)
         }
 
         then {
+            def minimap2_index_files = getAllFilesFromDir("${baseDir}/nf-core/minimap2/index", relative: true)
             assertAll(
-                { assert path("${baseDir}/nf-core/minimap2/index/main.nf").exists()                 },
-                { assert path("${baseDir}/nf-core/minimap2/index/environment.yml").exists()         },
-                { assert path("${baseDir}/nf-core/minimap2/index/meta.yml").exists()                },
-                { assert path("${baseDir}/nf-core/minimap2/index/tests/main.nf.test").exists()      },
-                { assert path("${baseDir}/nf-core/minimap2/index/tests/main.nf.test.snap").exists() }
+                { assert snapshot(minimap2_index_files).match() }
             )
         }
 
         cleanup {
-            nfcoreUnlink("${baseDir}/nf-core")
+            nfcoreUnlink("${launchDir}/library/", baseDir)
         }
 
     }

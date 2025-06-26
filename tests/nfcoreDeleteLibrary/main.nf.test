@@ -9,7 +9,7 @@ nextflow_process {
     test("test plugin") {
 
         setup {
-            nfcoreSetup("${launchDir}/library/")
+            nfcoreInitialise("${launchDir}/library/")
             nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
             nfcoreDeleteLibrary("${launchDir}/library/")
         }

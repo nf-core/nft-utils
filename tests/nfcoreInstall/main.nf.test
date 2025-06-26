@@ -9,7 +9,7 @@ nextflow_process {
     test("test module list") {
 
         setup {
-            nfcoreSetup("${launchDir}/library/")
+            nfcoreInitialise("${launchDir}/library/")
             nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
         }
 
@@ -17,8 +17,7 @@ nextflow_process {
             def minimap2_index_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/index", relative: true)
             assertAll(
                 { assert path("${launchDir}/library/modules.json").exists()                                   },
-                { assert snapshot(minimap2_index_files).match()
-                }
+                { assert snapshot(minimap2_index_files).match() }
             )
         }
 
@@ -27,7 +26,7 @@ nextflow_process {
     test("test module map") {
 
         setup {
-            nfcoreSetup("${launchDir}/library/")
+            nfcoreInitialise("${launchDir}/library/")
             nfcoreInstall(
               "${launchDir}/library/",
               [

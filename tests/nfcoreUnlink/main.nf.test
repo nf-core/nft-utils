@@ -9,19 +9,20 @@ nextflow_process {
     test("test plugin") {
 
         setup {
-            nfcoreSetup("${launchDir}/library/")
+            nfcoreInitialise("${launchDir}/library/")
             nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
-            nfcoreLink("${launchDir}/library/", "${baseDir}/nf-core")
-            nfcoreUnlink("${baseDir}/nf-core")
+            nfcoreLink("${launchDir}/library/", baseDir)
+            nfcoreUnlink("${launchDir}/library/", baseDir)
         }
 
         then {
             assertAll(
-                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/main.nf").exists()                 },
-                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/environment.yml").exists()         },
-                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/meta.yml").exists()                },
-                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/tests/main.nf.test").exists()      },
-                { assert !path("${baseDir}/nf-core/nf-core/minimap2/index/tests/main.nf.test.snap").exists() }
+                { assert !path("${baseDir}/nf-core/").exists()                 },
+                { assert !path("${baseDir}/nf-core/minimap2/index/main.nf").exists()                 },
+                { assert !path("${baseDir}/nf-core/minimap2/index/environment.yml").exists()         },
+                { assert !path("${baseDir}/nf-core/minimap2/index/meta.yml").exists()                },
+                { assert !path("${baseDir}/nf-core/minimap2/index/tests/main.nf.test").exists()      },
+                { assert !path("${baseDir}/nf-core/minimap2/index/tests/main.nf.test.snap").exists() }
             )
         }
 
