@@ -292,12 +292,30 @@ setup {
 
 ### `nfcoreInstall()` - Install modules to a temporary library
 
-Use the `nfcoreInstall()` function to install nf-core modules in a temporary library. This function takes the path to the library and a list of strings, each with an nf-core module name in `tool/subtool` format.
+Use the `nfcoreInstall()` function to install nf-core modules in a temporary library. This function takes the path to the library and either a list of strings, each with an nf-core module name in `tool/subtool` format, or a list of maps, with the keys `name`, `sha`, and `remote` (both `sha` and `remote` are optional).
 
 ```groovy
 setup {
     nfcoreSetup("${launchDir}/library")
-    nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
+    nfcoreInstall("${launchDir}/library", ["minimap2/index"])
+    nfcoreInstall(
+      "${launchDir}/library",
+        [
+          [
+            name: "minimap2/align",
+            sha: "5850432aab24a1924389b660adfee3809d3e60a9"
+          ],
+          [
+            name: "fastqc",
+            remote: "https://github.com/nf-core-test/modules.git"
+          ],
+          [
+            name: "prokka",
+            sha: "9627f4367b11527194ef14473019d0e1a181b741"
+            remote: "https://github.com/nf-core-test/modules.git"
+          ],
+        ]
+    )
 }
 ```
 

@@ -1,0 +1,47 @@
+{
+    "test module map": {
+        "content": [
+            [
+                "environment.yml",
+                "main.nf",
+                "meta.yml",
+                "tests/main.nf.test",
+                "tests/main.nf.test.snap"
+            ],
+            [
+                "main.nf",
+                "meta.yml"
+            ],
+            [
+                "main.nf:md5,88aeb64bdd2bac0d334bb9abf51f410a",
+                "meta.yml:md5,c6c37522e65307a75649c83fc1d718fc"
+            ],
+            [
+                "environment.yml:md5,1ad01a097bd7a4bd7ac64ecad2c00c45",
+                "main.nf:md5,6b63c5012f03241f9087e15b6152ccac",
+                "meta.yml:md5,dc579195e211eaf80b35a36b3a58d36b"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.2"
+        },
+        "timestamp": "2025-06-26T09:43:44.521124"
+    },
+    "test module list": {
+        "content": [
+            [
+                "environment.yml",
+                "main.nf",
+                "meta.yml",
+                "tests/main.nf.test",
+                "tests/main.nf.test.snap"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.2"
+        },
+        "timestamp": "2025-06-26T09:43:24.564405"
+    }
+}

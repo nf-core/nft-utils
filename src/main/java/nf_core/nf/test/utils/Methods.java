@@ -323,41 +323,101 @@ public class Methods {
   /**
    * Installs nf-core modules from a list
    * @param libDir An nf-core library initialised by nfcoreSetup()
-   * @param modules List of module names to install (e.g., ["minimap2/index", "samtools/view"])
+   * @param modules List of module names (strings) or module maps with keys: name (required), sha (optional), remote (optional)
    */
-  public static void nfcoreInstall(String libDir, List<String> modules) {
+  @SuppressWarnings("unchecked")
+  public static void nfcoreInstall(String libDir, List<?> modules) {
     System.out.println("Installing nf-core modules...");
-    for (String module : modules) {
-      try {
-        ProcessBuilder processBuilder = new ProcessBuilder(
-          "bash",
-          "-c",
-          "cd " + libDir + " && nf-core --verbose modules install " + module
-        );
-        Process process = processBuilder.start();
 
-        // Capture stderr from nf-core tools
-        BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        StringBuilder stderr = new StringBuilder();
-        String line;
-        while ((line = stderrReader.readLine()) != null) {
-          stderr.append(line).append("\n");
-        }
-        int exitCode = process.waitFor();
+    if (modules == null) {
+      throw new IllegalArgumentException("Modules list cannot be null");
+    }
+    if (modules.isEmpty()) {
+      throw new IllegalArgumentException("Modules list cannot be empty");
+    }
 
-        // Spit out nf-core tools stderr if install fails
-        if (exitCode != 0) {
-          System.err.println("Error installing module " + module + ": exit code " + exitCode + "\n");
-          System.err.println("nf-core tools output: \n");
-          System.err.println(stderr.toString());
+    // Check the type of the first element to determine how to process the list
+    Object firstElement = modules.get(0);
+
+    if (firstElement instanceof String) {
+      // Handle list of strings
+      for (Object module : modules) {
+        if (module instanceof String) {
+          installModule(libDir, (String) module, null, null);
         } else {
-          System.out.println("Successfully installed module: " + module);
+          System.err.println("Error: Mixed types in module list - expected all strings");
         }
-      } catch (IOException | InterruptedException e) {
-        System.err.println("Error installing module " + module + ": " + e.getMessage());
-        if (e instanceof InterruptedException) {
-          Thread.currentThread().interrupt();
+      }
+    } else if (firstElement instanceof LinkedHashMap || firstElement instanceof Map) {
+      // Handle list of maps
+      for (Object moduleObj : modules) {
+        if (moduleObj instanceof Map) {
+          Map<String, String> moduleMap = (Map<String, String>) moduleObj;
+          String name = moduleMap.get("name");
+          String sha = moduleMap.get("sha");
+          String remote = moduleMap.get("remote");
+
+          if (name == null || name.isEmpty()) {
+            System.err.println("Error: Module name is required");
+            continue;
+          }
+
+          installModule(libDir, name, sha, remote);
+        } else {
+          System.err.println("Error: Mixed types in module list - expected all maps");
         }
+      }
+    } else {
+      System.err.println("Error: Unsupported module type. Expected String or Map.");
+    }
+  }
+
+  /**
+   * Private helper method to install a single nf-core module
+   * @param libDir The library directory
+   * @param name The module name (required)
+   * @param sha The SHA hash (optional)
+   * @param remote The remote repository (optional)
+   */
+  private static void installModule(String libDir, String name, String sha, String remote) {
+    try {
+      StringBuilder command = new StringBuilder("cd " + libDir + " && nf-core --verbose modules");
+
+      if (remote != null && !remote.isEmpty()) {
+        command.append(" --git-remote ").append(remote);
+      }
+
+      command.append(" install ").append(name);
+
+      if (sha != null && !sha.isEmpty()) {
+        command.append(" --sha ").append(sha);
+      }
+
+      ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
+      Process process = processBuilder.start();
+
+      // Capture stderr from nf-core tools
+      BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+      StringBuilder stderr = new StringBuilder();
+      String line;
+      while ((line = stderrReader.readLine()) != null) {
+        stderr.append(line).append("\n");
+      }
+      int exitCode = process.waitFor();
+
+      // Spit out nf-core tools stderr if install fails
+      if (exitCode != 0) {
+        System.err.println("Error installing module " + name + ": exit code " + exitCode + "\n");
+        System.out.println("Installation command: \n" + command.toString());
+        System.err.println("nf-core tools output: \n");
+        System.err.println(stderr.toString());
+      } else {
+        System.out.println("Successfully installed module: " + name);
+      }
+    } catch (IOException | InterruptedException e) {
+      System.err.println("Error installing module " + name + ": " + e.getMessage());
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
       }
     }
   }
