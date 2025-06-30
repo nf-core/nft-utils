@@ -23,17 +23,17 @@ To use the development version, please do the following steps:
 
 - Clone the [nft-utils repository](https://github.com/nf-core/nft-utils)
 
-=== "HTTPS"
+### SSH
 
-    ```bash
-    git clone git@github.com:nf-core/nft-utils.git
-    ```
+  ```bash
+  git clone git@github.com:nf-core/nft-utils.git
+  ```
 
-=== "SSH"
+### HTTPS
 
-    ```bash
-    git clone https://github.com/nf-core/nft-utils.git
-    ```
+  ```bash
+  git clone https://github.com/nf-core/nft-utils.git
+  ```
 
 - Run the build script
 
