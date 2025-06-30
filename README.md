@@ -13,6 +13,7 @@ We'd like to thank the following people:
 
 - [Adam Talbot](https://github.com/adamrtalbot)
 - [Edmund Miller](https://github.com/edmundmiller)
+- [Jim Downie](https://github.com/prototaxites)
 - [Jonathan Manning](https://github.com/pinin4fjords)
 - [Lukas Forer](https://github.com/lukfor)
 - [Matthias Zepper](https://github.com/MatthiasZepper)

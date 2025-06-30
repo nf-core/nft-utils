@@ -56,6 +56,7 @@ removeFromYamlMap("file.yml", "Workflow", "Nextflow")
 ```
 
 **Example input:**
+
 ```yaml
 UNTAR:
   untar: 1.34
@@ -65,6 +66,7 @@ Workflow:
 ```
 
 **Result:** Only the "Nextflow" subkey is removed from "Workflow"
+
 ```yaml
 UNTAR:
   untar: 1.34
@@ -81,6 +83,7 @@ removeFromYamlMap("file.yml", "Workflow")
 ```
 
 **Example input:**
+
 ```yaml
 UNTAR:
   untar: 1.34
@@ -92,6 +95,7 @@ Workflow2:
 ```
 
 **Result:** The entire "Workflow" section is removed
+
 ```yaml
 UNTAR:
   untar: 1.34
@@ -125,11 +129,13 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 ```
 
 **Arguments:**
+
 - First argument: Path to the YAML file (supports wildcard patterns like `*` and `?`)
 - Second argument: The top-level key (section name)
 - Third argument (optional): The subkey to remove. If omitted, the entire section is removed.
 
 **Notes:**
+
 - When using wildcard patterns, all matching files will be processed and their results merged together.
 - The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
@@ -176,7 +182,6 @@ def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/ex
 Secondly, we need to supply these two variables to the nf-test snapshot assrtion.
 The list of files in `stable_content` can be supplied to the snapshot directly, and nf-test will include the md5sum hash of the file contents.
 For the list of stable file names with unstable contents, we can use `stable_name*.name`, to just extract just _name_ of every file in the list for comparison (i.e., without generating the md5sum hash).
-
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
@@ -338,7 +343,6 @@ This creates a symlink to the modules directory of your temporary library at `${
 To unlink a temporary library after the test has completed, use the `nfcoreUnlink()` function. It takes the same arguments as `nfcoreLink()`, and recursively removes all symlinks pointing to the temporary library.
 
 ```groovy
-
 setup {
     nfcoreInitialise("${launchDir}/library")
     nfcoreInstall("${launchDir}/library", ["minimap2/index", "minimap2/align"])
