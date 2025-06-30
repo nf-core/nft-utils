@@ -1,0 +1,77 @@
+nextflow_process {
+
+    name "Test Process TEST_MODULE"
+    script "./main.nf"
+    process "TEST_MODULE"
+
+    tag "test"
+
+    test("test module list") {
+
+        setup {
+            nfcoreInitialise("${launchDir}/library/")
+            nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
+        }
+
+        then {
+            def minimap2_index_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/index", relative: true)
+            assertAll(
+                { assert path("${launchDir}/library/modules.json").exists()                                   },
+                { assert snapshot(minimap2_index_files).match() }
+            )
+        }
+
+    }
+
+    test("test module map") {
+
+        setup {
+            nfcoreInitialise("${launchDir}/library/")
+            nfcoreInstall(
+              "${launchDir}/library/",
+              [
+                [
+                  name: "minimap2/index"
+                ],
+                [
+                  name: "minimap2/align",
+                  sha: "5850432aab24a1924389b660adfee3809d3e60a9"
+                ],
+                [
+                  name: "fastqc",
+                  remote: "https://github.com/nf-core-test/modules.git"
+                ],
+                [
+                  name: "prokka",
+                  sha: "9627f4367b11527194ef14473019d0e1a181b741",
+                  remote: "https://github.com/nf-core-test/modules.git"
+                ]
+              ]
+            )
+        }
+
+        then {
+            // unstable files
+            def minimap2_index_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/index", relative: true)
+            def fastqc_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core-test/fastqc", relative: true)
+
+            // stable files
+            def minimap2_align_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/align")
+            def prokka_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core-test/prokka")
+            assertAll(
+                // Check we have generated a modules.json
+                { assert path("${launchDir}/library/modules.json").exists() },
+                { assert snapshot(
+                    minimap2_index_files,
+                    fastqc_files,
+                    minimap2_align_files,
+                    prokka_files
+                  ).match()
+                }
+
+            )
+        }
+
+    }
+
+}

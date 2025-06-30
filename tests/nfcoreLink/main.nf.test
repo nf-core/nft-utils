@@ -1,0 +1,30 @@
+nextflow_process {
+
+    name "Test Process TEST_MODULE"
+    script "./main.nf"
+    process "TEST_MODULE"
+
+    tag "test"
+
+    test("test plugin") {
+
+        setup {
+            nfcoreInitialise("${launchDir}/library/")
+            nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
+            nfcoreLink("${launchDir}/library/", baseDir)
+        }
+
+        then {
+            def minimap2_index_files = getAllFilesFromDir("${baseDir}/nf-core/minimap2/index", relative: true)
+            assertAll(
+                { assert snapshot(minimap2_index_files).match() }
+            )
+        }
+
+        cleanup {
+            nfcoreUnlink("${launchDir}/library/", baseDir)
+        }
+
+    }
+
+}

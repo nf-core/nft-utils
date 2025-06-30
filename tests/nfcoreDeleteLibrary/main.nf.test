@@ -1,0 +1,25 @@
+nextflow_process {
+
+    name "Test Process TEST_MODULE"
+    script "./main.nf"
+    process "TEST_MODULE"
+
+    tag "test"
+
+    test("test plugin") {
+
+        setup {
+            nfcoreInitialise("${launchDir}/library/")
+            nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
+            nfcoreDeleteLibrary("${launchDir}/library/")
+        }
+
+        then {
+            assertAll(
+                { assert !path("${launchDir}/library").exists() }
+            )
+        }
+
+    }
+
+}

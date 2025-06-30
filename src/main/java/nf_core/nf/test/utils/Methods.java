@@ -3,8 +3,11 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -16,6 +19,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
@@ -59,11 +64,11 @@ public class Methods {
     // Find matching files in the parent directory
     try {
       List<String> matchingFiles = Files.list(parent)
-          .filter(Files::isRegularFile)
-          .filter(path -> matcher.matches(path.getFileName()))
-          .sorted()
-          .map(path -> path.toAbsolutePath().toString())
-          .collect(Collectors.toList());
+        .filter(Files::isRegularFile)
+        .filter(path -> matcher.matches(path.getFileName()))
+        .sorted()
+        .map(path -> path.toAbsolutePath().toString())
+        .collect(Collectors.toList());
 
       if (matchingFiles.isEmpty()) {
         throw new IOException("No files found matching pattern: " + pathPattern);
@@ -175,9 +180,13 @@ public class Methods {
 
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
-  public static List<File> getAllFilesFromDir(String outdir, boolean includeDir, List<String> ignoreGlobs,
-      String ignoreFilePath, List<String> includeGlobs)
-      throws IOException {
+  public static List<File> getAllFilesFromDir(
+    String outdir,
+    boolean includeDir,
+    List<String> ignoreGlobs,
+    String ignoreFilePath,
+    List<String> includeGlobs
+  ) throws IOException {
     List<File> output = new ArrayList<>();
     Path directory = Paths.get(outdir);
 
@@ -204,36 +213,37 @@ public class Methods {
       includeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
     }
 
-    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        if (isIncluded(file) && !isExcluded(file)) {
-          output.add(file.toFile());
+    Files.walkFileTree(
+      directory,
+      new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+          if (isIncluded(file) && !isExcluded(file)) {
+            output.add(file.toFile());
+          }
+          return FileVisitResult.CONTINUE;
         }
-        return FileVisitResult.CONTINUE;
-      }
 
-      @Override
-      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        // Exclude output which is the root output folder from nf-test
-        if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
-          output.add(dir.toFile());
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+          // Exclude output which is the root output folder from nf-test
+          if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
+            output.add(dir.toFile());
+          }
+          return FileVisitResult.CONTINUE;
         }
-        return FileVisitResult.CONTINUE;
-      }
 
-      private boolean isExcluded(Path path) {
-        return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
-      }
+        private boolean isExcluded(Path path) {
+          return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+        }
 
-      private boolean isIncluded(Path path) {
-        return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+        private boolean isIncluded(Path path) {
+          return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+        }
       }
-    });
+    );
 
-    return output.stream()
-        .sorted(Comparator.comparing(File::getPath))
-        .collect(Collectors.toList());
+    return output.stream().sorted(Comparator.comparing(File::getPath)).collect(Collectors.toList());
   }
 
   private static List<String> readGlobsFromFile(String filePath) throws IOException {
@@ -253,12 +263,13 @@ public class Methods {
   public static List<String> getRelativePath(List<File> filePaths, String baseDir) {
     Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
 
-    return filePaths.stream()
-        .map(filePath -> {
-          Path path = Paths.get(filePath.toURI()).toAbsolutePath().normalize();
-          return basePath.relativize(path).toString();
-        })
-        .collect(Collectors.toList());
+    return filePaths
+      .stream()
+      .map(filePath -> {
+        Path path = Paths.get(filePath.toURI()).toAbsolutePath().normalize();
+        return basePath.relativize(path).toString();
+      })
+      .collect(Collectors.toList());
   }
 
   public static String listToMD5(ArrayList<Object> input) throws UnsupportedEncodingException {
@@ -283,5 +294,48 @@ public class Methods {
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException("MD5 algorithm not available", e);
     }
+  }
+
+  /**
+   * Creates the modules directory and .nf-core.yml configuration file
+   * @param libDir The directory path to initialise an nf-core library at
+   */
+  public static void nfcoreInitialise(String libDir) {
+    NfCoreUtils.nfcoreInitialise(libDir);
+  }
+
+  /**
+   * Installs nf-core modules from a list
+   * @param libDir An nf-core library initialised by nfcoreInitialise()
+   * @param modules List of module names (strings) or module maps with keys: name (required), sha (optional), remote (optional)
+   */
+  public static void nfcoreInstall(String libDir, List<?> modules) {
+    NfCoreUtils.nfcoreInstall(libDir, modules);
+  }
+
+  /**
+   * Creates a symbolic link from the installed nf-core modules to the base directory
+   * @param libDir An nf-core library initialised by nfcoreSetup()
+   * @param modulesDir Location to make the library available at
+   */
+  public static void nfcoreLink(String libDir, String modulesDir) {
+    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "link");
+  }
+
+  /**
+   * Remove all linked modules from a modules directory
+   * @param libDir An nf-core library initialised by nfcoreSetup()
+   * @param modulesDir Location to make the library available at
+   */
+  public static void nfcoreUnlink(String libDir, String modulesDir) {
+    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "unlink");
+  }
+
+  /**
+   * Delete the temporary nf-core library
+   * @param libDir The library directory path to delete
+   */
+  public static void nfcoreDeleteLibrary(String libDir) {
+    NfCoreUtils.nfcoreDeleteLibrary(libDir);
   }
 }
