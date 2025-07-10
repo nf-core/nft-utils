@@ -144,7 +144,16 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 :::warning
 This function requires absolute paths and does not support relative paths to `params.outdir`.
 Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
-cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/?h=outputd#outputdir)
+cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
+
+```groovy
+  when {
+    params {
+      outdir = "$outputDir" // Use nf-test global variable to output dir
+    }
+  }
+```
+
 :::
 
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
@@ -213,7 +222,16 @@ def stable_content    = getAllFilesFromDir(params.outdir, includeDir: false, ign
 :::warning
 This function requires absolute paths and does not support relative paths to `params.outdir`.
 Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
-cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/?h=outputd#outputdir)
+cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
+
+```groovy
+  when {
+    params {
+      outdir = "$outputDir" // Use nf-test global variable to output dir
+    }
+  }
+```
+
 :::
 
 This function is used to get the relative path from a list of files compared to a given directory.
