@@ -141,6 +141,12 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 
 ### `getAllFilesFromDir()`
 
+:::warning
+This function requires absolute paths and does not support relative paths to `params.outdir`.
+Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
+cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/?h=outputd#outputdir)
+:::
+
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
 
 - The first argument is the directory path to screen for file paths (e.g. a  pipeline's `outdir` ).
@@ -203,6 +209,12 @@ def stable_content    = getAllFilesFromDir(params.outdir, includeDir: false, ign
 ![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
 
 ### `getRelativePath()`
+
+:::warning
+This function requires absolute paths and does not support relative paths to `params.outdir`.
+Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
+cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/?h=outputd#outputdir)
+:::
 
 This function is used to get the relative path from a list of files compared to a given directory.
 
