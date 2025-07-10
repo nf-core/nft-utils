@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
     
     
       
@@ -805,6 +805,11 @@
 <li>The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.</li>
 </ul>
 <h3 id="getallfilesfromdir"><code>getAllFilesFromDir()</code></h3>
+<p>:::warning
+This function requires absolute paths and does not support relative paths to <code>params.outdir</code>.
+Assign the nf-test <code>outputDir</code> variable to <code>params.outdir</code> when calling this function.
+cf <a href="https://www.nf-test.com/docs/testcases/global_variables/?h=outputd#outputdir">nf-test/docs</a>
+:::</p>
 <p>This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.</p>
 <ul>
 <li>The first argument is the directory path to screen for file paths (e.g. a  pipeline's <code>outdir</code> ).</li>
@@ -853,6 +858,11 @@ For the list of stable file names with unstable contents, we can use <code>stabl
 </span></code></pre></div>
 <p><img alt="Drake not enjoying nft-csv and enjoying .nftignore" src="../images/nftignore_meme.png" /></p>
 <h3 id="getrelativepath"><code>getRelativePath()</code></h3>
+<p>:::warning
+This function requires absolute paths and does not support relative paths to <code>params.outdir</code>.
+Assign the nf-test <code>outputDir</code> variable to <code>params.outdir</code> when calling this function.
+cf <a href="https://www.nf-test.com/docs/testcases/global_variables/?h=outputd#outputdir">nf-test/docs</a>
+:::</p>
 <p>This function is used to get the relative path from a list of files compared to a given directory.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>results/
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>├──<span class="w"> </span>pipeline_info
@@ -1079,7 +1089,7 @@ For the list of stable file names with unstable contents, we can use <code>stabl
       <script id="__config" type="application/json">{"base": "..", "features": ["content.code.annotate", "content.code.copy", "navigation.instant", "navigation.top", "navigation.tracking", "navigation.sections", "navigation.footer", "search.share", "toc.follow"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
     
   </body>
