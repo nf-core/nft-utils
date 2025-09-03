@@ -1005,7 +1005,7 @@ public class Methods {
 
     for (String envVar : envVars) {
       String envValue = System.getenv(envVar);
-      if (envValue != null && !envValue.isEmpty()) {
+      if (envValue != null && !envValue.isEmpty() && !envValue.equals("~")) {
         pathsToReplace.add(envValue);
       }
     }
@@ -1015,7 +1015,7 @@ public class Methods {
     String nxfHome = System.getenv("NXF_HOME");
     if (nxfHome == null || nxfHome.isEmpty()) {
       String home = System.getenv("HOME");
-      if (home != null && !home.isEmpty()) {
+      if (home != null && !home.isEmpty() && !home.equals("~")) {
         pathsToReplace.add(home + "/.nextflow");
       }
     }

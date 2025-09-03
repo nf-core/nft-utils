@@ -27,7 +27,7 @@
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
                 "NXF_SINGULARITY_CACHEDIR  : [PATH]",
-                "NXF_SINGULARITY_LIBRARYDIR: null",
+                "NXF_SINGULARITY_LIBRARYDIR: [PATH]",
                 "NXF_TEMP                  : null",
                 "NXF_WORK                  : null",
                 "userName                  : [USER]",
@@ -73,7 +73,7 @@
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
                 "NXF_SINGULARITY_CACHEDIR  : [PATH]",
-                "NXF_SINGULARITY_LIBRARYDIR: null",
+                "NXF_SINGULARITY_LIBRARYDIR: [PATH]",
                 "NXF_TEMP                  : null",
                 "NXF_WORK                  : null",
                 "userName                  : [USER]",
@@ -96,7 +96,7 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.6"
         },
-        "timestamp": "2025-09-03T15:39:50.085457038"
+        "timestamp": "2025-09-03T17:15:16.821788014"
     },
     "Capture both stdout and stderr and keep ANSI codes": {
         "content": [
@@ -126,7 +126,7 @@
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
                 "NXF_SINGULARITY_CACHEDIR  : [PATH]",
-                "NXF_SINGULARITY_LIBRARYDIR: null",
+                "NXF_SINGULARITY_LIBRARYDIR: [PATH]",
                 "NXF_TEMP                  : null",
                 "NXF_WORK                  : null",
                 "userName                  : [USER]",
@@ -171,7 +171,7 @@
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
                 "NXF_SINGULARITY_CACHEDIR  : [PATH]",
-                "NXF_SINGULARITY_LIBRARYDIR: null",
+                "NXF_SINGULARITY_LIBRARYDIR: [PATH]",
                 "NXF_TEMP                  : null",
                 "NXF_WORK                  : null",
                 "userName                  : [USER]",
@@ -194,6 +194,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.6"
         },
-        "timestamp": "2025-09-03T15:39:56.020531393"
+        "timestamp": "2025-09-03T17:15:22.444019342"
     }
 }
