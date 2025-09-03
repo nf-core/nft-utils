@@ -6,8 +6,8 @@ workflow {
     channel
         .of(
             """
-          I HAVE STABLE CONTENT
-          """.stripIndent().trim()
+            I HAVE STABLE CONTENT
+            """.stripIndent().trim()
         )
         .collectFile(storeDir: "${params.outdir}/stable", name: 'stable_content.txt', sort: true, newLine: true)
 
