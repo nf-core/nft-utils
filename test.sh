@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -eq 0 ] || [[ ! "$*" == *"tests/"* ]]; then
-    nf-test test --plugins target/nft-utils-*.jar tests/
+    nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
 else
-    nf-test test --plugins target/nft-utils-*.jar ${@}
+    nf-test test --plugins target/nft-utils-*.jar --verbose --debug ${@}
 fi
