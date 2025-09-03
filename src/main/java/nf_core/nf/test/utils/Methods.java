@@ -230,21 +230,18 @@ public class Methods {
           @Override
           public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             // Exclude output which is the root output folder from nf-test
-            if (includeDir && (isIncluded(dir) && !isExcluded(dir)
-                && !dir.getFileName().toString().equals("output"))) {
+            if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
               output.add(dir.toFile());
             }
             return FileVisitResult.CONTINUE;
           }
 
           private boolean isExcluded(Path path) {
-            return excludeMatchers.stream()
-                .anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+            return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
           }
 
           private boolean isIncluded(Path path) {
-            return includeMatchers.stream()
-                .anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+            return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
           }
         });
 
