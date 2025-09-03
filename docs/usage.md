@@ -158,7 +158,7 @@ cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outpu
 
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
 
-- The first argument is the directory path to screen for file paths (e.g. a  pipeline's `outdir` ).
+- The first argument is the directory path to screen for file paths (e.g. a pipeline's `outdir` ).
 - The second argument is a boolean indicating whether to include subdirectory names in the list.
 - The third argument is a _list_ of glob patterns to exclude.
 - The fourth argument is a _file_ containing additional glob patterns to exclude.
