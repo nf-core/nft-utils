@@ -24,6 +24,7 @@ workflow {
 
   def test_file = file("${output_dir}/test.txt")
 
+  // Print a complex nf-core/pipeline logo (ie SAREK for example)
   log.info(
     """
 \033[2m----------------------------------------------------\033[0m-
@@ -40,22 +41,24 @@ workflow {
 \033[0;37m   \\ \033[0;32m|   \\\033[0m  /\033[0m     \033[0;34m.__| /¯¯\\ |  \\ |___ |  \\\033[0m
 \033[0;37m    `\033[0;32m|\033[0m____\033[0;32m\\\033[0m´\033[0m
 -\033[2m----------------------------------------------------\033[0m-
-nf-core/pipeline1: 1.0dev
-nf-core/pipeline2: 1.0
-nf-core/pipeline3: 1.1.0dev
-nf-core/pipeline4: 1.1.0
+nf-core/pipeline1 1.0dev
+nf-core/pipeline2 1.0
+nf-core/pipeline3 1.1.0dev
+nf-core/pipeline4 1.1.0
         """
   )
 
-  log.info("outdir: ${params.outdir}")
-  log.info("HOME: ${System.getenv("HOME")}")
-  log.info("NFT_WORKDIR: ${System.getenv("NFT_WORKDIR")}")
-  log.info("NXF_CACHE_DIR: ${System.getenv("NXF_CACHE_DIR")}")
-  log.info("NXF_CONDA_CACHEDIR: ${System.getenv("NXF_CONDA_CACHEDIR")}")
-  log.info("NXF_HOME: ${System.getenv("NXF_HOME")}")
+  // Print various ENVs and PATHs
+  log.info("HOME                    : ${System.getenv("HOME")}")
+  log.info("NFT_WORKDIR             : ${System.getenv("NFT_WORKDIR")}")
+  log.info("NXF_CACHE_DIR           : ${System.getenv("NXF_CACHE_DIR")}")
+  log.info("NXF_CONDA_CACHEDIR      : ${System.getenv("NXF_CONDA_CACHEDIR")}")
+  log.info("NXF_HOME                : ${System.getenv("NXF_HOME")}")
   log.info("NXF_SINGULARITY_CACHEDIR: ${System.getenv("NXF_SINGULARITY_CACHEDIR")}")
-  log.info("NXF_TEMP: ${System.getenv("NXF_TEMP")}")
-  log.info("NXF_WORK: ${System.getenv("NXF_WORK")}")
+  log.info("NXF_TEMP                : ${System.getenv("NXF_TEMP")}")
+  log.info("NXF_WORK                : ${System.getenv("NXF_WORK")}")
+  log.info("userName                : ${System.getenv("USER")}")
+  log.info("outdir                  : ${params.outdir}")
 
   println("println message")
   log.info("\033[0;34mlog.info message\033[0m")

@@ -362,7 +362,7 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output) {
-    return filterNextflowOutput(output, null, true, true);
+    return filterNextflowOutput(output, null, true, false);
   }
 
   /**
@@ -373,20 +373,20 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, boolean sorted) {
-    return filterNextflowOutput(output, null, sorted, true);
+    return filterNextflowOutput(output, null, sorted, false);
   }
 
   /**
    * Filters Nextflow stdout/stderr output with optional sorting and ANSI code
    * handling.
    *
-   * @param output    The stdout or stderr output (String or List) to filter
-   * @param sorted    Whether to sort the output lines alphabetically
-   * @param stripAnsi Whether to strip ANSI escape codes (colors, formatting)
+   * @param output   The stdout or stderr output (String or List) to filter
+   * @param sorted   Whether to sort the output lines alphabetically
+   * @param keepAnsi Whether to keep ANSI escape codes (colors, formatting)
    * @return The filtered output as a List<String> with unstable patterns removed
    */
-  public static List<String> filterNextflowOutput(Object output, boolean sorted, boolean stripAnsi) {
-    return filterNextflowOutput(output, null, sorted, stripAnsi);
+  public static List<String> filterNextflowOutput(Object output, boolean sorted, boolean keepAnsi) {
+    return filterNextflowOutput(output, null, sorted, keepAnsi);
   }
 
   /**
@@ -398,12 +398,12 @@ public class Methods {
    * @param additionalPatterns List of additional regex patterns to remove from
    *                           the output
    * @param sorted             Whether to sort the output lines alphabetically
-   * @param stripAnsi          Whether to strip ANSI escape codes (colors,
+   * @param keepAnsi           Whether to keep ANSI escape codes (colors,
    *                           formatting)
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, List<String> additionalPatterns, boolean sorted,
-      boolean stripAnsi) {
+      boolean keepAnsi) {
     if (output == null) {
       return new ArrayList<>();
     }
@@ -435,6 +435,17 @@ public class Methods {
     List<String> filteredLines = new ArrayList<>();
     for (String line : outputLines) {
       String filtered = line;
+
+      // Strip ANSI escape codes unless keepAnsi is true (colors, formatting, etc.)
+      if (!keepAnsi) {
+        filtered = filtered.replaceAll("\\x1B\\[[0-9;]*[A-Za-z]", "");
+      }
+
+      // Replace username value in patterns like "userName : max"
+      String userName = System.getenv("USER");
+      if (userName != null && !userName.isEmpty()) {
+        filtered = filtered.replaceAll("(userName\\s*:\\s*)" + java.util.regex.Pattern.quote(userName), "$1[USER]");
+      }
 
       // Remove timestamp patterns
 
@@ -834,30 +845,17 @@ public class Methods {
             return matchResult.group(0); // Return original if not a match
           });
 
-      // Replace nf-core pipeline versions (e.g., "nf-core/pipeline1: 1.0dev")
-      filtered = filtered.replaceAll("(nf-core/[^:]+:\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*", "$1[VERSION]");
+      // Replace nf-core pipeline versions (e.g., "nf-core/xxx yyyy")
+      filtered = filtered.replaceAll("(nf-core/[^\\s]+\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*", "$1[VERSION]");
+
+      // Replace NEXTFLOW versions
+      filtered = filtered.replaceAll("N E X T F L O W  ~  version \\d+\\.\\d+\\.\\d+",
+          "N E X T F L O W  ~  version [VERSION]");
 
       // Only add non-empty lines (filter out empty lines)
       if (!filtered.trim().isEmpty()) {
         filteredLines.add(filtered);
       }
-    }
-
-    // Apply additional patterns if provided
-    if (additionalPatterns != null) {
-      List<String> additionallyFilteredLines = new ArrayList<>();
-      for (String line : filteredLines) {
-        String filtered = line;
-        for (String pattern : additionalPatterns) {
-          try {
-            filtered = filtered.replaceAll(pattern, "[FILTERED]");
-          } catch (Exception e) {
-            System.err.println("Warning: Invalid regex pattern '" + pattern + "': " + e.getMessage());
-          }
-        }
-        additionallyFilteredLines.add(filtered);
-      }
-      filteredLines = additionallyFilteredLines;
     }
 
     // Sort and remove duplicates if requested
@@ -914,12 +912,12 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, List<String> additionalPatterns) {
-    return filterNextflowOutput(output, additionalPatterns, true, true);
+    return filterNextflowOutput(output, additionalPatterns, true, false);
   }
 
   /**
    * Filters Nextflow stdout/stderr output using Groovy's named parameter syntax.
-   * This allows calling: filterNextflowOutput(output, sorted: false, stripAnsi:
+   * This allows calling: filterNextflowOutput(output, sorted: false, keepAnsi:
    * true)
    *
    * @param output  The stdout or stderr output (String or List) to filter
@@ -928,10 +926,33 @@ public class Methods {
    *                - additionalPatterns: List<String> of additional regex
    *                patterns (optional)
    *                - sorted: Boolean whether to sort the output (default: true)
-   *                - stripAnsi: Boolean whether to strip ANSI codes (default:
-   *                true)
+   *                - keepAnsi: Boolean whether to keep ANSI codes (default:
+   *                false)
    * @return The filtered output as a List<String> with unstable patterns removed
    */
+
+  // Handle Groovy named parameters: filterNextflowOutput(output, keepAnsi:
+  // true)
+  // Groovy converts this to: filterNextflowOutput([keepAnsi: true], output)
+  public static List<String> filterNextflowOutput(LinkedHashMap<String, Object> options, Object output) {
+    if (options == null) {
+      options = new LinkedHashMap<>();
+    }
+
+    // Extract options with defaults
+    List<String> additionalPatterns = (List<String>) options.get("additionalPatterns");
+    Boolean sorted = (Boolean) options.get("sorted");
+    Boolean keepAnsi = (Boolean) options.get("keepAnsi");
+
+    // Apply defaults
+    if (sorted == null)
+      sorted = true;
+    if (keepAnsi == null)
+      keepAnsi = false;
+
+    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi);
+  }
+
   public static List<String> filterNextflowOutput(Object output, Map<String, Object> options) {
     if (options == null) {
       options = new HashMap<>();
@@ -940,15 +961,15 @@ public class Methods {
     // Extract options with defaults
     List<String> additionalPatterns = (List<String>) options.get("additionalPatterns");
     Boolean sorted = (Boolean) options.get("sorted");
-    Boolean stripAnsi = (Boolean) options.get("stripAnsi");
+    Boolean keepAnsi = (Boolean) options.get("keepAnsi");
 
     // Apply defaults
     if (sorted == null)
       sorted = true;
-    if (stripAnsi == null)
-      stripAnsi = true;
+    if (keepAnsi == null)
+      keepAnsi = false;
 
-    return filterNextflowOutput(output, additionalPatterns, sorted, stripAnsi);
+    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi);
   }
 
   /**
@@ -990,43 +1011,17 @@ public class Methods {
       }
     }
 
-    // Remove duplicates and sort paths by length (longest first) to avoid partial
-    // replacements
-    pathsToReplace = pathsToReplace.stream()
-        .distinct()
-        .sorted((a, b) -> Integer.compare(b.length(), a.length()))
-        .collect(java.util.stream.Collectors.toList());
-
-    // Also extract paths from the text itself (e.g., "NXF_HOME: /path/to/dir")
-    // This handles cases where environment variables are printed but not available
-    // in our context
-    String[] envPrefixes = {
-        "HOME:",
-        "NFT_WORKDIR:",
-        "NXF_CACHE_DIR:",
-        "NXF_CONDA_CACHEDIR:",
-        "NXF_HOME:",
-        "NXF_SINGULARITY_CACHEDIR:",
-        "NXF_TEMP:",
-        "NXF_WORK:"
-    };
-
-    for (String prefix : envPrefixes) {
-      if (filtered.contains(prefix)) {
-        // Extract the path after the colon
-        int start = filtered.indexOf(prefix) + prefix.length();
-        int end = filtered.indexOf('\n', start);
-        if (end == -1)
-          end = filtered.length();
-
-        String extractedPath = filtered.substring(start, end).trim();
-        if (!extractedPath.isEmpty() && !extractedPath.equals("null") && extractedPath.startsWith("/")) {
-          pathsToReplace.add(extractedPath);
-        }
+    // Handle default NXF_HOME case: if NXF_HOME is null, Nextflow uses
+    // $HOME/.nextflow
+    String nxfHome = System.getenv("NXF_HOME");
+    if (nxfHome == null || nxfHome.isEmpty()) {
+      String home = System.getenv("HOME");
+      if (home != null && !home.isEmpty()) {
+        pathsToReplace.add(home + "/.nextflow");
       }
     }
 
-    // Re-sort after adding extracted paths
+    // Remove duplicates and sort paths by length to avoid partial replacements
     pathsToReplace = pathsToReplace.stream()
         .distinct()
         .sorted((a, b) -> Integer.compare(b.length(), a.length()))

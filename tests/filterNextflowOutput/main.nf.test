@@ -4,76 +4,12 @@ nextflow_pipeline {
     script "./main.nf"
     tag "filterNextflowOutput"
 
-    test("Capture stdout only") {
-
-        then {
-            def filtered_stdout = filterNextflowOutput(workflow.stdout)
-
-            // Print the stdout
-            println "workflow.stdout [${workflow.stdout.size()}]:"
-            println workflow.stdout.join('\n')
-
-            // Print the filtered stdout
-            println "filtered_stdout: [${filtered_stdout.size()}]"
-            println filtered_stdout.join('\n')
-
-            assert workflow.success
-            assert snapshot(
-                filterNextflowOutput(workflow.stdout)
-            ).match()
-        }
-    }
-
-    test("Capture stderr only") {
-
-        then {
-            def filtered_stderr = filterNextflowOutput(workflow.stderr)
-
-            // Print the stderr
-            println "workflow.stderr [${workflow.stderr.size()}]:"
-            println workflow.stderr.join('\n')
-
-            // Print the filtered stderr
-            println "filtered_stderr: [${filtered_stderr.size()}]"
-            println filtered_stderr.join('\n')
-
-            assert workflow.success
-            assert snapshot(
-                filterNextflowOutput(workflow.stderr)
-            ).match()
-        }
-    }
-
-    test("Capture both stdout and stderr") {
-
-        then {
-            def filtered_stdout = filterNextflowOutput(workflow.stdout)
-            def filtered_stderr = filterNextflowOutput(workflow.stderr)
-
-            // Print the stdout
-            println "workflow.stdout [${workflow.stdout.size()}]:"
-            println workflow.stdout.join('\n')
-
-            // Print the filtered stdout
-            println "filtered_stdout: [${filtered_stdout.size()}]"
-            println filtered_stdout.join('\n')
-
-            // Print the stderr
-            println "workflow.stderr [${workflow.stderr.size()}]:"
-            println workflow.stderr.join('\n')
-
-            // Print the filtered stderr
-            println "filtered_stderr: [${filtered_stderr.size()}]"
-            println filtered_stderr.join('\n')
-
-            assert workflow.success
-            assert snapshot(
-                filterNextflowOutput(workflow.stdout+workflow.stderr),
-            ).match()
-        }
-    }
-
     test("Capture stdout, stderr and both when failure") {
+
+        tag 'both'
+        tag 'failure'
+        tag 'stderr'
+        tag 'stdout'
 
         when {
             params {
@@ -104,9 +40,46 @@ nextflow_pipeline {
             assert workflow.failed
             assert snapshot(
                 filterNextflowOutput(workflow.stdout),
-                filterNextflowOutput(workflow.stderr),
-                filterNextflowOutput(workflow.stdout+workflow.stderr),
-                ).match()
+                filterNextflowOutput(workflow.stderr)?:"no stderr",
+                filterNextflowOutput(workflow.stdout + workflow.stderr)
+              ).match()
+        }
+    }
+
+
+    test("Capture both stdout and stderr and keep ANSI codes") {
+
+        tag 'ansi'
+        tag 'both'
+        tag 'stderr'
+        tag 'stdout'
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout, keepAnsi: true)
+            def filtered_stderr = filterNextflowOutput(workflow.stderr, keepAnsi: true)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.success
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout, keepAnsi: true),
+                filterNextflowOutput(workflow.stderr, keepAnsi: true)?:"no stderr",
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+            ).match()
         }
     }
 }
