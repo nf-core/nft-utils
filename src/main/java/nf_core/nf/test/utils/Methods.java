@@ -578,6 +578,7 @@ public class Methods {
           "zen"
       };
 
+      // List of all scientific names used by Nextflow
       String[] scientificNames = {
           "agnesi",
           "albattani",
