@@ -463,7 +463,7 @@ public class Methods {
       filtered = filtered.replaceAll("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]");
 
       // Remove NFT_HASH work dir (format: [xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx])
-      filtered = filtered.replaceAll("\\b[0-9a-f]{31,32}\\b", "[NFT_HASH]");
+      filtered = filtered.replaceAll("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]");
 
       // Remove revision hashes (format: revision: abc1234)
       filtered = filtered.replaceAll("revision: [0-9a-f]{10}", "revision: [REVISION]");
@@ -1000,6 +1000,7 @@ public class Methods {
         "NXF_CONDA_CACHEDIR",
         "NXF_HOME",
         "NXF_SINGULARITY_CACHEDIR",
+        "NXF_SINGULARITY_LIBRARYDIR",
         "NXF_TEMP",
         "NXF_WORK"
     };
