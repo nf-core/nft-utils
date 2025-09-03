@@ -337,6 +337,8 @@ These lines are sorted alphabetically, once censored:
 - `WARN:` messages (warning logs)
 - `ERROR:` messages (error logs)
 
+This behaviour can be disabled by setting `sorted: false`, which is not recommended as it will cause the snapshot to fail.
+
 Other lines are kept in their original order.
 
 - Other log messages (INFO, etc.)

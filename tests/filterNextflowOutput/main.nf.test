@@ -82,4 +82,23 @@ nextflow_pipeline {
             ).match()
         }
     }
+
+    test("Do not sort") {
+
+        tag 'sorted'
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout, sorted: false)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            assert workflow.success
+        }
+    }
 }
