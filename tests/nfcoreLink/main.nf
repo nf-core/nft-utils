@@ -1,7 +1,6 @@
 process TEST_MODULE {
-
     output:
-    path("test.txt"), emit: output
+    path ("test.txt"), emit: output
 
     script:
     """

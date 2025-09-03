@@ -8,7 +8,7 @@ workflow TEST {
         """
         Wow, a multiline string
         """,
-        "${fill}"
+        "${fill}",
     ]
 
     emit:
