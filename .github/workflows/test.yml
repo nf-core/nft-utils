@@ -56,7 +56,7 @@ jobs:
 
       - name: Test the plugin
         run: |
-          ./test.sh --verbose
+          ./test.sh --verbose --debug
 
       - name: Clean up
         if: always()
