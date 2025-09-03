@@ -158,7 +158,7 @@ cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outpu
 
 This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
 
-- The first argument is the directory path to screen for file paths (e.g. a  pipeline's `outdir` ).
+- The first argument is the directory path to screen for file paths (e.g. a pipeline's `outdir` ).
 - The second argument is a boolean indicating whether to include subdirectory names in the list.
 - The third argument is a _list_ of glob patterns to exclude.
 - The fourth argument is a _file_ containing additional glob patterns to exclude.
@@ -310,6 +310,131 @@ def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, includ
 This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.
 
 A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.
+
+### `filterNextflowOutput()`
+
+This function filters Nextflow stdout/stderr output to remove variable content that makes snapshots unstable. It removes common patterns like timestamps, execution IDs, memory usage, empty lines, and other runtime-specific information to make test snapshots reproducible.
+
+The function can be called with multiple parameters and accepts both String and List inputs. It returns a `List<String>` (array) to maintain consistency with the input format:
+
+```groovy
+// Basic usage - works directly with workflow.stdout and workflow.stderr
+// Returns List<String> with filtered and sorted lines (sorting is enabled by default)
+def filtered_stdout = filterNextflowOutput(workflow.stdout)
+def filtered_stderr = filterNextflowOutput(workflow.stderr)
+
+// Disable sorting if you want to preserve original execution order
+def filtered_stdout_unsorted = filterNextflowOutput(workflow.stdout, false)
+def filtered_stderr_unsorted = filterNextflowOutput(workflow.stderr, false)
+
+// Also works with strings - splits into lines and returns sorted List<String>
+def filtered_output = filterNextflowOutput(stdout_string)
+
+// With custom patterns - filters common patterns plus additional custom ones (sorted by default)
+def custom_patterns = ["INFO:", "WARN"]
+def filtered_output = filterNextflowOutput(workflow.stderr, custom_patterns)
+
+// With custom patterns and explicit sorting control
+def filtered_output_unsorted = filterNextflowOutput(workflow.stderr, custom_patterns, false)
+def filtered_output_sorted = filterNextflowOutput(workflow.stderr, custom_patterns, true)
+
+// Control ANSI escape code stripping (enabled by default)
+def filtered_with_ansi_stripped = filterNextflowOutput(workflow.stdout, true, true)   // sorted=true, stripAnsi=true (default)
+def filtered_with_ansi_kept = filterNextflowOutput(workflow.stdout, true, false)     // sorted=true, stripAnsi=false
+
+// Named parameters provide a more readable API (recommended)
+def filtered_defaults = filterNextflowOutput(workflow.stdout, [:])                    // All defaults
+def filtered_custom = filterNextflowOutput(workflow.stdout,
+    sorted: false,
+    stripAnsi: true,
+    additionalPatterns: ["WARN:", "Process .* started"]
+)
+def filtered_partial = filterNextflowOutput(workflow.stdout, stripAnsi: false)        // Only override ANSI stripping
+```
+
+**Named Parameters (Recommended API):**
+The method supports both positional arguments and named parameters. Named parameters provide better readability and flexibility:
+
+- `additionalPatterns`: List of additional regex patterns to filter (default: none)
+- `sorted`: Whether to sort output lines alphabetically (default: true)
+- `stripAnsi`: Whether to strip ANSI escape codes/colors (default: true)
+
+Use an empty map `[:]` for all defaults, or specify only the options you want to override.
+
+**Selective Sorting and Deduplication (Enabled by Default):**
+Sorting is enabled by default, but only applies to specific line types that typically vary in execution order. When sorting is enabled, duplicate lines are also automatically removed to create cleaner snapshots.
+
+**Lines that are sorted alphabetically:**
+
+- `Staging foreign file` messages (file staging operations)
+- `Submitted process` messages (process submissions)
+- `Check * file for details` messages (error/log references)
+- `WARN:` messages (warning logs)
+- `ERROR:` messages (error logs)
+
+**Lines that preserve original order:**
+
+- Other log messages (INFO, etc.)
+- Execution output and results
+- All other content
+
+For example, process submissions like `[PROCESS_HASH] Submitted process > FASTQC (sample_1)`, `[PROCESS_HASH] Submitted process > FASTQC (sample_3)`, `[PROCESS_HASH] Submitted process > FASTQC (sample_2)` will be consistently ordered as `sample_1`, `sample_2`, `sample_3`, but log messages and other output will maintain their original sequence. You can disable sorting entirely by passing `sorted: false` if you need to preserve the exact original execution order.
+
+**ANSI Code Stripping (Enabled by Default):**
+ANSI escape codes (colors, formatting) are stripped by default to ensure clean, consistent snapshots. This prevents color codes from appearing as garbled text like `\u001B[32mtext\u001B[0m` or being misinterpreted by other filtering patterns. You can disable this by setting `stripAnsi: false` if you need to preserve formatting codes.
+
+Common patterns that are automatically filtered include:
+
+- **Empty lines**: Blank lines and whitespace-only lines → removed entirely
+- **Timestamps**: Various formats (ISO 8601, log timestamps, etc.) → `[TIMESTAMP]`
+- **Process hashes**: Nextflow process execution IDs → `[PROCESS_HASH]`
+- **UUIDs and hashes**: Execution IDs, commit hashes, work directories → `[UUID]` or `[HASH]`
+- **Memory and time**: CPU hours, memory usage, execution times → `[TIME_OR_MEMORY]`
+- **Progress indicators**: Progress percentages → `[PROGRESS]`
+- **Resource allocation**: CPU counts, memory allocations → `cpus: [N]`, `memory: [MEMORY]`
+- **Execution paths**: Temporary directories, work directories → `/tmp/nf-[HASH]`, `work/[HASH]`
+- **File paths**: Absolute paths to scripts and logs → `Launching '[PATH]/tests/module/./main.nf'`, `Check '[PATH]/.nf-test/tests/[HASH]/meta/nextflow.log'` (replaces current working directory with [PATH] and preserves relative project structure)
+- **Session information**: Session IDs, run names → `Session id: [SESSION_ID]`, `[RUN_NAME]`
+- **Version information**: Software versions, build numbers, update notifications → `version [VERSION]`, `build [BUILD]`, removes "Nextflow X.Y.Z is available" messages
+
+Example usage in a test:
+
+```groovy
+test("my_pipeline_test") {
+    when {
+        params {
+            outdir = "$outputDir"
+        }
+    }
+
+        then {
+        // Filter out variable content for stable snapshots - works directly with Lists
+        def filtered_stdout = filterNextflowOutput(workflow.stdout)
+        def filtered_stderr = filterNextflowOutput(workflow.stderr)
+
+        assert snapshot(
+            filtered_stdout,
+            filtered_stderr
+        ).match()
+    }
+}
+```
+
+For additional custom filtering, you can provide a list of regex patterns:
+
+```groovy
+// Remove custom patterns in addition to default ones
+def custom_patterns = [
+    "Process .* started",        // Remove process start messages
+    "\\d+ files processed",      // Remove file count messages
+    "Custom pattern here"
+]
+def filtered_output = filterNextflowOutput(output_content, custom_patterns)
+```
+
+:::warning
+When using custom patterns, ensure your regex patterns are properly escaped. Invalid regex patterns will be logged as warnings and ignored.
+:::
 
 ## Dependency management
 

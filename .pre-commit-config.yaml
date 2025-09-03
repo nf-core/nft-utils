@@ -4,10 +4,10 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@3.6.2
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+          - prettier@3.3.3
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: "2.7.3"
     hooks:
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
-      - id: end-of-file-fixer
+      - id: editorconfig-checker
+        alias: ec

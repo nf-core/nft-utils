@@ -1,0 +1,203 @@
+{
+    "Capture stdout, stderr and both when failure": {
+        "content": [
+            [
+                "N E X T F L O W  ~  version [VERSION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: fb6161adf3",
+                "-----------------------------------------------------",
+                "                                        ,--./,-.",
+                "        ___     __   __   __   ___     /,-._.--~'",
+                "  |\\ | |__  __ /  ` /  \\ |__) |__         }  {",
+                "  | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,",
+                "                                        `._,._,'",
+                "      ____",
+                "    .\u00b4 _  `.",
+                "   /  |\\`-_ \\      __        __   ___     ",
+                "  |   | \\  `-|    |__`  /\\  |__) |__  |__/",
+                "   \\ |   \\  /     .__| /\u00af\u00af\\ |  \\ |___ |  \\",
+                "    `|____\\\u00b4",
+                "------------------------------------------------------",
+                "Pipeline in dev: [VERSION]",
+                "Pipeline in prod: [VERSION]",
+                "outdir: results",
+                "HOME: [PATH]",
+                "NFT_WORKDIR: [PATH]",
+                "NXF_CACHE_DIR: null",
+                "NXF_CONDA_CACHEDIR: null",
+                "NXF_HOME: [PATH]",
+                "NXF_SINGULARITY_CACHEDIR: [PATH]",
+                "NXF_TEMP: null",
+                "NXF_WORK: null",
+                "println message",
+                "log.info message",
+                "println with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "log.info with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "Error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                " -- Check '[PATH]/.nf-test/tests/[NFT_HASH]/meta/nextflow.log' file for details",
+                "ERROR ~ log.error message",
+                "ERROR ~ log.error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "WARN: log.warn message",
+                "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt"
+            ],
+            [
+                "System error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "System error message"
+            ],
+            [
+                "N E X T F L O W  ~  version [VERSION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: fb6161adf3",
+                "-----------------------------------------------------",
+                "                                        ,--./,-.",
+                "        ___     __   __   __   ___     /,-._.--~'",
+                "  |\\ | |__  __ /  ` /  \\ |__) |__         }  {",
+                "  | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,",
+                "                                        `._,._,'",
+                "      ____",
+                "    .\u00b4 _  `.",
+                "   /  |\\`-_ \\      __        __   ___     ",
+                "  |   | \\  `-|    |__`  /\\  |__) |__  |__/",
+                "   \\ |   \\  /     .__| /\u00af\u00af\\ |  \\ |___ |  \\",
+                "    `|____\\\u00b4",
+                "------------------------------------------------------",
+                "Pipeline in dev: [VERSION]",
+                "Pipeline in prod: [VERSION]",
+                "outdir: results",
+                "HOME: [PATH]",
+                "NFT_WORKDIR: [PATH]",
+                "NXF_CACHE_DIR: null",
+                "NXF_CONDA_CACHEDIR: null",
+                "NXF_HOME: [PATH]",
+                "NXF_SINGULARITY_CACHEDIR: [PATH]",
+                "NXF_TEMP: null",
+                "NXF_WORK: null",
+                "println message",
+                "log.info message",
+                "println with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "log.info with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "Error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "System error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "System error message",
+                " -- Check '[PATH]/.nf-test/tests/[NFT_HASH]/meta/nextflow.log' file for details",
+                "ERROR ~ log.error message",
+                "ERROR ~ log.error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "WARN: log.warn message",
+                "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-09-03T12:08:45.088484089"
+    },
+    "Capture stderr only": {
+        "content": [
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-09-03T12:08:37.687964135"
+    },
+    "Capture both stdout and stderr": {
+        "content": [
+            [
+                "N E X T F L O W  ~  version [VERSION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: fb6161adf3",
+                "-----------------------------------------------------",
+                "                                        ,--./,-.",
+                "        ___     __   __   __   ___     /,-._.--~'",
+                "  |\\ | |__  __ /  ` /  \\ |__) |__         }  {",
+                "  | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,",
+                "                                        `._,._,'",
+                "      ____",
+                "    .\u00b4 _  `.",
+                "   /  |\\`-_ \\      __        __   ___     ",
+                "  |   | \\  `-|    |__`  /\\  |__) |__  |__/",
+                "   \\ |   \\  /     .__| /\u00af\u00af\\ |  \\ |___ |  \\",
+                "    `|____\\\u00b4",
+                "------------------------------------------------------",
+                "Pipeline in dev: [VERSION]",
+                "Pipeline in prod: [VERSION]",
+                "outdir: results",
+                "HOME: [PATH]",
+                "NFT_WORKDIR: [PATH]",
+                "NXF_CACHE_DIR: null",
+                "NXF_CONDA_CACHEDIR: null",
+                "NXF_HOME: [PATH]",
+                "NXF_SINGULARITY_CACHEDIR: [PATH]",
+                "NXF_TEMP: null",
+                "NXF_WORK: null",
+                "println message",
+                "log.info message",
+                "println with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "log.info with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                " -- Check '[PATH]/.nf-test/tests/[NFT_HASH]/meta/nextflow.log' file for details",
+                "ERROR ~ log.error message",
+                "ERROR ~ log.error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "WARN: log.warn message",
+                "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "[NXF_HASH] Submitted process > FASTQC (sample_1)",
+                "[NXF_HASH] Submitted process > FASTQC (sample_2)",
+                "[NXF_HASH] Submitted process > FASTQC (sample_3)"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-09-03T12:08:41.642327407"
+    },
+    "Capture stdout only": {
+        "content": [
+            [
+                "N E X T F L O W  ~  version [VERSION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: fb6161adf3",
+                "-----------------------------------------------------",
+                "                                        ,--./,-.",
+                "        ___     __   __   __   ___     /,-._.--~'",
+                "  |\\ | |__  __ /  ` /  \\ |__) |__         }  {",
+                "  | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,",
+                "                                        `._,._,'",
+                "      ____",
+                "    .\u00b4 _  `.",
+                "   /  |\\`-_ \\      __        __   ___     ",
+                "  |   | \\  `-|    |__`  /\\  |__) |__  |__/",
+                "   \\ |   \\  /     .__| /\u00af\u00af\\ |  \\ |___ |  \\",
+                "    `|____\\\u00b4",
+                "------------------------------------------------------",
+                "Pipeline in dev: [VERSION]",
+                "Pipeline in prod: [VERSION]",
+                "outdir: results",
+                "HOME: [PATH]",
+                "NFT_WORKDIR: [PATH]",
+                "NXF_CACHE_DIR: null",
+                "NXF_CONDA_CACHEDIR: null",
+                "NXF_HOME: [PATH]",
+                "NXF_SINGULARITY_CACHEDIR: [PATH]",
+                "NXF_TEMP: null",
+                "NXF_WORK: null",
+                "println message",
+                "log.info message",
+                "println with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "log.info with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                " -- Check '[PATH]/.nf-test/tests/[NFT_HASH]/meta/nextflow.log' file for details",
+                "ERROR ~ log.error message",
+                "ERROR ~ log.error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "WARN: log.warn message",
+                "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "[NXF_HASH] Submitted process > FASTQC (sample_1)",
+                "[NXF_HASH] Submitted process > FASTQC (sample_2)",
+                "[NXF_HASH] Submitted process > FASTQC (sample_3)"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-09-03T12:08:33.818176023"
+    }
+}

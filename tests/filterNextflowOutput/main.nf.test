@@ -1,0 +1,112 @@
+nextflow_pipeline {
+
+    name "Test filterNextflowOutput"
+    script "./main.nf"
+    tag "filterNextflowOutput"
+
+    test("Capture stdout only") {
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            assert workflow.success
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout)
+            ).match()
+        }
+    }
+
+    test("Capture stderr only") {
+
+        then {
+            def filtered_stderr = filterNextflowOutput(workflow.stderr)
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.success
+            assert snapshot(
+                filterNextflowOutput(workflow.stderr)
+            ).match()
+        }
+    }
+
+    test("Capture both stdout and stderr") {
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout)
+            def filtered_stderr = filterNextflowOutput(workflow.stderr)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.success
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout+workflow.stderr),
+            ).match()
+        }
+    }
+
+    test("Capture stdout, stderr and both when failure") {
+
+        when {
+            params {
+                failure = true
+            }
+        }
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout)
+            def filtered_stderr = filterNextflowOutput(workflow.stderr)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.failed
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout),
+                filterNextflowOutput(workflow.stderr),
+                filterNextflowOutput(workflow.stdout+workflow.stderr),
+                ).match()
+        }
+    }
+}
