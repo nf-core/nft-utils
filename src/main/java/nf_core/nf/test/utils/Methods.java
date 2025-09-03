@@ -303,7 +303,7 @@ public class Methods {
 
   /**
    * Creates the modules directory and .nf-core.yml configuration file
-   * 
+   *
    * @param libDir The directory path to initialise an nf-core library at
    */
   public static void nfcoreInitialise(String libDir) {
@@ -312,7 +312,7 @@ public class Methods {
 
   /**
    * Installs nf-core modules from a list
-   * 
+   *
    * @param libDir  An nf-core library initialised by nfcoreInitialise()
    * @param modules List of module names (strings) or module maps with keys: name
    *                (required), sha (optional), remote (optional)
@@ -324,7 +324,7 @@ public class Methods {
   /**
    * Creates a symbolic link from the installed nf-core modules to the base
    * directory
-   * 
+   *
    * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
    */
@@ -334,7 +334,7 @@ public class Methods {
 
   /**
    * Remove all linked modules from a modules directory
-   * 
+   *
    * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
    */
@@ -344,7 +344,7 @@ public class Methods {
 
   /**
    * Delete the temporary nf-core library
-   * 
+   *
    * @param libDir The library directory path to delete
    */
   public static void nfcoreDeleteLibrary(String libDir) {
@@ -436,15 +436,16 @@ public class Methods {
     for (String line : outputLines) {
       String filtered = line;
 
-      // Strip ANSI escape codes if requested (colors, formatting, etc.)
-      if (stripAnsi) {
-        filtered = filtered.replaceAll("\\x1B\\[[0-9;]*[A-Za-z]", "");
-      }
+      // Remove timestamp patterns
 
-      // Remove timestamp patterns (various formats)
+      // ISO 8601 related formats:
+      // YYY-MM-DDTHH:mm:ss
+      // YYY-MM-DD HH:mm:ss
+      // YYY-MM-DD_HH-mm-ss
       filtered = filtered.replaceAll(
-          "\\d{4}-\\d{2}-\\d{2}[T\\s]\\d{2}[:-]\\d{2}[:-]\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?",
+          "\\d{4}-\\d{2}-\\d{2}[T\\s_]\\d{2}[:-]\\d{2}[:-]\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?",
           "[TIMESTAMP]");
+      // US date format: MM/DD/YYY HH:mm:ss
       filtered = filtered.replaceAll("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]");
 
       // Remove Nextflow process execution hashes (format: [xx/yyyyyy])
@@ -453,6 +454,9 @@ public class Methods {
       // Remove NFT_HASH work dir (format: [xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx])
       filtered = filtered.replaceAll("\\b[0-9a-f]{31,32}\\b", "[NFT_HASH]");
 
+      // Remove revision hashes (format: revision: abc1234)
+      filtered = filtered.replaceAll("revision: [0-9a-f]{10}", "revision: [REVISION]");
+
       // Remove Nextflow version update notifications
       filtered = filtered.replaceAll(".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*", "");
       filtered = filtered.replaceAll(".*Please consider updating your version.*", "");
@@ -460,21 +464,378 @@ public class Methods {
       // Replace absolute paths with [PATH] placeholder using a more general approach
       filtered = filterAbsolutePaths(filtered);
 
-      // Remove session and run names
-      filtered = filtered.replaceAll("Session id:\\s*[0-9a-f-]+", "Session id: [SESSION_ID]");
-      filtered = filtered.replaceAll("Run name:\\s*\\S+", "Run name: [RUN_NAME]");
+      // Remove run name
+      // List of all adjectives used by Nextflow
+      String[] adjectives = {
+          "admiring",
+          "adoring",
+          "agitated",
+          "amazing",
+          "angry",
+          "astonishing",
+          "awesome",
+          "backstabbing",
+          "berserk",
+          "big",
+          "boring",
+          "chaotic",
+          "cheeky",
+          "cheesy",
+          "clever",
+          "compassionate",
+          "condescending",
+          "confident",
+          "cranky",
+          "crazy",
+          "curious",
+          "deadly",
+          "desperate",
+          "determined",
+          "distracted",
+          "distraught",
+          "disturbed",
+          "dreamy",
+          "drunk",
+          "ecstatic",
+          "elated",
+          "elegant",
+          "evil",
+          "exotic",
+          "extravagant",
+          "fabulous",
+          "fervent",
+          "festering",
+          "focused",
+          "friendly",
+          "furious",
+          "gigantic",
+          "gloomy",
+          "golden",
+          "goofy",
+          "grave",
+          "happy",
+          "high",
+          "hopeful",
+          "hungry",
+          "infallible",
+          "insane",
+          "intergalactic",
+          "irreverent",
+          "jolly",
+          "jovial",
+          "kickass",
+          "lethal",
+          "lonely",
+          "loving",
+          "loquacious",
+          "mad",
+          "magical",
+          "maniac",
+          "marvelous",
+          "mighty",
+          "modest",
+          "nasty",
+          "naughty",
+          "nauseous",
+          "nice",
+          "nostalgic",
+          "peaceful",
+          "pedantic",
+          "pensive",
+          "prickly",
+          "reverent",
+          "ridiculous",
+          "romantic",
+          "sad",
+          "scruffy",
+          "serene",
+          "sharp",
+          "shrivelled",
+          "sick",
+          "silly",
+          "sleepy",
+          "small",
+          "soggy",
+          "special",
+          "spontaneous",
+          "stoic",
+          "stupefied",
+          "suspicious",
+          "tender",
+          "thirsty",
+          "tiny",
+          "trusting",
+          "voluminous",
+          "wise",
+          "zen"
+      };
 
-      // Remove Nextflow run names in square brackets (e.g., [nasty_magritte])
-      // Note: This should come after process hash filtering to avoid conflicts
-      // More specific pattern to avoid matching process hashes
-      filtered = filtered.replaceAll("\\[([a-z]+_[a-z]+)\\]", "[RUN_NAME]");
+      String[] scientificNames = {
+          "agnesi",
+          "albattani",
+          "allen",
+          "almeida",
+          "ampere",
+          "angela",
+          "archimedes",
+          "ardinghelli",
+          "aryabhata",
+          "austin",
+          "avogadro",
+          "babbage",
+          "baekeland",
+          "banach",
+          "bardeen",
+          "bartik",
+          "bassi",
+          "becquerel",
+          "bell",
+          "bernard",
+          "bhabha",
+          "bhaskara",
+          "blackwell",
+          "bohr",
+          "boltzmann",
+          "booth",
+          "borg",
+          "bose",
+          "boyd",
+          "brahmagupta",
+          "brattain",
+          "brazil",
+          "brenner",
+          "brown",
+          "cajal",
+          "cantor",
+          "caravaggio",
+          "carlsson",
+          "carson",
+          "celsius",
+          "chandrasekhar",
+          "church",
+          "colden",
+          "cori",
+          "coulomb",
+          "cray",
+          "crick",
+          "curie",
+          "curran",
+          "curry",
+          "cuvier",
+          "dalembert",
+          "darwin",
+          "davinci",
+          "descartes",
+          "dijkstra",
+          "dubinsky",
+          "easley",
+          "edison",
+          "einstein",
+          "ekeblad",
+          "elion",
+          "engelbart",
+          "escher",
+          "euclid",
+          "euler",
+          "faggin",
+          "faraday",
+          "fermat",
+          "fermi",
+          "feynman",
+          "fourier",
+          "franklin",
+          "galileo",
+          "gates",
+          "gauss",
+          "gautier",
+          "gilbert",
+          "goldberg",
+          "goldstine",
+          "goldwasser",
+          "golick",
+          "goodall",
+          "gutenberg",
+          "hamilton",
+          "hawking",
+          "heisenberg",
+          "heyrovsky",
+          "hilbert",
+          "hirsch",
+          "hodgkin",
+          "hoover",
+          "hopper",
+          "hugle",
+          "hypatia",
+          "jang",
+          "jennings",
+          "jepsen",
+          "joliot",
+          "jones",
+          "kalam",
+          "kalman",
+          "kare",
+          "kay",
+          "keller",
+          "khorana",
+          "kilby",
+          "kimura",
+          "kirch",
+          "knuth",
+          "koch",
+          "kowalevski",
+          "lagrange",
+          "lalande",
+          "lamarck",
+          "lamarr",
+          "lamport",
+          "laplace",
+          "lattes",
+          "lavoisier",
+          "leakey",
+          "leavitt",
+          "legentil",
+          "leibniz",
+          "lichterman",
+          "linnaeus",
+          "liskov",
+          "lorenz",
+          "lovelace",
+          "lumiere",
+          "magritte",
+          "mahavira",
+          "majorana",
+          "mandelbrot",
+          "marconi",
+          "maxwell",
+          "mayer",
+          "mccarthy",
+          "mcclintock",
+          "mclean",
+          "mcnulty",
+          "meitner",
+          "mendel",
+          "meninsky",
+          "mercator",
+          "mestorf",
+          "meucci",
+          "miescher",
+          "minsky",
+          "mirzakhani",
+          "monod",
+          "montalcini",
+          "moriondo",
+          "morse",
+          "murdock",
+          "neumann",
+          "newton",
+          "nightingale",
+          "nobel",
+          "noether",
+          "northcutt",
+          "noyce",
+          "ochoa",
+          "panini",
+          "pare",
+          "pasteur",
+          "pauling",
+          "payne",
+          "perlman",
+          "pesquet",
+          "picasso",
+          "pike",
+          "planck",
+          "plateau",
+          "poincare",
+          "poisson",
+          "poitras",
+          "ptolemy",
+          "raman",
+          "ramanujan",
+          "ride",
+          "ritchie",
+          "roentgen",
+          "rosalind",
+          "rubens",
+          "rutherford",
+          "saha",
+          "salas",
+          "sammet",
+          "sanger",
+          "sax",
+          "shannon",
+          "shaw",
+          "shirley",
+          "shockley",
+          "sinoussi",
+          "snyder",
+          "solvay",
+          "spence",
+          "stallman",
+          "stone",
+          "stonebraker",
+          "swanson",
+          "swartz",
+          "swirles",
+          "tesla",
+          "thompson",
+          "torricelli",
+          "torvalds",
+          "tuckerman",
+          "turing",
+          "varahamihira",
+          "venter",
+          "visvesvaraya",
+          "volhard",
+          "volta",
+          "waddington",
+          "watson",
+          "wegener",
+          "wescoff",
+          "wiles",
+          "williams",
+          "wilson",
+          "wing",
+          "woese",
+          "wozniak",
+          "wright",
+          "yalow",
+          "yonath"
+      };
 
-      // Remove version-specific information that might vary
-      filtered = filtered.replaceAll("version\\s+\\d+\\.\\d+\\.\\d+", "version [VERSION]");
-      filtered = filtered.replaceAll("build\\s+\\d+", "build [BUILD]");
+      // Remove Nextflow run names using specific adjective_scientificname patterns
+      // Use more efficient approach with Set lookups instead of large regex
+      // alternations
 
-      // Replace standalone version numbers (e.g., "1.0.0dev", "2.3.5")
-      filtered = filtered.replaceAll("\\b\\d+\\.\\d+\\.\\d+[a-zA-Z]*\\b", "[VERSION]");
+      // First, match bracketed run names: [adjective_scientificname]
+      filtered = java.util.regex.Pattern.compile("\\[([a-z]+)_([a-z]+)\\]")
+          .matcher(filtered)
+          .replaceAll(matchResult -> {
+            String adjective = matchResult.group(1);
+            String scientificName = matchResult.group(2);
+            // Check if both parts are in our known lists
+            if (java.util.Arrays.asList(adjectives).contains(adjective) &&
+                java.util.Arrays.asList(scientificNames).contains(scientificName)) {
+              return "[RUN_NAME]";
+            }
+            return matchResult.group(0); // Return original if not a match
+          });
+
+      // Then, match unbracketed run names: adjective_scientificname
+      filtered = java.util.regex.Pattern.compile("\\b([a-z]+)_([a-z]+)\\b")
+          .matcher(filtered)
+          .replaceAll(matchResult -> {
+            String adjective = matchResult.group(1);
+            String scientificName = matchResult.group(2);
+            // Check if both parts are in our known lists
+            if (java.util.Arrays.asList(adjectives).contains(adjective) &&
+                java.util.Arrays.asList(scientificNames).contains(scientificName)) {
+              return "[RUN_NAME]";
+            }
+            return matchResult.group(0); // Return original if not a match
+          });
+
+      // Replace nf-core pipeline versions (e.g., "nf-core/pipeline1: 1.0dev")
+      filtered = filtered.replaceAll("(nf-core/[^:]+:\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*", "$1[VERSION]");
 
       // Only add non-empty lines (filter out empty lines)
       if (!filtered.trim().isEmpty()) {
@@ -593,7 +954,7 @@ public class Methods {
   /**
    * Filters absolute paths in the given text and replaces them with [PATH]
    * placeholder.
-   * 
+   *
    * @param text The text to filter
    * @return The filtered text with various directory paths replaced with [PATH]
    */
