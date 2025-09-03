@@ -4,10 +4,31 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@3.3.3
+          - prettier@3.6.2
 
-  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: "2.7.3"
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
     hooks:
-      - id: editorconfig-checker
-        alias: ec
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        exclude: |
+          (?x)^(
+              .*\.snap$
+          )$
+      - id: end-of-file-fixer
+        exclude: |
+          (?x)^(
+              .*\.snap$
+          )$
+
+  - repo: local
+    hooks:
+      - id: nextflow-lint
+        name: Lint Nextflow scripts and fix formatting
+        entry: nextflow lint
+        language: system
+        files: '\.nf$|nextflow\.config$'
+        args: ["-format", "-sort-declarations", "-spaces", "4", "-harshil-alignment", "-output", "concise"]
+        pass_filenames: true
+        # FIXME Throws `ERROR ~ Unexpected error [ConcurrentModificationException]`
+        require_serial: true
