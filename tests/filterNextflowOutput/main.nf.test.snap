@@ -22,7 +22,7 @@
                 "nf-core/pipeline3 [VERSION]",
                 "nf-core/pipeline4 [VERSION]",
                 "HOME                      : [PATH]",
-                "NFT_WORKDIR               : [PATH]",
+                "NFT_WORKDIR               : ~",
                 "NXF_CACHE_DIR             : null",
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
@@ -68,7 +68,7 @@
                 "nf-core/pipeline3 [VERSION]",
                 "nf-core/pipeline4 [VERSION]",
                 "HOME                      : [PATH]",
-                "NFT_WORKDIR               : [PATH]",
+                "NFT_WORKDIR               : ~",
                 "NXF_CACHE_DIR             : null",
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
@@ -96,7 +96,7 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.6"
         },
-        "timestamp": "2025-09-03T17:34:35.027435477"
+        "timestamp": "2025-09-03T17:57:54.638336422"
     },
     "Capture both stdout and stderr and keep ANSI codes": {
         "content": [
@@ -121,7 +121,7 @@
                 "nf-core/pipeline3 [VERSION]",
                 "nf-core/pipeline4 [VERSION]",
                 "HOME                      : [PATH]",
-                "NFT_WORKDIR               : [PATH]",
+                "NFT_WORKDIR               : ~",
                 "NXF_CACHE_DIR             : null",
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
@@ -166,7 +166,7 @@
                 "nf-core/pipeline3 [VERSION]",
                 "nf-core/pipeline4 [VERSION]",
                 "HOME                      : [PATH]",
-                "NFT_WORKDIR               : [PATH]",
+                "NFT_WORKDIR               : ~",
                 "NXF_CACHE_DIR             : null",
                 "NXF_CONDA_CACHEDIR        : null",
                 "NXF_HOME                  : [PATH]",
@@ -194,6 +194,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.6"
         },
-        "timestamp": "2025-09-03T17:34:38.497743816"
+        "timestamp": "2025-09-03T17:57:59.129128339"
     }
 }
