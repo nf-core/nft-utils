@@ -45,6 +45,10 @@ nf-core/pipeline1 1.0dev
 nf-core/pipeline2 1.0
 nf-core/pipeline3 1.1.0dev
 nf-core/pipeline4 1.1.0
+container: docker
+image: singularity
+virtualenv: conda
+profile: test,docker,singularity,conda
         """
     )
 

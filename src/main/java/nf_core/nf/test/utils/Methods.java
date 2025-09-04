@@ -829,6 +829,14 @@ public class Methods {
             return matchResult.group(0); // Return original if not a match
           });
 
+      filtered = filtered.replaceAll(",docker", "[PROFILE]");
+      filtered = filtered.replaceAll(",singularity", "[PROFILE]");
+      filtered = filtered.replaceAll(",conda", "[PROFILE]");
+
+      filtered = filtered.replaceAll("docker", "[CONTAINER]");
+      filtered = filtered.replaceAll("singularity", "[CONTAINER]");
+      filtered = filtered.replaceAll("conda", "[CONTAINER]");
+
       // Then, match unbracketed run names: adjective_scientificname
       filtered = java.util.regex.Pattern.compile("\\b([a-z]+)_([a-z]+)\\b")
           .matcher(filtered)
