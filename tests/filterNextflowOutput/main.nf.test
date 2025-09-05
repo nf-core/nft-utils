@@ -40,7 +40,7 @@ nextflow_pipeline {
             assert workflow.failed
             assert snapshot(
                 filterNextflowOutput(workflow.stdout),
-                filterNextflowOutput(workflow.stderr)?:"no stderr",
+                filterNextflowOutput(workflow.stderr, include: ["System error message"])?:"no stderr",
                 filterNextflowOutput(workflow.stdout + workflow.stderr)
               ).match()
         }
@@ -76,7 +76,7 @@ nextflow_pipeline {
 
             assert workflow.success
             assert snapshot(
-                filterNextflowOutput(workflow.stdout, keepAnsi: true),
+                filterNextflowOutput(workflow.stdout, keepAnsi: true, ignore: ["Submitted process"]),
                 filterNextflowOutput(workflow.stderr, keepAnsi: true)?:"no stderr",
                 filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
             ).match()

@@ -359,7 +359,7 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output) {
-    return filterNextflowOutput(output, null, true, false);
+    return filterNextflowOutput(output, null, true, false, null, null);
   }
 
   /**
@@ -370,7 +370,7 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, boolean sorted) {
-    return filterNextflowOutput(output, null, sorted, false);
+    return filterNextflowOutput(output, null, sorted, false, null, null);
   }
 
   /**
@@ -383,7 +383,7 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, boolean sorted, boolean keepAnsi) {
-    return filterNextflowOutput(output, null, sorted, keepAnsi);
+    return filterNextflowOutput(output, null, sorted, keepAnsi, null, null);
   }
 
   /**
@@ -397,10 +397,17 @@ public class Methods {
    * @param sorted             Whether to sort the output lines alphabetically
    * @param keepAnsi           Whether to keep ANSI escape codes (colors,
    *                           formatting)
+   * @param ignore             List of strings to filter out from the output
+   *                           (lines containing any of these strings will be
+   *                           removed)
+   * @param include            List of strings to include in the output (only
+   *                           lines containing at least one of these strings
+   *                           will be kept). If null or empty, all lines are
+   *                           considered for inclusion.
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, List<String> additionalPatterns, boolean sorted,
-      boolean keepAnsi) {
+      boolean keepAnsi, List<String> ignore, List<String> include) {
     if (output == null) {
       return new ArrayList<>();
     }
@@ -430,12 +437,52 @@ public class Methods {
 
     // Filter each line
     List<String> filteredLines = new ArrayList<>();
+    String capturedRunName = null;
+
     for (String line : outputLines) {
       String filtered = line;
+
+      // Filter out lines containing any of the ignore strings
+      if (ignore != null && !ignore.isEmpty()) {
+        boolean shouldIgnore = false;
+        for (String ignoreString : ignore) {
+          if (filtered.contains(ignoreString)) {
+            shouldIgnore = true;
+            break;
+          }
+        }
+        if (shouldIgnore) {
+          continue; // Skip this line
+        }
+      }
+
+      // Filter to include only lines containing any of the include strings
+      if (include != null && !include.isEmpty()) {
+        boolean shouldInclude = false;
+        for (String includeString : include) {
+          if (filtered.contains(includeString)) {
+            shouldInclude = true;
+            break;
+          }
+        }
+        if (!shouldInclude) {
+          continue; // Skip this line
+        }
+      }
 
       // Strip ANSI escape codes unless keepAnsi is true (colors, formatting, etc.)
       if (!keepAnsi) {
         filtered = filtered.replaceAll("\\x1B\\[[0-9;]*[A-Za-z]", "");
+      }
+
+      // Capture run name from launching line
+      if (capturedRunName == null && filtered.contains("Launching") && filtered.contains("[")
+          && filtered.contains("]")) {
+        java.util.regex.Pattern runNamePattern = java.util.regex.Pattern.compile("\\[([^\\]]+)\\]");
+        java.util.regex.Matcher matcher = runNamePattern.matcher(filtered);
+        if (matcher.find()) {
+          capturedRunName = matcher.group(1);
+        }
       }
 
       // Replace username value in patterns like "userName : max"
@@ -472,384 +519,31 @@ public class Methods {
       // Replace absolute paths with [PATH] placeholder using a more general approach
       filtered = filterAbsolutePaths(filtered);
 
-      // Remove run name
-      // List of all adjectives used by Nextflow
-      String[] adjectives = {
-          "admiring",
-          "adoring",
-          "agitated",
-          "amazing",
-          "angry",
-          "astonishing",
-          "awesome",
-          "backstabbing",
-          "berserk",
-          "big",
-          "boring",
-          "chaotic",
-          "cheeky",
-          "cheesy",
-          "clever",
-          "compassionate",
-          "condescending",
-          "confident",
-          "cranky",
-          "crazy",
-          "curious",
-          "deadly",
-          "desperate",
-          "determined",
-          "distracted",
-          "distraught",
-          "disturbed",
-          "dreamy",
-          "drunk",
-          "ecstatic",
-          "elated",
-          "elegant",
-          "evil",
-          "exotic",
-          "extravagant",
-          "fabulous",
-          "fervent",
-          "festering",
-          "focused",
-          "friendly",
-          "furious",
-          "gigantic",
-          "gloomy",
-          "golden",
-          "goofy",
-          "grave",
-          "happy",
-          "high",
-          "hopeful",
-          "hungry",
-          "infallible",
-          "insane",
-          "intergalactic",
-          "irreverent",
-          "jolly",
-          "jovial",
-          "kickass",
-          "lethal",
-          "lonely",
-          "loving",
-          "loquacious",
-          "mad",
-          "magical",
-          "maniac",
-          "marvelous",
-          "mighty",
-          "modest",
-          "nasty",
-          "naughty",
-          "nauseous",
-          "nice",
-          "nostalgic",
-          "peaceful",
-          "pedantic",
-          "pensive",
-          "prickly",
-          "reverent",
-          "ridiculous",
-          "romantic",
-          "sad",
-          "scruffy",
-          "serene",
-          "sharp",
-          "shrivelled",
-          "sick",
-          "silly",
-          "sleepy",
-          "small",
-          "soggy",
-          "special",
-          "spontaneous",
-          "stoic",
-          "stupefied",
-          "suspicious",
-          "tender",
-          "thirsty",
-          "tiny",
-          "trusting",
-          "voluminous",
-          "wise",
-          "zen"
-      };
+      // Remove run name using captured run name from launching line
+      if (capturedRunName != null) {
+        // Replace bracketed run name: [run_name]
+        filtered = filtered.replace("[" + capturedRunName + "]", "[RUN_NAME]");
+        // Replace unbracketed run name: run_name
+        filtered = filtered.replace(capturedRunName, "[RUN_NAME]");
+      }
 
-      // List of all scientific names used by Nextflow
-      String[] scientificNames = {
-          "agnesi",
-          "albattani",
-          "allen",
-          "almeida",
-          "ampere",
-          "angela",
-          "archimedes",
-          "ardinghelli",
-          "aryabhata",
-          "austin",
-          "avogadro",
-          "babbage",
-          "baekeland",
-          "banach",
-          "bardeen",
-          "bartik",
-          "bassi",
-          "becquerel",
-          "bell",
-          "bernard",
-          "bhabha",
-          "bhaskara",
-          "blackwell",
-          "bohr",
-          "boltzmann",
-          "booth",
-          "borg",
-          "bose",
-          "boyd",
-          "brahmagupta",
-          "brattain",
-          "brazil",
-          "brenner",
-          "brown",
-          "cajal",
-          "cantor",
-          "caravaggio",
-          "carlsson",
-          "carson",
-          "celsius",
-          "chandrasekhar",
-          "church",
-          "colden",
-          "cori",
-          "coulomb",
-          "cray",
-          "crick",
-          "curie",
-          "curran",
-          "curry",
-          "cuvier",
-          "dalembert",
-          "darwin",
-          "davinci",
-          "descartes",
-          "dijkstra",
-          "dubinsky",
-          "easley",
-          "edison",
-          "einstein",
-          "ekeblad",
-          "elion",
-          "engelbart",
-          "escher",
-          "euclid",
-          "euler",
-          "faggin",
-          "faraday",
-          "fermat",
-          "fermi",
-          "feynman",
-          "fourier",
-          "franklin",
-          "galileo",
-          "gates",
-          "gauss",
-          "gautier",
-          "gilbert",
-          "goldberg",
-          "goldstine",
-          "goldwasser",
-          "golick",
-          "goodall",
-          "gutenberg",
-          "hamilton",
-          "hawking",
-          "heisenberg",
-          "heyrovsky",
-          "hilbert",
-          "hirsch",
-          "hodgkin",
-          "hoover",
-          "hopper",
-          "hugle",
-          "hypatia",
-          "jang",
-          "jennings",
-          "jepsen",
-          "joliot",
-          "jones",
-          "kalam",
-          "kalman",
-          "kare",
-          "kay",
-          "keller",
-          "khorana",
-          "kilby",
-          "kimura",
-          "kirch",
-          "knuth",
-          "koch",
-          "kowalevski",
-          "lagrange",
-          "lalande",
-          "lamarck",
-          "lamarr",
-          "lamport",
-          "laplace",
-          "lattes",
-          "lavoisier",
-          "leakey",
-          "leavitt",
-          "legentil",
-          "leibniz",
-          "lichterman",
-          "linnaeus",
-          "liskov",
-          "lorenz",
-          "lovelace",
-          "lumiere",
-          "magritte",
-          "mahavira",
-          "majorana",
-          "mandelbrot",
-          "marconi",
-          "maxwell",
-          "mayer",
-          "mccarthy",
-          "mcclintock",
-          "mclean",
-          "mcnulty",
-          "meitner",
-          "mendel",
-          "meninsky",
-          "mercator",
-          "mestorf",
-          "meucci",
-          "miescher",
-          "minsky",
-          "mirzakhani",
-          "monod",
-          "montalcini",
-          "moriondo",
-          "morse",
-          "murdock",
-          "neumann",
-          "newton",
-          "nightingale",
-          "nobel",
-          "noether",
-          "northcutt",
-          "noyce",
-          "ochoa",
-          "panini",
-          "pare",
-          "pasteur",
-          "pauling",
-          "payne",
-          "perlman",
-          "pesquet",
-          "picasso",
-          "pike",
-          "planck",
-          "plateau",
-          "poincare",
-          "poisson",
-          "poitras",
-          "ptolemy",
-          "raman",
-          "ramanujan",
-          "ride",
-          "ritchie",
-          "roentgen",
-          "rosalind",
-          "rubens",
-          "rutherford",
-          "saha",
-          "salas",
-          "sammet",
-          "sanger",
-          "sax",
-          "shannon",
-          "shaw",
-          "shirley",
-          "shockley",
-          "sinoussi",
-          "snyder",
-          "solvay",
-          "spence",
-          "stallman",
-          "stone",
-          "stonebraker",
-          "swanson",
-          "swartz",
-          "swirles",
-          "tesla",
-          "thompson",
-          "torricelli",
-          "torvalds",
-          "tuckerman",
-          "turing",
-          "varahamihira",
-          "venter",
-          "visvesvaraya",
-          "volhard",
-          "volta",
-          "waddington",
-          "watson",
-          "wegener",
-          "wescoff",
-          "wiles",
-          "williams",
-          "wilson",
-          "wing",
-          "woese",
-          "wozniak",
-          "wright",
-          "yalow",
-          "yonath"
-      };
+      // Remove containerEngine messages
+      // as it's docker and singularity specific, but not conda
+      filtered = filtered.replaceAll(".*containerEngine.*", "");
 
-      // Remove Nextflow run names using specific adjective_scientificname patterns
-      // Use more efficient approach with Set lookups instead of large regex
-      // alternations
-
-      // First, match bracketed run names: [adjective_scientificname]
-      filtered = java.util.regex.Pattern.compile("\\[([a-z]+)_([a-z]+)\\]")
-          .matcher(filtered)
-          .replaceAll(matchResult -> {
-            String adjective = matchResult.group(1);
-            String scientificName = matchResult.group(2);
-            // Check if both parts are in our known lists
-            if (java.util.Arrays.asList(adjectives).contains(adjective) &&
-                java.util.Arrays.asList(scientificNames).contains(scientificName)) {
-              return "[RUN_NAME]";
-            }
-            return matchResult.group(0); // Return original if not a match
-          });
-
-      filtered = filtered.replaceAll(",docker", "[PROFILE]");
-      filtered = filtered.replaceAll(",singularity", "[PROFILE]");
-      filtered = filtered.replaceAll(",conda", "[PROFILE]");
-
-      filtered = filtered.replaceAll("docker", "[CONTAINER]");
-      filtered = filtered.replaceAll("singularity", "[CONTAINER]");
+      // Replace common reproducibility solutions (ie virtualenv or containerisation)
+      // by [CONTAINER] - All of theses are profiles in nf-core TEMPLATE
+      // I know that none all of these are actually containers, but it's a good quick
+      // approximation
+      filtered = filtered.replaceAll("apptainer", "[CONTAINER]");
+      filtered = filtered.replaceAll("charliecloud", "[CONTAINER]");
       filtered = filtered.replaceAll("conda", "[CONTAINER]");
-
-      // Then, match unbracketed run names: adjective_scientificname
-      filtered = java.util.regex.Pattern.compile("\\b([a-z]+)_([a-z]+)\\b")
-          .matcher(filtered)
-          .replaceAll(matchResult -> {
-            String adjective = matchResult.group(1);
-            String scientificName = matchResult.group(2);
-            // Check if both parts are in our known lists
-            if (java.util.Arrays.asList(adjectives).contains(adjective) &&
-                java.util.Arrays.asList(scientificNames).contains(scientificName)) {
-              return "[RUN_NAME]";
-            }
-            return matchResult.group(0); // Return original if not a match
-          });
+      filtered = filtered.replaceAll("docker", "[CONTAINER]");
+      filtered = filtered.replaceAll("mamba", "[CONTAINER]");
+      filtered = filtered.replaceAll("podman", "[CONTAINER]");
+      filtered = filtered.replaceAll("shifter", "[CONTAINER]");
+      filtered = filtered.replaceAll("singularity", "[CONTAINER]");
+      filtered = filtered.replaceAll("wave", "[CONTAINER]");
 
       // Replace nf-core pipeline versions (e.g., "nf-core/xxx yyyy")
       filtered = filtered.replaceAll("(nf-core/[^\\s]+\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*", "$1[VERSION]");
@@ -918,13 +612,13 @@ public class Methods {
    * @return The filtered output as a List<String> with unstable patterns removed
    */
   public static List<String> filterNextflowOutput(Object output, List<String> additionalPatterns) {
-    return filterNextflowOutput(output, additionalPatterns, true, false);
+    return filterNextflowOutput(output, additionalPatterns, true, false, null, null);
   }
 
   /**
    * Filters Nextflow stdout/stderr output using Groovy's named parameter syntax.
    * This allows calling: filterNextflowOutput(output, sorted: false, keepAnsi:
-   * true)
+   * true, ignore: ["Staging foreign file"], include: ["ERROR", "WARN"])
    *
    * @param output  The stdout or stderr output (String or List) to filter
    * @param options Map containing filtering options (automatically created by
@@ -934,6 +628,11 @@ public class Methods {
    *                - sorted: Boolean whether to sort the output (default: true)
    *                - keepAnsi: Boolean whether to keep ANSI codes (default:
    *                false)
+   *                - ignore: List<String> of strings to filter out (lines
+   *                containing any of these strings will be removed) (optional)
+   *                - include: List<String> of strings to include (only lines
+   *                containing at least one of these strings will be kept)
+   *                (optional)
    * @return The filtered output as a List<String> with unstable patterns removed
    */
 
@@ -949,6 +648,8 @@ public class Methods {
     List<String> additionalPatterns = (List<String>) options.get("additionalPatterns");
     Boolean sorted = (Boolean) options.get("sorted");
     Boolean keepAnsi = (Boolean) options.get("keepAnsi");
+    List<String> ignore = (List<String>) options.get("ignore");
+    List<String> include = (List<String>) options.get("include");
 
     // Apply defaults
     if (sorted == null)
@@ -956,7 +657,7 @@ public class Methods {
     if (keepAnsi == null)
       keepAnsi = false;
 
-    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi);
+    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi, ignore, include);
   }
 
   public static List<String> filterNextflowOutput(Object output, Map<String, Object> options) {
@@ -968,6 +669,8 @@ public class Methods {
     List<String> additionalPatterns = (List<String>) options.get("additionalPatterns");
     Boolean sorted = (Boolean) options.get("sorted");
     Boolean keepAnsi = (Boolean) options.get("keepAnsi");
+    List<String> ignore = (List<String>) options.get("ignore");
+    List<String> include = (List<String>) options.get("include");
 
     // Apply defaults
     if (sorted == null)
@@ -975,7 +678,7 @@ public class Methods {
     if (keepAnsi == null)
       keepAnsi = false;
 
-    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi);
+    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi, ignore, include);
   }
 
   /**

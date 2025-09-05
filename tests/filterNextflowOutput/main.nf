@@ -49,12 +49,15 @@ container: docker
 image: singularity
 virtualenv: conda
 profile: test,docker,singularity,conda
+runName[false]: test_run_name
+runName[false]: amazing_mercury
+runName[false]: [amazing_mercury]
+runName[true]: ${workflow.runName}
         """
     )
 
     // Print various ENVs and PATHs
     log.info("HOME                      : ${System.getenv("HOME")}")
-    log.info("NFT_WORKDIR               : ${System.getenv("NFT_WORKDIR")}")
     log.info("NXF_CACHE_DIR             : ${System.getenv("NXF_CACHE_DIR")}")
     log.info("NXF_CONDA_CACHEDIR        : ${System.getenv("NXF_CONDA_CACHEDIR")}")
     log.info("NXF_HOME                  : ${System.getenv("NXF_HOME")}")
