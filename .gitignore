@@ -29,6 +29,7 @@ target/
 # Nextflow + nf-test
 .nextflow.log*
 .nextflow/
+.nf-test-*.nf
 .nf-test/
 null/
 results/

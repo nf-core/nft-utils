@@ -20,7 +20,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
@@ -64,11 +68,11 @@ public class Methods {
     // Find matching files in the parent directory
     try {
       List<String> matchingFiles = Files.list(parent)
-        .filter(Files::isRegularFile)
-        .filter(path -> matcher.matches(path.getFileName()))
-        .sorted()
-        .map(path -> path.toAbsolutePath().toString())
-        .collect(Collectors.toList());
+          .filter(Files::isRegularFile)
+          .filter(path -> matcher.matches(path.getFileName()))
+          .sorted()
+          .map(path -> path.toAbsolutePath().toString())
+          .collect(Collectors.toList());
 
       if (matchingFiles.isEmpty()) {
         throw new IOException("No files found matching pattern: " + pathPattern);
@@ -181,12 +185,11 @@ public class Methods {
   // Return all files in a directory and its sub-directories
   // matching or not matching supplied glob
   public static List<File> getAllFilesFromDir(
-    String outdir,
-    boolean includeDir,
-    List<String> ignoreGlobs,
-    String ignoreFilePath,
-    List<String> includeGlobs
-  ) throws IOException {
+      String outdir,
+      boolean includeDir,
+      List<String> ignoreGlobs,
+      String ignoreFilePath,
+      List<String> includeGlobs) throws IOException {
     List<File> output = new ArrayList<>();
     Path directory = Paths.get(outdir);
 
@@ -214,34 +217,33 @@ public class Methods {
     }
 
     Files.walkFileTree(
-      directory,
-      new SimpleFileVisitor<Path>() {
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-          if (isIncluded(file) && !isExcluded(file)) {
-            output.add(file.toFile());
+        directory,
+        new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+            if (isIncluded(file) && !isExcluded(file)) {
+              output.add(file.toFile());
+            }
+            return FileVisitResult.CONTINUE;
           }
-          return FileVisitResult.CONTINUE;
-        }
 
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-          // Exclude output which is the root output folder from nf-test
-          if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
-            output.add(dir.toFile());
+          @Override
+          public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            // Exclude output which is the root output folder from nf-test
+            if (includeDir && (isIncluded(dir) && !isExcluded(dir) && !dir.getFileName().toString().equals("output"))) {
+              output.add(dir.toFile());
+            }
+            return FileVisitResult.CONTINUE;
           }
-          return FileVisitResult.CONTINUE;
-        }
 
-        private boolean isExcluded(Path path) {
-          return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
-        }
+          private boolean isExcluded(Path path) {
+            return excludeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+          }
 
-        private boolean isIncluded(Path path) {
-          return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
-        }
-      }
-    );
+          private boolean isIncluded(Path path) {
+            return includeMatchers.stream().anyMatch(matcher -> matcher.matches(directory.relativize(path)));
+          }
+        });
 
     return output.stream().sorted(Comparator.comparing(File::getPath)).collect(Collectors.toList());
   }
@@ -264,12 +266,12 @@ public class Methods {
     Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
 
     return filePaths
-      .stream()
-      .map(filePath -> {
-        Path path = Paths.get(filePath.toURI()).toAbsolutePath().normalize();
-        return basePath.relativize(path).toString();
-      })
-      .collect(Collectors.toList());
+        .stream()
+        .map(filePath -> {
+          Path path = Paths.get(filePath.toURI()).toAbsolutePath().normalize();
+          return basePath.relativize(path).toString();
+        })
+        .collect(Collectors.toList());
   }
 
   public static String listToMD5(ArrayList<Object> input) throws UnsupportedEncodingException {
@@ -298,6 +300,7 @@ public class Methods {
 
   /**
    * Creates the modules directory and .nf-core.yml configuration file
+   *
    * @param libDir The directory path to initialise an nf-core library at
    */
   public static void nfcoreInitialise(String libDir) {
@@ -306,16 +309,20 @@ public class Methods {
 
   /**
    * Installs nf-core modules from a list
-   * @param libDir An nf-core library initialised by nfcoreInitialise()
-   * @param modules List of module names (strings) or module maps with keys: name (required), sha (optional), remote (optional)
+   *
+   * @param libDir  An nf-core library initialised by nfcoreInitialise()
+   * @param modules List of module names (strings) or module maps with keys: name
+   *                (required), sha (optional), remote (optional)
    */
   public static void nfcoreInstall(String libDir, List<?> modules) {
     NfCoreUtils.nfcoreInstall(libDir, modules);
   }
 
   /**
-   * Creates a symbolic link from the installed nf-core modules to the base directory
-   * @param libDir An nf-core library initialised by nfcoreSetup()
+   * Creates a symbolic link from the installed nf-core modules to the base
+   * directory
+   *
+   * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
    */
   public static void nfcoreLink(String libDir, String modulesDir) {
@@ -324,7 +331,8 @@ public class Methods {
 
   /**
    * Remove all linked modules from a modules directory
-   * @param libDir An nf-core library initialised by nfcoreSetup()
+   *
+   * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
    */
   public static void nfcoreUnlink(String libDir, String modulesDir) {
@@ -333,9 +341,407 @@ public class Methods {
 
   /**
    * Delete the temporary nf-core library
+   *
    * @param libDir The library directory path to delete
    */
   public static void nfcoreDeleteLibrary(String libDir) {
     NfCoreUtils.nfcoreDeleteLibrary(libDir);
+  }
+
+  /**
+   * Filters Nextflow stdout/stderr output to remove variable content that makes
+   * snapshots unstable.
+   * This method removes common patterns like timestamps, execution IDs, memory
+   * usage, and other
+   * runtime-specific information to make test snapshots reproducible.
+   *
+   * @param output The stdout or stderr output (String or List) to filter
+   * @return The filtered output as a List<String> with unstable patterns removed
+   */
+  public static List<String> filterNextflowOutput(Object output) {
+    return filterNextflowOutput(output, null, true, false, null, null);
+  }
+
+  /**
+   * Filters Nextflow stdout/stderr output with optional sorting.
+   *
+   * @param output The stdout or stderr output (String or List) to filter
+   * @param sorted Whether to sort the output lines alphabetically
+   * @return The filtered output as a List<String> with unstable patterns removed
+   */
+  public static List<String> filterNextflowOutput(Object output, boolean sorted) {
+    return filterNextflowOutput(output, null, sorted, false, null, null);
+  }
+
+  /**
+   * Filters Nextflow stdout/stderr output with optional sorting and ANSI code
+   * handling.
+   *
+   * @param output   The stdout or stderr output (String or List) to filter
+   * @param sorted   Whether to sort the output lines alphabetically
+   * @param keepAnsi Whether to keep ANSI escape codes (colors, formatting)
+   * @return The filtered output as a List<String> with unstable patterns removed
+   */
+  public static List<String> filterNextflowOutput(Object output, boolean sorted, boolean keepAnsi) {
+    return filterNextflowOutput(output, null, sorted, keepAnsi, null, null);
+  }
+
+  /**
+   * Filters Nextflow stdout/stderr output with custom patterns, optional
+   * sorting, and ANSI code handling.
+   *
+   * @param output             The stdout or stderr output (String or List) to
+   *                           filter
+   * @param additionalPatterns List of additional regex patterns to remove from
+   *                           the output
+   * @param sorted             Whether to sort the output lines alphabetically
+   * @param keepAnsi           Whether to keep ANSI escape codes (colors,
+   *                           formatting)
+   * @param ignore             List of strings to filter out from the output
+   *                           (lines containing any of these strings will be
+   *                           removed)
+   * @param include            List of strings to include in the output (only
+   *                           lines containing at least one of these strings
+   *                           will be kept). If null or empty, all lines are
+   *                           considered for inclusion.
+   * @return The filtered output as a List<String> with unstable patterns removed
+   */
+  public static List<String> filterNextflowOutput(Object output, List<String> additionalPatterns, boolean sorted,
+      boolean keepAnsi, List<String> ignore, List<String> include) {
+    if (output == null) {
+      return new ArrayList<>();
+    }
+
+    List<String> outputLines;
+    if (output instanceof List) {
+      // Handle workflow.stdout and workflow.stderr which are Lists
+      List<?> outputList = (List<?>) output;
+      if (outputList.isEmpty()) {
+        return new ArrayList<>();
+      }
+      outputLines = outputList.stream()
+          .map(Object::toString)
+          .collect(Collectors.toList());
+    } else if (output instanceof String) {
+      String outputString = (String) output;
+      if (outputString.isEmpty()) {
+        return new ArrayList<>();
+      }
+      // Split string into lines
+      outputLines = Arrays.asList(outputString.split("\n"));
+    } else {
+      // Convert any other type to string and split into lines
+      String outputString = output.toString();
+      outputLines = Arrays.asList(outputString.split("\n"));
+    }
+
+    // Filter each line
+    List<String> filteredLines = new ArrayList<>();
+    String capturedRunName = null;
+
+    for (String line : outputLines) {
+      String filtered = line;
+
+      // Filter out lines containing any of the ignore strings
+      if (ignore != null && !ignore.isEmpty()) {
+        boolean shouldIgnore = false;
+        for (String ignoreString : ignore) {
+          if (filtered.contains(ignoreString)) {
+            shouldIgnore = true;
+            break;
+          }
+        }
+        if (shouldIgnore) {
+          continue; // Skip this line
+        }
+      }
+
+      // Filter to include only lines containing any of the include strings
+      if (include != null && !include.isEmpty()) {
+        boolean shouldInclude = false;
+        for (String includeString : include) {
+          if (filtered.contains(includeString)) {
+            shouldInclude = true;
+            break;
+          }
+        }
+        if (!shouldInclude) {
+          continue; // Skip this line
+        }
+      }
+
+      // Strip ANSI escape codes unless keepAnsi is true (colors, formatting, etc.)
+      if (!keepAnsi) {
+        filtered = filtered.replaceAll("\\x1B\\[[0-9;]*[A-Za-z]", "");
+      }
+
+      // Capture run name from launching line
+      if (capturedRunName == null && filtered.contains("Launching") && filtered.contains("[")
+          && filtered.contains("]")) {
+        java.util.regex.Pattern runNamePattern = java.util.regex.Pattern.compile("\\[([^\\]]+)\\]");
+        java.util.regex.Matcher matcher = runNamePattern.matcher(filtered);
+        if (matcher.find()) {
+          capturedRunName = matcher.group(1);
+        }
+      }
+
+      // Replace username value in patterns like "userName : max"
+      String userName = System.getenv("USER");
+      if (userName != null && !userName.isEmpty()) {
+        filtered = filtered.replaceAll("(userName\\s*:\\s*)" + java.util.regex.Pattern.quote(userName), "$1[USER]");
+      }
+
+      // Remove timestamp patterns
+
+      // ISO 8601 related formats:
+      // YYY-MM-DDTHH:mm:ss
+      // YYY-MM-DD HH:mm:ss
+      // YYY-MM-DD_HH-mm-ss
+      filtered = filtered.replaceAll(
+          "\\d{4}-\\d{2}-\\d{2}[T\\s_]\\d{2}[:-]\\d{2}[:-]\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?",
+          "[TIMESTAMP]");
+      // US date format: MM/DD/YYY HH:mm:ss
+      filtered = filtered.replaceAll("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]");
+
+      // Remove Nextflow process execution hashes (format: [xx/yyyyyy])
+      filtered = filtered.replaceAll("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]");
+
+      // Remove NFT_HASH work dir (format: [xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx])
+      filtered = filtered.replaceAll("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]");
+
+      // Remove revision hashes (format: revision: abc1234)
+      filtered = filtered.replaceAll("revision: [0-9a-f]{10}", "revision: [REVISION]");
+
+      // Remove Nextflow version update notifications
+      filtered = filtered.replaceAll(".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*", "");
+      filtered = filtered.replaceAll(".*Please consider updating your version.*", "");
+
+      // Replace absolute paths with [PATH] placeholder using a more general approach
+      filtered = filterAbsolutePaths(filtered);
+
+      // Remove run name using captured run name from launching line
+      if (capturedRunName != null) {
+        // Replace bracketed run name: [run_name]
+        filtered = filtered.replace("[" + capturedRunName + "]", "[RUN_NAME]");
+        // Replace unbracketed run name: run_name
+        filtered = filtered.replace(capturedRunName, "[RUN_NAME]");
+      }
+
+      // Remove containerEngine messages
+      // as it's docker and singularity specific, but not conda
+      filtered = filtered.replaceAll(".*containerEngine.*", "");
+
+      // Replace common reproducibility solutions (ie virtualenv or containerisation)
+      // by [CONTAINER] - All of theses are profiles in nf-core TEMPLATE
+      // I know that none all of these are actually containers, but it's a good quick
+      // approximation
+      filtered = filtered.replaceAll("apptainer", "[CONTAINER]");
+      filtered = filtered.replaceAll("charliecloud", "[CONTAINER]");
+      filtered = filtered.replaceAll("conda", "[CONTAINER]");
+      filtered = filtered.replaceAll("docker", "[CONTAINER]");
+      filtered = filtered.replaceAll("mamba", "[CONTAINER]");
+      filtered = filtered.replaceAll("podman", "[CONTAINER]");
+      filtered = filtered.replaceAll("shifter", "[CONTAINER]");
+      filtered = filtered.replaceAll("singularity", "[CONTAINER]");
+      filtered = filtered.replaceAll("wave", "[CONTAINER]");
+
+      // Replace nf-core pipeline versions (e.g., "nf-core/xxx yyyy")
+      filtered = filtered.replaceAll("(nf-core/[^\\s]+\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*", "$1[VERSION]");
+
+      // Replace NEXTFLOW versions
+      filtered = filtered.replaceAll("N E X T F L O W  ~  version \\d+\\.\\d+\\.\\d+",
+          "N E X T F L O W  ~  version [VERSION]");
+
+      // Only add non-empty lines (filter out empty lines)
+      if (!filtered.trim().isEmpty()) {
+        filteredLines.add(filtered);
+      }
+    }
+
+    // Sort and remove duplicates if requested
+    if (sorted) {
+      // Separate lines that should be sorted from those that should preserve order
+      List<String> sortableLines = new ArrayList<>();
+      List<String> preserveOrderLines = new ArrayList<>();
+
+      for (String line : filteredLines) {
+        if (line.contains("Staging foreign file") ||
+            line.contains("Submitted process") ||
+            line.startsWith("Creating env using conda:") ||
+            line.startsWith("Pulling Singularity image") ||
+            line.startsWith("ERROR ~") ||
+            line.startsWith("WARN:") ||
+            (line.contains("Check ") && line.contains(" file for details"))) {
+          sortableLines.add(line);
+        } else {
+          preserveOrderLines.add(line);
+        }
+      }
+
+      // Sort only the sortable lines
+      Collections.sort(sortableLines);
+
+      // Combine lists: preserve-order lines first, then sorted lines
+      List<String> combinedLines = new ArrayList<>();
+      combinedLines.addAll(preserveOrderLines);
+      combinedLines.addAll(sortableLines);
+
+      // Remove duplicates while preserving the new order
+      List<String> uniqueLines = new ArrayList<>();
+      String lastLine = null;
+      for (String line : combinedLines) {
+        if (!line.equals(lastLine)) {
+          uniqueLines.add(line);
+          lastLine = line;
+        }
+      }
+      filteredLines = uniqueLines;
+    }
+
+    return filteredLines;
+  }
+
+  /**
+   * Filters Nextflow stdout/stderr output with custom patterns.
+   * This overloaded method allows specifying additional patterns to filter.
+   *
+   * @param output             The stdout or stderr output (String or List) to
+   *                           filter
+   * @param additionalPatterns List of additional regex patterns to remove from
+   *                           the output
+   * @return The filtered output as a List<String> with unstable patterns removed
+   */
+  public static List<String> filterNextflowOutput(Object output, List<String> additionalPatterns) {
+    return filterNextflowOutput(output, additionalPatterns, true, false, null, null);
+  }
+
+  /**
+   * Filters Nextflow stdout/stderr output using Groovy's named parameter syntax.
+   * This allows calling: filterNextflowOutput(output, sorted: false, keepAnsi:
+   * true, ignore: ["Staging foreign file"], include: ["ERROR", "WARN"])
+   *
+   * @param output  The stdout or stderr output (String or List) to filter
+   * @param options Map containing filtering options (automatically created by
+   *                Groovy named params):
+   *                - additionalPatterns: List<String> of additional regex
+   *                patterns (optional)
+   *                - sorted: Boolean whether to sort the output (default: true)
+   *                - keepAnsi: Boolean whether to keep ANSI codes (default:
+   *                false)
+   *                - ignore: List<String> of strings to filter out (lines
+   *                containing any of these strings will be removed) (optional)
+   *                - include: List<String> of strings to include (only lines
+   *                containing at least one of these strings will be kept)
+   *                (optional)
+   * @return The filtered output as a List<String> with unstable patterns removed
+   */
+
+  // Handle Groovy named parameters: filterNextflowOutput(output, keepAnsi:
+  // true)
+  // Groovy converts this to: filterNextflowOutput([keepAnsi: true], output)
+  public static List<String> filterNextflowOutput(LinkedHashMap<String, Object> options, Object output) {
+    if (options == null) {
+      options = new LinkedHashMap<>();
+    }
+
+    // Extract options with defaults
+    List<String> additionalPatterns = (List<String>) options.get("additionalPatterns");
+    Boolean sorted = (Boolean) options.get("sorted");
+    Boolean keepAnsi = (Boolean) options.get("keepAnsi");
+    List<String> ignore = (List<String>) options.get("ignore");
+    List<String> include = (List<String>) options.get("include");
+
+    // Apply defaults
+    if (sorted == null)
+      sorted = true;
+    if (keepAnsi == null)
+      keepAnsi = false;
+
+    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi, ignore, include);
+  }
+
+  public static List<String> filterNextflowOutput(Object output, Map<String, Object> options) {
+    if (options == null) {
+      options = new HashMap<>();
+    }
+
+    // Extract options with defaults
+    List<String> additionalPatterns = (List<String>) options.get("additionalPatterns");
+    Boolean sorted = (Boolean) options.get("sorted");
+    Boolean keepAnsi = (Boolean) options.get("keepAnsi");
+    List<String> ignore = (List<String>) options.get("ignore");
+    List<String> include = (List<String>) options.get("include");
+
+    // Apply defaults
+    if (sorted == null)
+      sorted = true;
+    if (keepAnsi == null)
+      keepAnsi = false;
+
+    return filterNextflowOutput(output, additionalPatterns, sorted, keepAnsi, ignore, include);
+  }
+
+  /**
+   * Filters absolute paths in the given text and replaces them with [PATH]
+   * placeholder.
+   *
+   * @param text The text to filter
+   * @return The filtered text with various directory paths replaced with [PATH]
+   */
+  private static String filterAbsolutePaths(String text) {
+    String filtered = text;
+
+    // Collect all paths to replace, then sort by length (longest first)
+    // This ensures more specific paths are replaced before their parent paths
+    List<String> pathsToReplace = new ArrayList<>();
+
+    // Get the current working directory
+    String workingDir = System.getProperty("user.dir");
+    if (workingDir != null) {
+      pathsToReplace.add(workingDir);
+    }
+
+    // Check for various environment variables
+    String[] envVars = {
+        "HOME",
+        "NFT_WORKDIR",
+        "NXF_CACHE_DIR",
+        "NXF_CONDA_CACHEDIR",
+        "NXF_HOME",
+        "NXF_SINGULARITY_CACHEDIR",
+        "NXF_SINGULARITY_LIBRARYDIR",
+        "NXF_TEMP",
+        "NXF_WORK"
+    };
+
+    for (String envVar : envVars) {
+      String envValue = System.getenv(envVar);
+      if (envValue != null && !envValue.isEmpty() && !envValue.equals("~")) {
+        pathsToReplace.add(envValue);
+      }
+    }
+
+    // Handle default NXF_HOME case: if NXF_HOME is null, Nextflow uses
+    // $HOME/.nextflow
+    String nxfHome = System.getenv("NXF_HOME");
+    if (nxfHome == null || nxfHome.isEmpty()) {
+      String home = System.getenv("HOME");
+      if (home != null && !home.isEmpty() && !home.equals("~")) {
+        pathsToReplace.add(home + "/.nextflow");
+      }
+    }
+
+    // Remove duplicates and sort paths by length to avoid partial replacements
+    pathsToReplace = pathsToReplace.stream()
+        .distinct()
+        .sorted((a, b) -> Integer.compare(b.length(), a.length()))
+        .collect(java.util.stream.Collectors.toList());
+
+    // Replace all paths with [PATH] in order of longest first
+    for (String path : pathsToReplace) {
+      filtered = filtered.replace(path, "[PATH]");
+    }
+
+    return filtered;
   }
 }

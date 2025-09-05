@@ -1,0 +1,104 @@
+nextflow_pipeline {
+
+    name "Test filterNextflowOutput"
+    script "./main.nf"
+    tag "filterNextflowOutput"
+
+    test("Capture stdout, stderr and both when failure") {
+
+        tag 'both'
+        tag 'failure'
+        tag 'stderr'
+        tag 'stdout'
+
+        when {
+            params {
+                failure = true
+            }
+        }
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout)
+            def filtered_stderr = filterNextflowOutput(workflow.stderr)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.failed
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout),
+                filterNextflowOutput(workflow.stderr, include: ["System error message"])?:"no stderr",
+                filterNextflowOutput(workflow.stdout + workflow.stderr)
+              ).match()
+        }
+    }
+
+
+    test("Capture both stdout and stderr and keep ANSI codes") {
+
+        tag 'ansi'
+        tag 'both'
+        tag 'stderr'
+        tag 'stdout'
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout, keepAnsi: true)
+            def filtered_stderr = filterNextflowOutput(workflow.stderr, keepAnsi: true)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.success
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout, keepAnsi: true, ignore: ["Submitted process"]),
+                filterNextflowOutput(workflow.stderr, keepAnsi: true)?:"no stderr",
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+            ).match()
+        }
+    }
+
+    test("Do not sort") {
+
+        tag 'sorted'
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout, sorted: false)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            assert workflow.success
+        }
+    }
+}
