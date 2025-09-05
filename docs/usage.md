@@ -363,8 +363,8 @@ will be consistently ordered as
 
 ```bash
 [PROCESS_HASH] Submitted process > FASTQC (sample_1)
-[PROCESS_HASH] Submitted process > FASTQC (sample_3)
 [PROCESS_HASH] Submitted process > FASTQC (sample_2)
+[PROCESS_HASH] Submitted process > FASTQC (sample_3)
 ```
 
 ANSI escape codes (colors, formatting) are stripped by default to ensure clean, consistent snapshots.
