@@ -327,6 +327,12 @@ def filtered_both = filterNextflowOutput(workflow.stdout + workflow.stderr)
 
 // Control ANSI escape code stripping (enabled by default)
 def filtered_with_ansi_stripped = filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+
+// Ignore lines containing specific strings
+def filtered_with_ignore = filterNextflowOutput(workflow.stdout, ignore: ["Submitted process"])
+
+// Include lines containing specific strings
+def filtered_with_include = filterNextflowOutput(workflow.stdout, include: ["Submitted process"])
 ```
 
 These lines are sorted alphabetically, once censored:
