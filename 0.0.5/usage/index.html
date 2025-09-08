@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
     
     
       
@@ -431,6 +431,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#filternextflowoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      filterNextflowOutput()
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -622,6 +631,15 @@
   <a href="#listtomd5" class="md-nav__link">
     <span class="md-ellipsis">
       listToMD5()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filternextflowoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      filterNextflowOutput()
     </span>
   </a>
   
@@ -928,97 +946,179 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 <h3 id="listtomd5"><code>listToMD5()</code></h3>
 <p>This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.</p>
 <p>A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.</p>
+<h3 id="filternextflowoutput"><code>filterNextflowOutput()</code></h3>
+<p>This function filters Nextflow stdout/stderr output to remove variable content that makes snapshots unstable.
+It censor common patterns like timestamps, run names, runtime-specific information to make test snapshots reproducible.
+It also removes other common patterns like Nextflow message to update for a new version or empty lines to make test snapshots reproducible.</p>
+<p>The function can be called with multiple parameters:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1">// Basic usage - works directly with workflow.stdout and workflow.stderr, or even both</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">)</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_both</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="c1">// Control ANSI escape code stripping (enabled by default)</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_ansi_stripped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">,</span><span class="w"> </span><span class="nl">keepAnsi:</span><span class="w"> </span><span class="kc">true</span><span class="o">)</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="c1">// Ignore lines containing specific strings</span>
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;Submitted process&quot;</span><span class="o">])</span>
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>
+</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="c1">// Include lines containing specific strings</span>
+</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;Submitted process&quot;</span><span class="o">])</span>
+</span></code></pre></div>
+<p>These lines are sorted alphabetically, once censored:</p>
+<ul>
+<li><code>Staging foreign file</code> messages (file staging operations)</li>
+<li><code>Submitted process</code> messages (process submissions)</li>
+<li><code>Check * file for details</code> messages (error/log references)</li>
+<li><code>WARN:</code> messages (warning logs)</li>
+<li><code>ERROR:</code> messages (error logs)</li>
+</ul>
+<p>This behaviour can be disabled by setting <code>sorted: false</code>, which is not recommended as it will cause the snapshot to fail.</p>
+<p>Other lines are kept in their original order.</p>
+<ul>
+<li>Other log messages (INFO, etc.)</li>
+<li>Execution output and results</li>
+<li>All other content</li>
+</ul>
+<p>For example, process submissions like</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="o">[</span><span class="m">57</span>/0d391c<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="o">[</span>6f/3be732<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="o">[</span>6d/0082ab<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
+</span></code></pre></div>
+<p>will be consistently ordered as</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="o">[</span>PROCESS_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="o">[</span>PROCESS_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="o">[</span>PROCESS_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
+</span></code></pre></div>
+<p>ANSI escape codes (colors, formatting) are stripped by default to ensure clean, consistent snapshots.
+This prevents color codes from appearing as garbled text like <code>\u001B[32mtext\u001B[0m</code> or being misinterpreted by other filtering patterns.
+You can disable this by setting <code>keepAnsi: true</code> if you need to preserve formatting codes.</p>
+<p>Common patterns that are automatically filtered include:</p>
+<ul>
+<li>Empty lines</li>
+<li>Blank lines and whitespace-only lines are removed entirely</li>
+<li>Timestamps</li>
+<li>Various formats (ISO 8601, log timestamps, etc.) are replaced with <code>[TIMESTAMP]</code></li>
+<li>Process hashes</li>
+<li>Nextflow process hashes are replaced with <code>[PROCESS_HASH]</code></li>
+<li>File paths</li>
+<li>Absolute paths to scripts and logs are replaced with <code>[PATH]</code></li>
+<li>The common ENV variables are checked if available and replaced with <code>[PATH]</code><ul>
+<li><code>HOME</code>, <code>NFT_WORKDIR</code>, <code>NXF_CACHE_DIR</code>, <code>NXF_CONDA_CACHEDIR</code>, <code>NXF_HOME</code>, <code>NXF_SINGULARITY_CACHEDIR</code>, <code>NXF_SINGULARITY_LIBRARYDIR</code>, <code>NXF_TEMP</code>, <code>NXF_WORK</code></li>
+</ul>
+</li>
+<li>Version information</li>
+<li>"Nextflow X.Y.Z is available" messages are removed</li>
+<li>"N E X T F L O W ~ version 24.04.5" is replaced with "N E X T F L O W ~ version [VERSION]"</li>
+<li>"nf-core/pipeline 1.2.3" is replaced with "nf-core/pipeline [VERSION]"</li>
+</ul>
+<p>Example usage in a test:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">&quot;my_pipeline_test&quot;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">        </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">            </span><span class="n">outdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;$outputDir&quot;</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">        </span><span class="o">}</span>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="w">        </span><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="w">        </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="w">            </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="w">        </span><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a><span class="o">}</span>
+</span></code></pre></div>
 <h2 id="dependency-management">Dependency management</h2>
 <p>The plugin also adds the following functions to manage dependences of tests on nf-core components, in situations where they may not otherwise be available (for example, writing tests for cross-organisational subworkflows in non-nf-core repositories).</p>
 <h3 id="nfcoreinitialise-set-up-a-temporary-nf-core-library"><code>nfcoreInitialise()</code> - set up a temporary nf-core library</h3>
 <p>In a setup block, use the <code>nfcoreInitialise()</code> function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is recommended to use a location inside <code>launchDir</code> as this will initialise a test-specific library.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="nfcoreinstall-install-modules-to-a-temporary-library"><code>nfcoreInstall()</code> - Install modules to a temporary library</h3>
 <p>Use the <code>nfcoreInstall()</code> function to install nf-core modules in a temporary library. This function takes the path to the library and either a list of strings, each with an nf-core module name in <code>tool/subtool</code> format, or a list of maps, with the keys <code>name</code>, <code>sha</code>, and <code>remote</code> (both <code>sha</code> and <code>remote</code> are optional).</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">])</span>
-</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span>
-</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">      </span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span>
-</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">        </span><span class="o">[</span>
-</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">          </span><span class="o">[</span>
-</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">,</span>
-</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">&quot;5850432aab24a1924389b660adfee3809d3e60a9&quot;</span>
-</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="w">          </span><span class="o">],</span>
-</span><span id="__span-26-11"><a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="w">          </span><span class="o">[</span>
-</span><span id="__span-26-12"><a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">&quot;fastqc&quot;</span><span class="o">,</span>
-</span><span id="__span-26-13"><a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">&quot;https://github.com/nf-core-test/modules.git&quot;</span>
-</span><span id="__span-26-14"><a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="w">          </span><span class="o">],</span>
-</span><span id="__span-26-15"><a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="w">          </span><span class="o">[</span>
-</span><span id="__span-26-16"><a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">&quot;prokka&quot;</span><span class="o">,</span>
-</span><span id="__span-26-17"><a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">&quot;9627f4367b11527194ef14473019d0e1a181b741&quot;</span>
-</span><span id="__span-26-18"><a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">&quot;https://github.com/nf-core-test/modules.git&quot;</span>
-</span><span id="__span-26-19"><a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="w">          </span><span class="o">],</span>
-</span><span id="__span-26-20"><a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a><span class="w">        </span><span class="o">]</span>
-</span><span id="__span-26-21"><a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="w">    </span><span class="o">)</span>
-</span><span id="__span-26-22"><a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">])</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">      </span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="w">        </span><span class="o">[</span>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="w">          </span><span class="o">[</span>
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">,</span>
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">&quot;5850432aab24a1924389b660adfee3809d3e60a9&quot;</span>
+</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="w">          </span><span class="o">],</span>
+</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a><span class="w">          </span><span class="o">[</span>
+</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">&quot;fastqc&quot;</span><span class="o">,</span>
+</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">&quot;https://github.com/nf-core-test/modules.git&quot;</span>
+</span><span id="__span-30-14"><a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a><span class="w">          </span><span class="o">],</span>
+</span><span id="__span-30-15"><a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a><span class="w">          </span><span class="o">[</span>
+</span><span id="__span-30-16"><a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">&quot;prokka&quot;</span><span class="o">,</span>
+</span><span id="__span-30-17"><a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">&quot;9627f4367b11527194ef14473019d0e1a181b741&quot;</span>
+</span><span id="__span-30-18"><a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">&quot;https://github.com/nf-core-test/modules.git&quot;</span>
+</span><span id="__span-30-19"><a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a><span class="w">          </span><span class="o">],</span>
+</span><span id="__span-30-20"><a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a><span class="w">        </span><span class="o">]</span>
+</span><span id="__span-30-21"><a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a><span class="w">    </span><span class="o">)</span>
+</span><span id="__span-30-22"><a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="nfcorelink-link-a-temporary-library-to-your-modules-directory"><code>nfcoreLink()</code> - Link a temporary library to your modules directory</h3>
 <p>Use the <code>nfcoreLink()</code> function to link a library to your module library. This function takes two arguments, the path to a temporary library, and the location where the modules in the library should be temporarily linked (e.g. <code>${baseDir}/modules/nf-core</code>):</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
-</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">])</span>
-</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/&quot;</span><span class="o">)</span>
-</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">])</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/&quot;</span><span class="o">)</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="o">}</span>
 </span></code></pre></div>
 <p>This creates a symlink to the modules directory of your temporary library at <code>${baseDir}/modules/nf-core</code>. Using this location, you can refer to the nf-core modules as if they were installed as normal in your tests.</p>
 <h3 id="nfcoreunlink-unlink-a-temporary-library-from-your-modules-directory"><code>nfcoreUnlink()</code> - Unlink a temporary library from your modules directory</h3>
 <p>To unlink a temporary library after the test has completed, use the <code>nfcoreUnlink()</code> function. It takes the same arguments as <code>nfcoreLink()</code>, and recursively removes all symlinks pointing to the temporary library.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
-</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">])</span>
-</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/&quot;</span><span class="o">)</span>
-</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>
-</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span><span class="n">run</span><span class="o">(</span><span class="s2">&quot;MINIMAP2_INDEX&quot;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">        </span><span class="n">script</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/nf-core/minimap2/index/main.nf</span>
-</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="s2">        ...</span>
-</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="s2">    }</span>
-</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="s2">}</span>
-</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>
-</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="s2">when {</span>
-</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="s2">    ...</span>
-</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a><span class="s2">}</span>
-</span><span id="__span-28-15"><a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a>
-</span><span id="__span-28-16"><a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a><span class="s2">then {</span>
-</span><span id="__span-28-17"><a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a><span class="s2">    ...</span>
-</span><span id="__span-28-18"><a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a><span class="s2">}</span>
-</span><span id="__span-28-19"><a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a>
-</span><span id="__span-28-20"><a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a><span class="s2">cleanup {</span>
-</span><span id="__span-28-21"><a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a><span class="s2">  nfcoreUnlink(&quot;</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}</span><span class="s">/library&quot;, &quot;${baseDir}/</span><span class="n">modules</span><span class="o">/</span><span class="err">&quot;</span><span class="o">)</span>
-</span><span id="__span-28-22"><a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">])</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/&quot;</span><span class="o">)</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="w">    </span><span class="n">run</span><span class="o">(</span><span class="s2">&quot;MINIMAP2_INDEX&quot;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="w">        </span><span class="n">script</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/nf-core/minimap2/index/main.nf</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="s2">        ...</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="s2">    }</span>
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="s2">}</span>
+</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>
+</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="s2">when {</span>
+</span><span id="__span-32-13"><a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a><span class="s2">    ...</span>
+</span><span id="__span-32-14"><a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a><span class="s2">}</span>
+</span><span id="__span-32-15"><a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a>
+</span><span id="__span-32-16"><a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a><span class="s2">then {</span>
+</span><span id="__span-32-17"><a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a><span class="s2">    ...</span>
+</span><span id="__span-32-18"><a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a><span class="s2">}</span>
+</span><span id="__span-32-19"><a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>
+</span><span id="__span-32-20"><a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a><span class="s2">cleanup {</span>
+</span><span id="__span-32-21"><a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a><span class="s2">  nfcoreUnlink(&quot;</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}</span><span class="s">/library&quot;, &quot;${baseDir}/</span><span class="n">modules</span><span class="o">/</span><span class="err">&quot;</span><span class="o">)</span>
+</span><span id="__span-32-22"><a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="nfcoredeletelibrary-completely-delete-a-temporary-library"><code>nfcoreDeleteLibrary()</code> - Completely delete a temporary library</h3>
 <p>You can use the <code>nfcoreDeleteLibrary()</code> function to completely remove the temporary library, if desired.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
-</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">])</span>
-</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/&quot;</span><span class="o">)</span>
-</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
-</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">    </span><span class="n">run</span><span class="o">(</span><span class="s2">&quot;MINIMAP2_INDEX&quot;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">        </span><span class="n">script</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/nf-core/minimap2/index/main.nf</span>
-</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="s2">        ...</span>
-</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="s2">    }</span>
-</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="s2">}</span>
-</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>
-</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="s2">when {</span>
-</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a><span class="s2">    ...</span>
-</span><span id="__span-29-14"><a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a><span class="s2">}</span>
-</span><span id="__span-29-15"><a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a>
-</span><span id="__span-29-16"><a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a><span class="s2">then {</span>
-</span><span id="__span-29-17"><a id="__codelineno-29-17" name="__codelineno-29-17" href="#__codelineno-29-17"></a><span class="s2">    ...</span>
-</span><span id="__span-29-18"><a id="__codelineno-29-18" name="__codelineno-29-18" href="#__codelineno-29-18"></a><span class="s2">}</span>
-</span><span id="__span-29-19"><a id="__codelineno-29-19" name="__codelineno-29-19" href="#__codelineno-29-19"></a>
-</span><span id="__span-29-20"><a id="__codelineno-29-20" name="__codelineno-29-20" href="#__codelineno-29-20"></a><span class="s2">cleanup {</span>
-</span><span id="__span-29-21"><a id="__codelineno-29-21" name="__codelineno-29-21" href="#__codelineno-29-21"></a><span class="s2">    nfcoreDeleteLibrary(&quot;</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}/</span><span class="n">library</span><span class="err">&quot;</span><span class="o">)</span>
-</span><span id="__span-29-22"><a id="__codelineno-29-22" name="__codelineno-29-22" href="#__codelineno-29-22"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">)</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">&quot;minimap2/index&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;minimap2/align&quot;</span><span class="o">])</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">&quot;${launchDir}/library&quot;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/&quot;</span><span class="o">)</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="w">    </span><span class="n">run</span><span class="o">(</span><span class="s2">&quot;MINIMAP2_INDEX&quot;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="w">        </span><span class="n">script</span><span class="w"> </span><span class="s2">&quot;${baseDir}/modules/nf-core/minimap2/index/main.nf</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="s2">        ...</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="s2">    }</span>
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a><span class="s2">}</span>
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>
+</span><span id="__span-33-12"><a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a><span class="s2">when {</span>
+</span><span id="__span-33-13"><a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a><span class="s2">    ...</span>
+</span><span id="__span-33-14"><a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a><span class="s2">}</span>
+</span><span id="__span-33-15"><a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>
+</span><span id="__span-33-16"><a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a><span class="s2">then {</span>
+</span><span id="__span-33-17"><a id="__codelineno-33-17" name="__codelineno-33-17" href="#__codelineno-33-17"></a><span class="s2">    ...</span>
+</span><span id="__span-33-18"><a id="__codelineno-33-18" name="__codelineno-33-18" href="#__codelineno-33-18"></a><span class="s2">}</span>
+</span><span id="__span-33-19"><a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a>
+</span><span id="__span-33-20"><a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a><span class="s2">cleanup {</span>
+</span><span id="__span-33-21"><a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a><span class="s2">    nfcoreDeleteLibrary(&quot;</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}/</span><span class="n">library</span><span class="err">&quot;</span><span class="o">)</span>
+</span><span id="__span-33-22"><a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a><span class="o">}</span>
 </span></code></pre></div>
 
 
