@@ -4,7 +4,7 @@
   <groupId>com.nf-core</groupId>
   <artifactId>nft-utils</artifactId>
   <name>nft-utils</name>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
   <description>nf-test plugin that adds commonly used utility functions</description>
   <url>https://github.com/nf-core/nft-utils</url>
   <licenses>
