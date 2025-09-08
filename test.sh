@@ -1,2 +1,7 @@
 #!/bin/bash
-nf-test test --debug --verbose tests/**/*.nf.test --plugins target/nft-utils-*.jar "${@}"
+
+if [ $# -eq 0 ] || [[ ! "$*" == *"tests/"* ]]; then
+    nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
+else
+    nf-test test --plugins target/nft-utils-*.jar --verbose --debug ${@}
+fi

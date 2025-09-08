@@ -311,6 +311,102 @@ This function takes a list of values as input and converts the sequence to a MD5
 
 A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.
 
+### `filterNextflowOutput()`
+
+This function filters Nextflow stdout/stderr output to remove variable content that makes snapshots unstable.
+It censor common patterns like timestamps, run names, runtime-specific information to make test snapshots reproducible.
+It also removes other common patterns like Nextflow message to update for a new version or empty lines to make test snapshots reproducible.
+
+The function can be called with multiple parameters:
+
+```groovy
+// Basic usage - works directly with workflow.stdout and workflow.stderr, or even both
+def filtered_stdout = filterNextflowOutput(workflow.stdout)
+def filtered_stderr = filterNextflowOutput(workflow.stderr)
+def filtered_both = filterNextflowOutput(workflow.stdout + workflow.stderr)
+
+// Control ANSI escape code stripping (enabled by default)
+def filtered_with_ansi_stripped = filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+
+// Ignore lines containing specific strings
+def filtered_with_ignore = filterNextflowOutput(workflow.stdout, ignore: ["Submitted process"])
+
+// Include lines containing specific strings
+def filtered_with_include = filterNextflowOutput(workflow.stdout, include: ["Submitted process"])
+```
+
+These lines are sorted alphabetically, once censored:
+
+- `Staging foreign file` messages (file staging operations)
+- `Submitted process` messages (process submissions)
+- `Check * file for details` messages (error/log references)
+- `WARN:` messages (warning logs)
+- `ERROR:` messages (error logs)
+
+This behaviour can be disabled by setting `sorted: false`, which is not recommended as it will cause the snapshot to fail.
+
+Other lines are kept in their original order.
+
+- Other log messages (INFO, etc.)
+- Execution output and results
+- All other content
+
+For example, process submissions like
+
+```bash
+[57/0d391c] Submitted process > FASTQC (sample_2)
+[6f/3be732] Submitted process > FASTQC (sample_1)
+[6d/0082ab] Submitted process > FASTQC (sample_3)
+```
+
+will be consistently ordered as
+
+```bash
+[PROCESS_HASH] Submitted process > FASTQC (sample_1)
+[PROCESS_HASH] Submitted process > FASTQC (sample_2)
+[PROCESS_HASH] Submitted process > FASTQC (sample_3)
+```
+
+ANSI escape codes (colors, formatting) are stripped by default to ensure clean, consistent snapshots.
+This prevents color codes from appearing as garbled text like `\u001B[32mtext\u001B[0m` or being misinterpreted by other filtering patterns.
+You can disable this by setting `keepAnsi: true` if you need to preserve formatting codes.
+
+Common patterns that are automatically filtered include:
+
+- Empty lines
+  - Blank lines and whitespace-only lines are removed entirely
+- Timestamps
+  - Various formats (ISO 8601, log timestamps, etc.) are replaced with `[TIMESTAMP]`
+- Process hashes
+  - Nextflow process hashes are replaced with `[PROCESS_HASH]`
+- File paths
+  - Absolute paths to scripts and logs are replaced with `[PATH]`
+  - The common ENV variables are checked if available and replaced with `[PATH]`
+    - `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
+- Version information
+  - "Nextflow X.Y.Z is available" messages are removed
+  - "N E X T F L O W ~ version 24.04.5" is replaced with "N E X T F L O W ~ version [VERSION]"
+  - "nf-core/pipeline 1.2.3" is replaced with "nf-core/pipeline [VERSION]"
+
+Example usage in a test:
+
+```groovy
+test("my_pipeline_test") {
+
+    when {
+        params {
+            outdir = "$outputDir"
+        }
+    }
+
+        then {
+        assert snapshot(
+            filterNextflowOutput(workflow.stdout + workflow.stderr)
+        ).match()
+    }
+}
+```
+
 ## Dependency management
 
 The plugin also adds the following functions to manage dependences of tests on nf-core components, in situations where they may not otherwise be available (for example, writing tests for cross-organisational subworkflows in non-nf-core repositories).
