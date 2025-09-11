@@ -1,0 +1,23 @@
+nextflow_process {
+
+    name "Test sanitizeOutput"
+    script "./modules/local/test/main.nf"
+    process "TEST"
+    tag "sanitizeOutput"
+
+    test("Default sanitize output") {
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+
+
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
+        }
+    }
+}
