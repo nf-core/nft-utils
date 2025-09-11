@@ -536,7 +536,9 @@ then {
 The function also supports options to control its behaviour:
 
 - `unstableKeys`: A list of keys to treat as unstable and only snapshot the file name (and not the md5sum). This is useful for output entries that contain files with unstable content.
+
 ```groovy
 then {
   assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
 }
+```

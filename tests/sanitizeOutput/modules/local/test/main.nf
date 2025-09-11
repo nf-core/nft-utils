@@ -3,14 +3,13 @@ process TEST {
     label 'process_single'
 
     input:
-    val(meta)
+    val meta
 
     output:
     tuple val(meta), path("*.html"), emit: html
     tuple val(meta), path("*.zip"), emit: zip
-    path("*.zip"), emit: zip_only
-    val(meta.id), emit: id
-
+    path ("*.zip"), emit: zip_only
+    val meta.id, emit: id
 
     script:
     """
