@@ -500,6 +500,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#sanitizeoutput-sanitize-process-output-to-create-clean-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      sanitizeOutput() - Sanitize process output to create clean snapshots
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -700,6 +709,15 @@
   <a href="#nfcoredeletelibrary-completely-delete-a-temporary-library" class="md-nav__link">
     <span class="md-ellipsis">
       nfcoreDeleteLibrary() - Completely delete a temporary library
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sanitizeoutput-sanitize-process-output-to-create-clean-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      sanitizeOutput() - Sanitize process output to create clean snapshots
     </span>
   </a>
   
@@ -1119,6 +1137,20 @@ You can disable this by setting <code>keepAnsi: true</code> if you need to prese
 </span><span id="__span-33-20"><a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a><span class="s2">cleanup {</span>
 </span><span id="__span-33-21"><a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a><span class="s2">    nfcoreDeleteLibrary(&quot;</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}/</span><span class="n">library</span><span class="err">&quot;</span><span class="o">)</span>
 </span><span id="__span-33-22"><a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a><span class="o">}</span>
+</span></code></pre></div>
+<h3 id="sanitizeoutput-sanitize-process-output-to-create-clean-snapshots"><code>sanitizeOutput()</code> - Sanitize process output to create clean snapshots</h3>
+<p>The <code>sanitizeOutput()</code> function is used to clean process and workflow outputs by removing the numbered keys. This will create snapshots that are more easy to read by humans.</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="o">}</span>
+</span></code></pre></div>
+<p>The function also supports options to control its behaviour:</p>
+<ul>
+<li><code>unstableKeys</code>: A list of keys to treat as unstable and only snapshot the file name (and not the md5sum). This is useful for output entries that contain files with unstable content.</li>
+</ul>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstableKeys:</span><span class="o">[</span><span class="s2">&quot;zip&quot;</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="o">}</span>
 </span></code></pre></div>
 
 
