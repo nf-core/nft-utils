@@ -744,4 +744,12 @@ public class Methods {
 
     return filtered;
   }
+
+  public static TreeMap<String,Object> sanitizeOutput(TreeMap<String,Object> channel) {
+    return sanitizeOutput(new HashMap<String,Object>(), channel);
+  }
+
+  public static TreeMap<String,Object> sanitizeOutput(HashMap<String,Object> options, TreeMap<String,Object> channel) {
+    return OutputSanitizer.sanitizeOutput(options, channel);
+  }
 }

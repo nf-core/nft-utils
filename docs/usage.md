@@ -522,3 +522,23 @@ cleanup {
     nfcoreDeleteLibrary("${launchDir}/library")
 }
 ```
+
+### `sanitizeOutput()` - Sanitize process output to create clean snapshots
+
+The `sanitizeOutput()` function is used to clean process and workflow outputs by removing the numbered keys. This will create snapshots that are more easy to read by humans.
+
+```groovy
+then {
+  assert snapshot(sanitizeOutput(process.out)).match()
+}
+```
+
+The function also supports options to control its behaviour:
+
+- `unstableKeys`: A list of keys to treat as unstable and only snapshot the file name (and not the md5sum). This is useful for output entries that contain files with unstable content.
+
+```groovy
+then {
+  assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
+}
+```
