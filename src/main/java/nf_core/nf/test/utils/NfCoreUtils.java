@@ -140,18 +140,17 @@ public class NfCoreUtils {
       File destModulesDir = new File(modulesDir);
 
       // Capitalise mode string for error messages
-      String Mode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
+      String CapMode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
 
       if (!libModulesDir.exists() || !libModulesDir.isDirectory()) {
-        String Mode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
         System.err.println("Warning: Library modules directory does not exist: " + libModulesDir.getAbsolutePath());
-        System.err.println(Mode + "ing halted!");
+        System.err.println(CapMode + "ing halted!");
         return;
       }
 
       if (!destModulesDir.exists()) {
         System.err.println("Warning: Modules directory does not exist: " + destModulesDir.getAbsolutePath());
-        System.err.println(Mode + "ing halted!");
+        System.err.println(CapMode + "ing halted!");
         return;
       }
 
