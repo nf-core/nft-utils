@@ -139,14 +139,20 @@ public class NfCoreUtils {
       File libModulesDir = new File(libDir + "/modules");
       File destModulesDir = new File(modulesDir);
 
+      // Capitalise mode string for error messages
+      String Mode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
+      
       if (!libModulesDir.exists() || !libModulesDir.isDirectory()) {
-        throw new RuntimeException(
-          "Error: Library modules directory does not exist: " + libModulesDir.getAbsolutePath()
-        );
+        String Mode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
+        System.err.println("Warning: Library modules directory does not exist: " + libModulesDir.getAbsolutePath());
+        System.err.println(Mode + "ing halted!");
+        return;
       }
 
       if (!destModulesDir.exists()) {
-        throw new RuntimeException("Error: modules directory does not exist: " + libModulesDir.getAbsolutePath());
+        System.err.println("Warning: Modules directory does not exist: " + destModulesDir.getAbsolutePath());
+        System.err.println(Mode + "ing halted!");
+        return;
       }
 
       // Starting at the organisation-dir (e.g. nf-core) - link it if it doesn't exist, otherwise
