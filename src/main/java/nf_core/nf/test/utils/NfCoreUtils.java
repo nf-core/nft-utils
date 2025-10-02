@@ -141,7 +141,7 @@ public class NfCoreUtils {
 
       // Capitalise mode string for error messages
       String Mode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
-      
+
       if (!libModulesDir.exists() || !libModulesDir.isDirectory()) {
         String Mode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
         System.err.println("Warning: Library modules directory does not exist: " + libModulesDir.getAbsolutePath());
