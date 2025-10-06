@@ -4,7 +4,7 @@
   <groupId>com.nf-core</groupId>
   <artifactId>nft-utils</artifactId>
   <name>nft-utils</name>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <description>nf-test plugin that adds commonly used utility functions</description>
   <url>https://github.com/nf-core/nft-utils</url>
   <licenses>
@@ -36,9 +36,9 @@
   </build>
   <properties>
     <maven.compiler.release>${java.version}</maven.compiler.release>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <java.version>11</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <htsjdk.version>3.0.5</htsjdk.version>
     <additionalparam>-Xdoclint:none</additionalparam>

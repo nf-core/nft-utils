@@ -5,7 +5,7 @@
 
 	<groupId>com.nf-core</groupId>
 	<artifactId>nft-utils</artifactId>
-	<version>0.0.6</version>
+	<version>0.0.7</version>
 	<packaging>jar</packaging>
 
 	<name>nft-utils</name>
