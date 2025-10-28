@@ -5,6 +5,8 @@ on:
   push:
     branches: [main]
 
+env:
+  NXF_SYNTAX_PARSER: "v2"
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
