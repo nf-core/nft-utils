@@ -46,6 +46,47 @@ nextflow_pipeline {
         }
     }
 
+    test("Capture both stdout and stderr and keep ANSI codes - monochrome") {
+
+        tag 'ansi'
+        tag 'both'
+        tag 'stderr'
+        tag 'stdout'
+
+        when {
+            params {
+                monochrome_logs = true
+            }
+        }
+
+        then {
+            def filtered_stdout = filterNextflowOutput(workflow.stdout, keepAnsi: true)
+            def filtered_stderr = filterNextflowOutput(workflow.stderr, keepAnsi: true)
+
+            // Print the stdout
+            println "workflow.stdout [${workflow.stdout.size()}]:"
+            println workflow.stdout.join('\n')
+
+            // Print the filtered stdout
+            println "filtered_stdout: [${filtered_stdout.size()}]"
+            println filtered_stdout.join('\n')
+
+            // Print the stderr
+            println "workflow.stderr [${workflow.stderr.size()}]:"
+            println workflow.stderr.join('\n')
+
+            // Print the filtered stderr
+            println "filtered_stderr: [${filtered_stderr.size()}]"
+            println filtered_stderr.join('\n')
+
+            assert workflow.success
+            assert snapshot(
+                filterNextflowOutput(workflow.stdout, keepAnsi: true, ignore: ["Submitted process"]),
+                filterNextflowOutput(workflow.stderr, keepAnsi: true)?:"no stderr",
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+            ).match()
+        }
+    }
 
     test("Capture both stdout and stderr and keep ANSI codes") {
 
