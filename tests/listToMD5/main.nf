@@ -1,4 +1,5 @@
 workflow TEST {
+
     main:
     def fill = "This needs to be filled in"
     def lines = [
