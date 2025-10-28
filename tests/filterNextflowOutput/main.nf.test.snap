@@ -106,10 +106,119 @@
             ]
         ],
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "25.04.6"
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
         },
-        "timestamp": "2025-09-05T09:42:24.347773785"
+        "timestamp": "2025-10-28T11:56:48.873208114"
+    },
+    "Capture both stdout and stderr and keep ANSI codes - monochrome": {
+        "content": [
+            [
+                "N E X T F L O W  ~  version [VERSION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "-----------------------------------------------------",
+                "                                        ,--./,-.",
+                "        ___     __   __   __   ___     /,-._.--~'",
+                "  |\\ | |__  __ /  ` /  \\ |__) |__         }  {",
+                "  | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,",
+                "                                        `._,._,'",
+                "      ____",
+                "    .\u00b4 _  `.",
+                "   /  |\\`-_ \\      __        __   ___     ",
+                "  |   | \\  `-|    |__`  /\\  |__) |__  |__/",
+                "   \\ |   \\  /     .__| /\u00af\u00af\\ |  \\ |___ |  \\",
+                "    `|____\\\u00b4",
+                "------------------------------------------------------",
+                "nf-core/pipeline1 [VERSION]",
+                "nf-core/pipeline2 [VERSION]",
+                "nf-core/pipeline3 [VERSION]",
+                "nf-core/pipeline4 [VERSION]",
+                "container: [CONTAINER]",
+                "image: [CONTAINER]",
+                "virtualenv: [CONTAINER]",
+                "profile: test,[CONTAINER],[CONTAINER],[CONTAINER]",
+                "runName[false]: test_run_name",
+                "runName[false]: amazing_mercury",
+                "runName[false]: [amazing_mercury]",
+                "runName[true]: [RUN_NAME]",
+                "HOME                      : [PATH]",
+                "NXF_CACHE_DIR             : null",
+                "NXF_CONDA_CACHEDIR        : null",
+                "NXF_HOME                  : [PATH]",
+                "NXF_SINGULARITY_CACHEDIR  : [PATH]",
+                "NXF_SINGULARITY_LIBRARYDIR: [PATH]",
+                "NXF_TEMP                  : null",
+                "NXF_WORK                  : null",
+                "userName                  : [USER]",
+                "outdir                    : results",
+                "println message",
+                "log.info message",
+                "println with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "log.info with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                " -- Check '[PATH]/.nf-test/tests/[NFT_HASH]/meta/nextflow.log' file for details",
+                "ERROR ~ log.error message",
+                "ERROR ~ log.error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "WARN: log.warn message",
+                "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt"
+            ],
+            "no stderr",
+            [
+                "N E X T F L O W  ~  version [VERSION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "-----------------------------------------------------",
+                "                                        ,--./,-.",
+                "        ___     __   __   __   ___     /,-._.--~'",
+                "  |\\ | |__  __ /  ` /  \\ |__) |__         }  {",
+                "  | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,",
+                "                                        `._,._,'",
+                "      ____",
+                "    .\u00b4 _  `.",
+                "   /  |\\`-_ \\      __        __   ___     ",
+                "  |   | \\  `-|    |__`  /\\  |__) |__  |__/",
+                "   \\ |   \\  /     .__| /\u00af\u00af\\ |  \\ |___ |  \\",
+                "    `|____\\\u00b4",
+                "------------------------------------------------------",
+                "nf-core/pipeline1 [VERSION]",
+                "nf-core/pipeline2 [VERSION]",
+                "nf-core/pipeline3 [VERSION]",
+                "nf-core/pipeline4 [VERSION]",
+                "container: [CONTAINER]",
+                "image: [CONTAINER]",
+                "virtualenv: [CONTAINER]",
+                "profile: test,[CONTAINER],[CONTAINER],[CONTAINER]",
+                "runName[false]: test_run_name",
+                "runName[false]: amazing_mercury",
+                "runName[false]: [amazing_mercury]",
+                "runName[true]: [RUN_NAME]",
+                "HOME                      : [PATH]",
+                "NXF_CACHE_DIR             : null",
+                "NXF_CONDA_CACHEDIR        : null",
+                "NXF_HOME                  : [PATH]",
+                "NXF_SINGULARITY_CACHEDIR  : [PATH]",
+                "NXF_SINGULARITY_LIBRARYDIR: [PATH]",
+                "NXF_TEMP                  : null",
+                "NXF_WORK                  : null",
+                "userName                  : [USER]",
+                "outdir                    : results",
+                "println message",
+                "log.info message",
+                "println with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "log.info with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                " -- Check '[PATH]/.nf-test/tests/[NFT_HASH]/meta/nextflow.log' file for details",
+                "ERROR ~ log.error message",
+                "ERROR ~ log.error with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "WARN: log.warn message",
+                "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt",
+                "[NXF_HASH] Submitted process > FASTQC (sample_1)",
+                "[NXF_HASH] Submitted process > FASTQC (sample_2)",
+                "[NXF_HASH] Submitted process > FASTQC (sample_3)"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-10-28T11:47:22.144274019"
     },
     "Capture both stdout and stderr and keep ANSI codes": {
         "content": [
@@ -215,9 +324,9 @@
             ]
         ],
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "25.04.6"
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
         },
-        "timestamp": "2025-09-05T09:42:26.74594254"
+        "timestamp": "2025-10-28T11:56:58.291151246"
     }
 }

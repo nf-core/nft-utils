@@ -1,8 +1,13 @@
 include { FASTQC } from './modules/local/fastqc'
 
-params.failure = false
-params.outdir  = "results"
+params.failure         = false
+params.outdir          = "results"
+params.monochrome_logs = false
+
 workflow {
+
+    colors = getColors(params.monochrome_logs)
+
     input = channel.of(
         'sample_1',
         'sample_2',
@@ -27,20 +32,20 @@ workflow {
     // Print a complex nf-core/pipeline logo (ie SAREK for example)
     log.info(
         """
-\033[2m----------------------------------------------------\033[0m-
-                                        \033[0;32m,--.\033[0;30m/\033[0;32m,-.\033[0m
-\033[0;34m        ___     __   __   __   ___     \033[0;32m/,-._.--~\'\033[0m
-\033[0;34m  |\\ | |__  __ /  ` /  \\ |__) |__         \033[0;33m}  {\033[0m
-\033[0;34m  | \\| |       \\__, \\__/ |  \\ |___     \033[0;32m\\`-._,-`-,\033[0m
-                                        \033[0;32m`._,._,\'\033[0m
+${colors.dim}----------------------------------------------------${colors.reset}-
+                                        ${colors.green},--.${colors.black}/${colors.green},-.${colors.reset}
+${colors.blue}        ___     __   __   __   ___     ${colors.green}/,-._.--~\'${colors.reset}
+${colors.blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${colors.yellow}}  {${colors.reset}
+${colors.blue}  | \\| |       \\__, \\__/ |  \\ |___     ${colors.green}\\`-._,-`-,${colors.reset}
+                                        ${colors.green}`._,._,\'${colors.reset}
 
-\033[0;37m      ____\033[0m
-\033[0;37m    .´ _  `.\033[0m
-\033[0;37m   /  \033[0;32m|\\\033[0m`-_ \\\033[0m     \033[0;34m __        __   ___     \033[0m
-\033[0;37m  |   \033[0;32m| \\\033[0m  `-|\033[0m    \033[0;34m|__`  /\\  |__) |__  |__/\033[0m
-\033[0;37m   \\ \033[0;32m|   \\\033[0m  /\033[0m     \033[0;34m.__| /¯¯\\ |  \\ |___ |  \\\033[0m
-\033[0;37m    `\033[0;32m|\033[0m____\033[0;32m\\\033[0m´\033[0m
--\033[2m----------------------------------------------------\033[0m-
+${colors.white}      ____${colors.reset}
+${colors.white}    .´ _  `.${colors.reset}
+${colors.white}   /  ${colors.green}|\\${colors.reset}`-_ \\${colors.reset}     ${colors.blue} __        __   ___     ${colors.reset}
+${colors.white}  |   ${colors.green}| \\${colors.reset}  `-|${colors.reset}    ${colors.blue}|__`  /\\  |__) |__  |__/${colors.reset}
+${colors.white}   \\ ${colors.green}|   \\${colors.reset}  /${colors.reset}     ${colors.blue}.__| /¯¯\\ |  \\ |___ |  \\${colors.reset}
+${colors.white}    `${colors.green}|${colors.reset}____${colors.green}\\${colors.reset}´${colors.reset}
+-${colors.dim}----------------------------------------------------${colors.reset}-
 nf-core/pipeline1 1.0dev
 nf-core/pipeline2 1.0
 nf-core/pipeline3 1.1.0dev
@@ -69,17 +74,53 @@ runName[true]: ${workflow.runName}
     log.info("outdir                    : ${params.outdir}")
 
     println("println message")
-    log.info("\033[0;34mlog.info message\033[0m")
-    log.warn("\033[0;33mlog.warn message\033[0m")
-    log.error("\033[0;31mlog.error message\033[0m")
+    log.info("${colors.blue}log.info message${colors.reset}")
+    log.warn("${colors.yellow}log.warn message${colors.reset}")
+    log.error("${colors.red}log.error message${colors.reset}")
 
     println("println with path: ${test_file}")
-    log.info("\033[0;34mlog.info with path: ${test_file}\033[0m")
-    log.warn("\033[0;33mlog.warn with path: ${test_file}\033[0m")
-    log.error("\033[0;31mlog.error with path: ${test_file}\033[0m")
+    log.info("${colors.blue}log.info with path: ${test_file}${colors.reset}")
+    log.warn("${colors.yellow}log.warn with path: ${test_file}${colors.reset}")
+    log.error("${colors.red}log.error with path: ${test_file}${colors.reset}")
     if (params.failure) {
-        System.err.println("\033[1;31mSystem error with path: ${test_file}\033[0m")
-        System.err.println("\033[1;31mSystem error message\033[0m")
-        error("\033[1;31mError with path: ${test_file}\033[0m")
+        System.err.println("${colors.bred}System error with path: ${test_file}${colors.reset}")
+        System.err.println("${colors.bred}System error message${colors.reset}")
+        error("${colors.bred}Error with path: ${test_file}${colors.reset}")
     }
+}
+
+def getColors(monochrome_logs = true) {
+
+    def colorsDict = [:]
+
+    // Reset / Meta
+    colorsDict['reset'] = monochrome_logs ? '' : "\033[0m"
+    colorsDict['bold'] = monochrome_logs ? '' : "\033[1m"
+    colorsDict['dim'] = monochrome_logs ? '' : "\033[2m"
+    colorsDict['underlined'] = monochrome_logs ? '' : "\033[4m"
+    colorsDict['blink'] = monochrome_logs ? '' : "\033[5m"
+    colorsDict['reverse'] = monochrome_logs ? '' : "\033[7m"
+    colorsDict['hidden'] = monochrome_logs ? '' : "\033[8m"
+
+    // Regular Colors
+    colorsDict['black'] = monochrome_logs ? '' : "\033[0;30m"
+    colorsDict['red'] = monochrome_logs ? '' : "\033[0;31m"
+    colorsDict['green'] = monochrome_logs ? '' : "\033[0;32m"
+    colorsDict['yellow'] = monochrome_logs ? '' : "\033[0;33m"
+    colorsDict['blue'] = monochrome_logs ? '' : "\033[0;34m"
+    colorsDict['purple'] = monochrome_logs ? '' : "\033[0;35m"
+    colorsDict['cyan'] = monochrome_logs ? '' : "\033[0;36m"
+    colorsDict['white'] = monochrome_logs ? '' : "\033[0;37m"
+
+    // Bold
+    colorsDict['bblack'] = monochrome_logs ? '' : "\033[1;30m"
+    colorsDict['bred'] = monochrome_logs ? '' : "\033[1;31m"
+    colorsDict['bgreen'] = monochrome_logs ? '' : "\033[1;32m"
+    colorsDict['byellow'] = monochrome_logs ? '' : "\033[1;33m"
+    colorsDict['bblue'] = monochrome_logs ? '' : "\033[1;34m"
+    colorsDict['bpurple'] = monochrome_logs ? '' : "\033[1;35m"
+    colorsDict['bcyan'] = monochrome_logs ? '' : "\033[1;36m"
+    colorsDict['bwhite'] = monochrome_logs ? '' : "\033[1;37m"
+
+    return colorsDict
 }

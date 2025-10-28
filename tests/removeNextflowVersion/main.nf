@@ -1,7 +1,6 @@
 workflow {
 
-    channel
-        .of(
+    channel.of(
             """
             Workflow:
                 Pipeline: 1.0.0
