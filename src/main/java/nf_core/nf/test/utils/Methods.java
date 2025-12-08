@@ -3,11 +3,8 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -19,12 +16,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
@@ -751,5 +742,40 @@ public class Methods {
 
   public static TreeMap<String,Object> sanitizeOutput(HashMap<String,Object> options, TreeMap<String,Object> channel) {
     return OutputSanitizer.sanitizeOutput(options, channel);
+  }
+
+  /**
+   * Run `curl -L --retry 5 $URL | tar xzf - -C $DEST` via `bash -c`.
+   * Uses safe single-quoting for the URL and destination path.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the tarball into
+   * @throws IOException on failure
+   */
+  public static void curlAndExtract(String urlString, String destPath) throws IOException {
+    Path destDir = Paths.get(destPath);
+    Files.createDirectories(destDir);
+
+    String escUrl = Utils.shellEscape(urlString);
+    String escDest = Utils.shellEscape(destPath);
+    String cmd = "curl -L --retry 5 " + escUrl + " | tar xzf - -C " + escDest;
+
+    ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd);
+    try {
+      Utils.ProcessResult result = Utils.runProcess(pb);
+      if (result.exitCode != 0) {
+        System.err.println("Error downloading and extracting file " + urlString + ": exit code " + result.exitCode + "\n");
+        System.out.println("Bash command: \n" + cmd);
+        System.err.println("command output: \n");
+        System.err.println(result.stderr);
+      } else {
+        System.out.println("Successfully downloaded and extracted file: " + urlString);
+      }
+    } catch (IOException | InterruptedException e) {
+      System.err.println("Error downloading and extracting file " + urlString + ": " + e.getMessage());
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
+    }
   }
 }

@@ -1,10 +1,8 @@
 package nf_core.nf.test.utils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,23 +97,14 @@ public class NfCoreUtils {
       }
 
       ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
-      Process process = processBuilder.start();
-
-      // Capture stderr from nf-core tools
-      BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      StringBuilder stderr = new StringBuilder();
-      String line;
-      while ((line = stderrReader.readLine()) != null) {
-        stderr.append(line).append("\n");
-      }
-      int exitCode = process.waitFor();
+      Utils.ProcessResult result = Utils.runProcess(processBuilder);
 
       // Spit out nf-core tools stderr if install fails
-      if (exitCode != 0) {
-        System.err.println("Error installing module " + name + ": exit code " + exitCode + "\n");
+      if (result.exitCode != 0) {
+        System.err.println("Error installing module " + name + ": exit code " + result.exitCode + "\n");
         System.out.println("Installation command: \n" + command.toString());
         System.err.println("nf-core tools output: \n");
-        System.err.println(stderr.toString());
+        System.err.println(result.stderr);
       } else {
         System.out.println("Successfully installed module: " + name);
       }
