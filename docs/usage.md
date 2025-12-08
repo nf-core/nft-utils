@@ -542,3 +542,51 @@ then {
   assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
 }
 ```
+
+### `curlAndUntar()` - Download and extract a Tar archive
+
+The `curlAndUntar()` function is used to download a tar archive (possibly compressed)
+from the Internet with `curl` and extract it in the required destination
+directory. `tar` automatically recognises compressed archives such as `tar.gz`, `tar.bz2`, etc.
+
+You are responsible for deleting the data in the `cleanup` phase.
+
+```groovy
+setup {
+    curlAndUntar("https://www.example.com/database.tar.gz", "${launchDir}/data_dir")
+}
+
+when {
+  params {
+    db_path = "${launchDir}/data_dir/db/"
+  }
+}
+
+cleanup {
+    new File("${launchDir}/data_dir/db").deleteDir()
+}
+```
+
+### `curlAndUnzip()` - Download and extract a Zip archive
+
+The `curlAndUnzip()` function is used to download a zip archive
+from the Internet with `curl` and extract it in the required destination
+directory.
+
+You are responsible for deleting the data in the `cleanup` phase.
+
+```groovy
+setup {
+    curlAndUnzip("https://www.example.com/database.zip", "${launchDir}/data_dir")
+}
+
+when {
+  params {
+    db_path = "${launchDir}/data_dir/db/"
+  }
+}
+
+cleanup {
+    new File("${launchDir}/data_dir/db").deleteDir()
+}
+```
