@@ -1,4 +1,14 @@
 {
+    "test curlAndExtract - tar file": {
+        "content": [
+            "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2025-12-08T18:09:58.396939"
+    },
     "test curlAndUntar": {
         "content": [
             "hello.txt:md5,e59ff97941044f85df5297e1c302d260"

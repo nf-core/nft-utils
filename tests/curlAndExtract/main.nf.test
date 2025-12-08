@@ -23,4 +23,23 @@ nextflow_process {
             new File("${launchDir}/dbs").deleteDir()
         }
     }
+
+
+    test("test curlAndExtract - tar file") {
+
+        setup {
+            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs")
+        }
+        then {
+            def expected_file = "${launchDir}/dbs/hello.txt"
+            assertAll(
+                { assert path(expected_file).exists() },
+                { assert path(expected_file).exists() },
+                { assert snapshot(expected_file).match() },
+            )
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
 }
