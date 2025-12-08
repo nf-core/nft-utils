@@ -590,3 +590,29 @@ cleanup {
     new File("${launchDir}/data_dir/db").deleteDir()
 }
 ```
+
+### `curlAndExtract()` - Download and extract an archive
+
+The `curlAndExtract()` function is used to download an archive
+from the Internet with `curl` and extract it in the required destination
+directory.
+Zip and Tar archives are currently supported, thanks to the above
+`curlAndUntar` and `curlAndUnzip`.
+
+You are responsible for deleting the data in the `cleanup` phase.
+
+```groovy
+setup {
+    curlAndExtract("https://www.example.com/database.zip", "${launchDir}/data_dir")
+}
+
+when {
+  params {
+    db_path = "${launchDir}/data_dir/db/"
+  }
+}
+
+cleanup {
+    new File("${launchDir}/data_dir/db").deleteDir()
+}
+```
