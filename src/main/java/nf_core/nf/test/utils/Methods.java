@@ -847,4 +847,36 @@ public class Methods {
       }
     }
   }
+
+  /**
+   * Download an archive and extract it in the given destination directory.
+   * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
+   * tar archives based on the URL's file extension.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the archive into
+   * @throws IOException on failure or if archive type is unsupported
+   */
+  public static void curlAndExtract(String urlString, String destPath) throws IOException {
+    // Try to extract a path portion from the URL (strip query strings)
+    String pathPart = urlString;
+    try {
+      java.net.URI uri = new java.net.URI(urlString);
+      if (uri.getPath() != null && !uri.getPath().isEmpty()) {
+        pathPart = uri.getPath();
+      }
+    } catch (Exception e) {
+      // If parsing fails, fall back to raw urlString
+      pathPart = urlString;
+    }
+
+    String lower = pathPart.toLowerCase(Locale.ROOT);
+    // .zip is the only definitve extension. tar has too many and
+    // will be considered the default
+    if (lower.endsWith(".zip")) {
+      curlAndUnzip(urlString, destPath);
+    } else {
+      curlAndUntar(urlString, destPath);
+    }
+  }
 }
