@@ -745,14 +745,15 @@ public class Methods {
   }
 
   /**
-   * Run `curl -L --retry 5 $URL | tar xzf - -C $DEST` via `bash -c`.
+   * Download a tar archive and extract it in the given destination directory.
+   * The file is streamed directly with `curl` into `tar` via a pipe.
    * Uses safe single-quoting for the URL and destination path.
    *
    * @param urlString the URL to fetch
    * @param destPath directory to extract the tarball into
    * @throws IOException on failure
    */
-  public static void curlAndExtract(String urlString, String destPath) throws IOException {
+  public static void curlAndUntar(String urlString, String destPath) throws IOException {
     Path destDir = Paths.get(destPath);
     Files.createDirectories(destDir);
 
@@ -775,6 +776,74 @@ public class Methods {
       System.err.println("Error downloading and extracting file " + urlString + ": " + e.getMessage());
       if (e instanceof InterruptedException) {
         Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+  /**
+   * Download a zip file and extract it in the given destination directory.
+   * The file is first downloaded with `curl` to a temporary file, then we
+   * call `unzip` and delete the temporary file.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the zip into
+   * @throws IOException on failure
+   */
+  public static void curlAndUnzip(String urlString, String destPath) throws IOException {
+    Path destDir = Paths.get(destPath);
+    Files.createDirectories(destDir);
+
+    // Create a temporary file in the destination directory for the downloaded zip
+    Path tempFile = Files.createTempFile(destDir, "download", ".zip");
+
+    // Run curl
+    ProcessBuilder pb = new ProcessBuilder(
+        "curl",
+        "-L",
+        "--retry",
+        "5",
+        "-o",
+        tempFile.toString(),
+        urlString
+    );
+
+    try {
+      Utils.ProcessResult result = Utils.runProcess(pb);
+      if (result.exitCode != 0) {
+        System.err.println("Error downloading file " + urlString + ": exit code " + result.exitCode + "\n");
+        System.out.println("Command: " + String.join(" ", pb.command()));
+        System.err.println("command output: \n");
+        System.err.println(result.stderr);
+        return;
+      }
+      // Run unzip
+      pb = new ProcessBuilder(
+          "unzip",
+          "-o",
+          tempFile.toString(),
+          "-d",
+          destPath
+      );
+      result = Utils.runProcess(pb);
+      if (result.exitCode != 0) {
+        System.err.println("Error extracting zip " + tempFile + ": exit code " + result.exitCode + "\n");
+        System.out.println("Command: " + String.join(" ", pb.command()));
+        System.err.println("command output: \n");
+        System.err.println(result.stderr);
+      } else {
+        System.out.println("Successfully downloaded and extracted file: " + urlString);
+      }
+    } catch (IOException | InterruptedException e) {
+      System.err.println("Error downloading and extracting file " + urlString + ": " + e.getMessage());
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
+    } finally {
+      try {
+        Files.deleteIfExists(tempFile);
+      } catch (IOException e) {
+        // Do not fail the operation if temp file cleanup fails; just log it
+        System.err.println("Warning: failed to delete temporary file " + tempFile + ": " + e.getMessage());
       }
     }
   }
