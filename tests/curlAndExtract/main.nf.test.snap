@@ -1,23 +1,15 @@
 {
     "test curlAndUntar - tar.gz file": {
         "content": [
-            "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+            [
+                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+            ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2025-12-08T18:15:18.388651"
-    },
-    "curlAndExtract:ncbi.map": {
-        "content": [
-            "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952"
-        ],
-        "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T18:15:31.586426"
+        "timestamp": "2025-12-08T23:27:19.495861"
     },
     "test curlAndUntar - tar file": {
         "content": [
@@ -831,42 +823,40 @@
     },
     "test curlAndExtract - tar.gz file": {
         "content": [
-            "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+            [
+                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+            ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2025-12-08T18:15:27.556287"
+        "timestamp": "2025-12-08T23:29:52.440355"
     },
-    "curlAndExtract:ncbi.tre": {
+    "test curlAndExtract - zip file": {
         "content": [
-            "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
+            [
+                "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952",
+                "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
+            ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2025-12-08T18:15:31.577887"
+        "timestamp": "2025-12-08T23:32:07.753491"
     },
-    "curlAndUnzip:ncbi.tre": {
+    "test curlAndUnzip": {
         "content": [
-            "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
+            [
+                "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952",
+                "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
+            ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2025-12-08T18:15:22.913108"
-    },
-    "curlAndUnzip:ncbi.map": {
-        "content": [
-            "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952"
-        ],
-        "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T18:15:22.922001"
+        "timestamp": "2025-12-08T23:33:12.404121"
     }
 }

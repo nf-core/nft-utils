@@ -26,11 +26,8 @@ nextflow_process {
             curlAndUntar("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs")
         }
         then {
-            def expected_file = "${launchDir}/dbs/hello.txt"
-            assertAll(
-                { assert path(expected_file).exists() },
-                { assert snapshot(expected_file).match() },
-            )
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
         }
         cleanup {
             new File("${launchDir}/dbs").deleteDir()
@@ -43,14 +40,8 @@ nextflow_process {
             curlAndUnzip("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", "${launchDir}/dbs")
         }
         then {
-            def expected_file1 = "${launchDir}/dbs/ncbi.tre"
-            def expected_file2 = "${launchDir}/dbs/ncbi.map"
-            assertAll(
-                { assert path(expected_file1).exists() },
-                { assert path(expected_file2).exists() },
-                { assert snapshot(expected_file1).match("curlAndUnzip:ncbi.tre") },
-                { assert snapshot(expected_file2).match("curlAndUnzip:ncbi.map") },
-            )
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
         }
         cleanup {
             new File("${launchDir}/dbs").deleteDir()
@@ -77,11 +68,8 @@ nextflow_process {
             curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs")
         }
         then {
-            def expected_file = "${launchDir}/dbs/hello.txt"
-            assertAll(
-                { assert path(expected_file).exists() },
-                { assert snapshot(expected_file).match() },
-            )
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
         }
         cleanup {
             new File("${launchDir}/dbs").deleteDir()
@@ -94,14 +82,8 @@ nextflow_process {
             curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", "${launchDir}/dbs")
         }
         then {
-            def expected_file1 = "${launchDir}/dbs/ncbi.tre"
-            def expected_file2 = "${launchDir}/dbs/ncbi.map"
-            assertAll(
-                { assert path(expected_file1).exists() },
-                { assert path(expected_file2).exists() },
-                { assert snapshot(expected_file1).match("curlAndExtract:ncbi.tre") },
-                { assert snapshot(expected_file2).match("curlAndExtract:ncbi.map") },
-            )
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
         }
         cleanup {
             new File("${launchDir}/dbs").deleteDir()
