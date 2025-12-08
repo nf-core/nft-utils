@@ -6,6 +6,20 @@ nextflow_process {
 
     tag "test"
 
+    test("test curlAndUntar - tar file") {
+
+        setup {
+            curlAndUntar("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", "${launchDir}/dbs")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
     test("test curlAndUntar - tar.gz file") {
 
         setup {
