@@ -758,7 +758,7 @@ public class Methods {
 
     String escUrl = Utils.shellEscape(urlString);
     String escDest = Utils.shellEscape(destPath);
-    String cmd = "curl -L --retry 5 " + escUrl + " | tar xzf - -C " + escDest;
+    String cmd = "curl -L --retry 5 " + escUrl + " | tar xaf - -C " + escDest;
 
     ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
     try {
