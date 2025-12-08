@@ -760,7 +760,7 @@ public class Methods {
     String escDest = Utils.shellEscape(destPath);
     String cmd = "curl -L --retry 5 " + escUrl + " | tar xzf - -C " + escDest;
 
-    ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd);
+    ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
     try {
       Utils.ProcessResult result = Utils.runProcess(pb);
       if (result.exitCode != 0) {
