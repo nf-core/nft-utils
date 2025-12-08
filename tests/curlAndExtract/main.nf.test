@@ -1,0 +1,20 @@
+nextflow_process {
+
+    name "Test Process curlAndExtract"
+    tag "test"
+
+    test("test plugin") {
+
+        setup {
+            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs")
+        }
+
+        then {
+            assertAll(
+                { assert path("${launchDir}/dbs/").exists() },
+                { assert path("${launchDir}/dbs/hello.txt").exists() },
+                { assert path("${launchDir}/dbs/hello.txt").lines().find { it.contains('Hello World') } }
+            )
+        }
+    }
+}
