@@ -24,7 +24,6 @@ public class Utils {
    * and returns a {@link ProcessResult}.
    */
   public static ProcessResult runProcess(ProcessBuilder pb) throws IOException, InterruptedException {
-    // If stdout isn't already redirected, discard it to avoid blocking
     pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
     Process process = pb.start();
     BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
