@@ -47,4 +47,60 @@ nextflow_process {
             new File("${launchDir}/dbs").deleteDir()
         }
     }
+
+    test("test curlAndExtract with type - tar file") {
+
+        setup {
+            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", "${launchDir}/dbs", "tar")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test curlAndExtract with type - tar.gz file") {
+
+        setup {
+            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs", "gzip")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test curlAndExtract with type - zip file") {
+
+        setup {
+            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", "${launchDir}/dbs", "zip")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test curlAndExtract with type - tar.bz2 file") {
+
+        setup {
+            curlAndExtract("https://card.mcmaster.ca/latest/data", "${launchDir}/dbs", "bzip2")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
 }

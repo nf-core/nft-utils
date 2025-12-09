@@ -763,7 +763,8 @@ public class Methods {
     String escDest = Utils.shellEscape(destPath);
     String cmd = "curl -L --retry 5 " + escUrl + " | tar xaf - -C " + escDest;
 
-    if (compression != null) {
+    // Convert compression name to tar option
+    if (compression != null && !compression.equals("tar")) {
       if (compression.equals("gzip") || compression.equals("gz")) {
         compression = "gzip";
       } else if (compression.equals("bzip2") || compression.equals("bz2")) {
@@ -882,8 +883,9 @@ public class Methods {
    */
   public static void curlAndExtract(String urlString, String destPath) throws IOException {
     String lower = Utils.getURLFileName(urlString);
-    // .zip is the only definitve extension. tar has too many and
-    // will be considered the default
+    // Convert file name (extension) to compression name.
+    // Zip is the only clearly defined archive format.
+    // Everything else is assumed to be Tar
     if (lower.endsWith(".zip")) {
       curlAndUnzip(urlString, destPath);
     } else if (lower.endsWith("gz")) {
@@ -902,6 +904,30 @@ public class Methods {
       curlAndUntar(urlString, destPath, "zstd");
     } else {
       curlAndUntar(urlString, destPath, null);
+    }
+  }
+
+  /**
+   * Download an archive and extract it in the given destination directory.
+   * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
+   * tar archives based on the `compression` parameter.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the archive into
+   * @param compression compression type: zip, gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd, tar
+   * @throws IOException on failure or if archive type is unsupported
+   */
+  public static void curlAndExtract(String urlString, String destPath, String compression) throws IOException {
+    if (compression == null || compression.isEmpty()) {
+      throw new IllegalArgumentException("The 'compression' parameter is required.");
+    }
+    String lower = compression.toLowerCase(Locale.ROOT);
+    // Zip is the only clearly defined archive format.
+    // Everything else is assumed to be Tar
+    if (lower.equals("zip")) {
+      curlAndUnzip(urlString, destPath);
+    } else {
+      curlAndUntar(urlString, destPath, compression);
     }
   }
 }
