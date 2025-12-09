@@ -404,7 +404,19 @@
         },
         "timestamp": "2025-12-09T10:08:33.373288"
     },
-    "test curlAndExtract with type - tar.bz2 file": {
+    "test curlAndExtract with type - tar.gzip file": {
+        "content": [
+            [
+                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2025-12-08T23:27:19.495861"
+    },
+    "test curlAndExtract with type - tbzip2 file": {
         "content": [
             [
                 "CARD-Download-README.txt:md5,b57364cc1a5fab0541e13a01fabe5dea",
@@ -433,29 +445,18 @@
         },
         "timestamp": "2025-12-09T11:01:00.867726"
     },
-    "test curlAndExtract with type - tar.gz file": {
+    "test curlAndExtract with type - zip file": {
         "content": [
             [
-                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+                "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952",
+                "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
             ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2025-12-08T23:27:19.495861"
-    },
-    "test curlAndExtract - tar.gz file": {
-        "content": [
-            [
-                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
-            ]
-        ],
-        "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T23:27:19.495861"
+        "timestamp": "2025-12-08T23:32:07.753491"
     },
     "test curlAndExtract - tar file": {
         "content": [
@@ -862,18 +863,17 @@
         },
         "timestamp": "2025-12-09T10:08:33.373288"
     },
-    "test curlAndExtract with type - zip file": {
+    "test curlAndExtract - tar.gz file": {
         "content": [
             [
-                "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952",
-                "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
+                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
             ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2025-12-08T23:32:07.753491"
+        "timestamp": "2025-12-08T23:27:19.495861"
     },
     "test curlAndExtract - zip file": {
         "content": [

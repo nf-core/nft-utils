@@ -62,10 +62,10 @@ nextflow_process {
         }
     }
 
-    test("test curlAndExtract with type - tar.gz file") {
+    test("test curlAndExtract with type - tar.gzip file") {
 
         setup {
-            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs", "gzip")
+            curlAndExtract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs", "tar.gzip")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -90,10 +90,10 @@ nextflow_process {
         }
     }
 
-    test("test curlAndExtract with type - tar.bz2 file") {
+    test("test curlAndExtract with type - tbzip2 file") {
 
         setup {
-            curlAndExtract("https://card.mcmaster.ca/latest/data", "${launchDir}/dbs", "bzip2")
+            curlAndExtract("https://card.mcmaster.ca/latest/data", "${launchDir}/dbs", "tbzip2")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")

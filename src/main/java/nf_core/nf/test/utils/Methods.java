@@ -752,7 +752,8 @@ public class Methods {
    *
    * @param urlString the URL to fetch
    * @param destPath directory to extract the tarball into
-   * @param compression compression type: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
+   * @param compression compression type: tar, gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
+   *        or any of these prefixed with "tar." or "t"
    * @throws IOException on failure
    */
   private static void curlAndUntar(String urlString, String destPath, String compression) throws IOException {
@@ -765,6 +766,13 @@ public class Methods {
 
     // Convert compression name to tar option
     if (compression != null && !compression.equals("tar")) {
+      // Remove leading "tar." or "t" if present
+      if (compression.startsWith("tar.")) {
+        compression = compression.substring(4);
+      } else if (compression.startsWith("t")) {
+        compression = compression.substring(1);
+      }
+
       if (compression.equals("gzip") || compression.equals("gz")) {
         compression = "gzip";
       } else if (compression.equals("bzip2") || compression.equals("bz2")) {
@@ -883,28 +891,25 @@ public class Methods {
    */
   public static void curlAndExtract(String urlString, String destPath) throws IOException {
     String lower = Utils.getURLFileName(urlString);
-    // Convert file name (extension) to compression name.
-    // Zip is the only clearly defined archive format.
-    // Everything else is assumed to be Tar
+
     if (lower.endsWith(".zip")) {
       curlAndUnzip(urlString, destPath);
-    } else if (lower.endsWith("gz")) {
-      curlAndUntar(urlString, destPath, "gzip");
-    } else if (lower.endsWith("bz2")) {
-      curlAndUntar(urlString, destPath, "bzip2");
-    } else if (lower.endsWith("xz")) {
-      curlAndUntar(urlString, destPath, "xz");
-    } else if (lower.endsWith("lz4")) {
-      curlAndUntar(urlString, destPath, "lz4");
-    } else if (lower.endsWith("lzma")) {
-      curlAndUntar(urlString, destPath, "lzma");
-    } else if (lower.endsWith("lzop")) {
-      curlAndUntar(urlString, destPath, "lzop");
-    } else if (lower.endsWith("zst") || lower.endsWith("zstd")) {
-      curlAndUntar(urlString, destPath, "zstd");
-    } else {
-      curlAndUntar(urlString, destPath, null);
+      return;
     }
+
+    for (String suffix: new String [] {"gz", "bz2", "xz", "lz4", "lzma", "lzop", "zst", "zstd"}) {
+      if (lower.endsWith(".tar." + suffix) || lower.endsWith(".t" + suffix)) {
+        curlAndUntar(urlString, destPath, suffix);
+        return;
+      }
+    }
+
+    if (lower.endsWith(".tar")) {
+      curlAndUntar(urlString, destPath, null);
+      return;
+    }
+
+    throw new IllegalArgumentException("Unsupported archive type in URL: " + urlString);
   }
 
   /**
@@ -914,7 +919,8 @@ public class Methods {
    *
    * @param urlString the URL to fetch
    * @param destPath directory to extract the archive into
-   * @param compression compression type: zip, gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd, tar
+   * @param compression compression type: zip, tar, or any of the following prefixed with "tar." or "t":
+   *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
    * @throws IOException on failure or if archive type is unsupported
    */
   public static void curlAndExtract(String urlString, String destPath, String compression) throws IOException {
@@ -926,8 +932,14 @@ public class Methods {
     // Everything else is assumed to be Tar
     if (lower.equals("zip")) {
       curlAndUnzip(urlString, destPath);
-    } else {
+    } else if (lower.equals("tar")) {
+      curlAndUntar(urlString, destPath, null);
+    } else if (lower.startsWith("tar.")) {
       curlAndUntar(urlString, destPath, compression);
+    } else if (lower.startsWith("t")) {
+      curlAndUntar(urlString, destPath, compression);
+    } else {
+      throw new IllegalArgumentException("Unsupported compression type: " + compression);
     }
   }
 }
