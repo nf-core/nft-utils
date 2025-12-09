@@ -542,3 +542,37 @@ then {
   assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
 }
 ```
+
+### `curlAndExtract()` - Download and extract an archive
+
+The `curlAndExtract()` function is used to download an archive
+from the Internet with `curl` and extract it in the required destination
+directory.
+Zip and Tar archives are currently supported. Tar archives can be compressed
+with any of these algorithms: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd.
+By default, the choice of archive format and compression algorithm is based on
+the name of the archive, but it can also be passed as an argument.
+For compressed Tar archives, the format to provide is "tar.bz2" or "tbz2"
+(adapting to your compression algorithm of choice).
+
+You are responsible for deleting the data in the `cleanup` phase.
+
+```groovy
+setup {
+    curlAndExtract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
+    curlAndExtract("https://www.example.com/beautiful_database.tar.gz", "${launchDir}/data_dir")
+    curlAndExtract("https://www.example.com/secret/data", "${launchDir}/data_dir", "tar.bz2")
+}
+
+when {
+  params {
+    pretty_db_path = "${launchDir}/data_dir/pretty_db"
+    beautiful_db_path = "${launchDir}/data_dir/db/beauty_db"
+    secret_db_path = "${launchDir}/data_dir/db/secret"
+  }
+}
+
+cleanup {
+    new File("${launchDir}/data_dir").deleteDir()
+}
+```

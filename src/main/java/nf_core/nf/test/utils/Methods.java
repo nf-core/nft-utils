@@ -3,11 +3,8 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -19,12 +16,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
@@ -751,5 +742,204 @@ public class Methods {
 
   public static TreeMap<String,Object> sanitizeOutput(HashMap<String,Object> options, TreeMap<String,Object> channel) {
     return OutputSanitizer.sanitizeOutput(options, channel);
+  }
+
+  /**
+   * Download a tar archive and extract it in the given destination directory.
+   * The file is streamed directly with `curl` into `tar` via a pipe.
+   * The compression type must be provided if applicable.
+   * Uses safe single-quoting for the URL and destination path.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the tarball into
+   * @param compression compression type: tar, gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
+   *        or any of these prefixed with "tar." or "t"
+   * @throws IOException on failure
+   */
+  private static void curlAndUntar(String urlString, String destPath, String compression) throws IOException {
+    Path destDir = Paths.get(destPath);
+    Files.createDirectories(destDir);
+
+    String escUrl = Utils.shellEscape(urlString);
+    String escDest = Utils.shellEscape(destPath);
+    String cmd = "curl -L --retry 5 " + escUrl + " | tar xaf - -C " + escDest;
+
+    // Convert compression name to tar option
+    if (compression != null && !compression.equals("tar")) {
+      // Remove leading "tar." or "t" if present
+      if (compression.startsWith("tar.")) {
+        compression = compression.substring(4);
+      } else if (compression.startsWith("t")) {
+        compression = compression.substring(1);
+      }
+
+      if (compression.equals("gzip") || compression.equals("gz")) {
+        compression = "gzip";
+      } else if (compression.equals("bzip2") || compression.equals("bz2")) {
+        compression = "bzip2";
+      } else if (compression.equals("xz")) {
+        compression = "xz";
+      } else if (compression.equals("lz4")) {
+        compression = "lz4";
+      } else if (compression.equals("lzma")) {
+        compression = "lzma";
+      } else if (compression.equals("lzop")) {
+        compression = "lzop";
+      } else if (compression.equals("zstd") || compression.equals("zst")) {
+        compression = "zstd";
+      } else {
+        throw new IllegalArgumentException("Unsupported compression type: " + compression);
+      }
+      cmd += " --" + compression;
+    }
+
+    ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
+    try {
+      Utils.ProcessResult result = Utils.runProcess(pb);
+      if (result.exitCode != 0) {
+        System.err.println("Error downloading and extracting file " + urlString + ": exit code " + result.exitCode + "\n");
+        System.out.println("Bash command: \n" + cmd);
+        System.err.println("command output: \n");
+        System.err.println(result.stderr);
+      } else {
+        System.out.println("Successfully downloaded and extracted file: " + urlString);
+      }
+    } catch (IOException | InterruptedException e) {
+      System.err.println("Error downloading and extracting file " + urlString + ": " + e.getMessage());
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+  /**
+   * Download a zip file and extract it in the given destination directory.
+   * The file is first downloaded with `curl` to a temporary file, then we
+   * call `unzip` and delete the temporary file.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the zip into
+   * @throws IOException on failure
+   */
+  private static void curlAndUnzip(String urlString, String destPath) throws IOException {
+    Path destDir = Paths.get(destPath);
+    Files.createDirectories(destDir);
+
+    // Create a temporary file in the destination directory for the downloaded zip
+    Path tempFile = Files.createTempFile(destDir, "download", ".zip");
+
+    // Run curl
+    ProcessBuilder pb = new ProcessBuilder(
+        "curl",
+        "-L",
+        "--retry",
+        "5",
+        "-o",
+        tempFile.toString(),
+        urlString
+    );
+
+    try {
+      Utils.ProcessResult result = Utils.runProcess(pb);
+      if (result.exitCode != 0) {
+        System.err.println("Error downloading file " + urlString + ": exit code " + result.exitCode + "\n");
+        System.out.println("Command: " + String.join(" ", pb.command()));
+        System.err.println("command output: \n");
+        System.err.println(result.stderr);
+        return;
+      }
+      // Run unzip
+      pb = new ProcessBuilder(
+          "unzip",
+          "-o",
+          tempFile.toString(),
+          "-d",
+          destPath
+      );
+      result = Utils.runProcess(pb);
+      if (result.exitCode != 0) {
+        System.err.println("Error extracting zip " + tempFile + ": exit code " + result.exitCode + "\n");
+        System.out.println("Command: " + String.join(" ", pb.command()));
+        System.err.println("command output: \n");
+        System.err.println(result.stderr);
+      } else {
+        System.out.println("Successfully downloaded and extracted file: " + urlString);
+      }
+    } catch (IOException | InterruptedException e) {
+      System.err.println("Error downloading and extracting file " + urlString + ": " + e.getMessage());
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
+    } finally {
+      try {
+        Files.deleteIfExists(tempFile);
+      } catch (IOException e) {
+        // Do not fail the operation if temp file cleanup fails; just log it
+        System.err.println("Warning: failed to delete temporary file " + tempFile + ": " + e.getMessage());
+      }
+    }
+  }
+
+  /**
+   * Download an archive and extract it in the given destination directory.
+   * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
+   * tar archives based on the URL's file extension.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the archive into
+   * @throws IOException on failure or if archive type is unsupported
+   */
+  public static void curlAndExtract(String urlString, String destPath) throws IOException {
+    String lower = Utils.getURLFileName(urlString);
+
+    if (lower.endsWith(".zip")) {
+      curlAndUnzip(urlString, destPath);
+      return;
+    }
+
+    for (String suffix: new String [] {"gz", "bz2", "xz", "lz4", "lzma", "lzop", "zst", "zstd"}) {
+      if (lower.endsWith(".tar." + suffix) || lower.endsWith(".t" + suffix)) {
+        curlAndUntar(urlString, destPath, suffix);
+        return;
+      }
+    }
+
+    if (lower.endsWith(".tar")) {
+      curlAndUntar(urlString, destPath, null);
+      return;
+    }
+
+    throw new IllegalArgumentException("Unsupported archive type in URL: " + urlString);
+  }
+
+  /**
+   * Download an archive and extract it in the given destination directory.
+   * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
+   * tar archives based on the `compression` parameter.
+   *
+   * @param urlString the URL to fetch
+   * @param destPath directory to extract the archive into
+   * @param compression compression type: zip, tar, or any of the following prefixed with "tar." or "t":
+   *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
+   * @throws IOException on failure or if archive type is unsupported
+   */
+  public static void curlAndExtract(String urlString, String destPath, String compression) throws IOException {
+    if (compression == null || compression.isEmpty()) {
+      throw new IllegalArgumentException("The 'compression' parameter is required.");
+    }
+    String lower = compression.toLowerCase(Locale.ROOT);
+    // Zip is the only clearly defined archive format.
+    // Everything else is assumed to be Tar
+    if (lower.equals("zip")) {
+      curlAndUnzip(urlString, destPath);
+    } else if (lower.equals("tar")) {
+      curlAndUntar(urlString, destPath, null);
+    } else if (lower.startsWith("tar.")) {
+      curlAndUntar(urlString, destPath, compression);
+    } else if (lower.startsWith("t")) {
+      curlAndUntar(urlString, destPath, compression);
+    } else {
+      throw new IllegalArgumentException("Unsupported compression type: " + compression);
+    }
   }
 }
