@@ -747,19 +747,42 @@ public class Methods {
   /**
    * Download a tar archive and extract it in the given destination directory.
    * The file is streamed directly with `curl` into `tar` via a pipe.
+   * The compression type must be provided if applicable.
    * Uses safe single-quoting for the URL and destination path.
    *
    * @param urlString the URL to fetch
    * @param destPath directory to extract the tarball into
+   * @param compression compression type: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
    * @throws IOException on failure
    */
-  public static void curlAndUntar(String urlString, String destPath) throws IOException {
+  private static void curlAndUntar(String urlString, String destPath, String compression) throws IOException {
     Path destDir = Paths.get(destPath);
     Files.createDirectories(destDir);
 
     String escUrl = Utils.shellEscape(urlString);
     String escDest = Utils.shellEscape(destPath);
     String cmd = "curl -L --retry 5 " + escUrl + " | tar xaf - -C " + escDest;
+
+    if (compression != null) {
+      if (compression.equals("gzip") || compression.equals("gz")) {
+        compression = "gzip";
+      } else if (compression.equals("bzip2") || compression.equals("bz2")) {
+        compression = "bzip2";
+      } else if (compression.equals("xz")) {
+        compression = "xz";
+      } else if (compression.equals("lz4")) {
+        compression = "lz4";
+      } else if (compression.equals("lzma")) {
+        compression = "lzma";
+      } else if (compression.equals("lzop")) {
+        compression = "lzop";
+      } else if (compression.equals("zstd") || compression.equals("zst")) {
+        compression = "zstd";
+      } else {
+        throw new IllegalArgumentException("Unsupported compression type: " + compression);
+      }
+      cmd += " --" + compression;
+    }
 
     ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
     try {
@@ -789,7 +812,7 @@ public class Methods {
    * @param destPath directory to extract the zip into
    * @throws IOException on failure
    */
-  public static void curlAndUnzip(String urlString, String destPath) throws IOException {
+  private static void curlAndUnzip(String urlString, String destPath) throws IOException {
     Path destDir = Paths.get(destPath);
     Files.createDirectories(destDir);
 
@@ -858,6 +881,31 @@ public class Methods {
    * @throws IOException on failure or if archive type is unsupported
    */
   public static void curlAndExtract(String urlString, String destPath) throws IOException {
+    String lower = getURLFileName(urlString);
+    // .zip is the only definitve extension. tar has too many and
+    // will be considered the default
+    if (lower.endsWith(".zip")) {
+      curlAndUnzip(urlString, destPath);
+    } else if (lower.endsWith("gz")) {
+      curlAndUntar(urlString, destPath, "gzip");
+    } else if (lower.endsWith("bz2")) {
+      curlAndUntar(urlString, destPath, "bzip2");
+    } else if (lower.endsWith("xz")) {
+      curlAndUntar(urlString, destPath, "xz");
+    } else if (lower.endsWith("lz4")) {
+      curlAndUntar(urlString, destPath, "lz4");
+    } else if (lower.endsWith("lzma")) {
+      curlAndUntar(urlString, destPath, "lzma");
+    } else if (lower.endsWith("lzop")) {
+      curlAndUntar(urlString, destPath, "lzop");
+    } else if (lower.endsWith("zst") || lower.endsWith("zstd")) {
+      curlAndUntar(urlString, destPath, "zstd");
+    } else {
+      curlAndUntar(urlString, destPath, null);
+    }
+  }
+
+  private static String getURLFileName(String urlString) {
     // Try to extract a path portion from the URL (strip query strings)
     String pathPart = urlString;
     try {
@@ -869,14 +917,6 @@ public class Methods {
       // If parsing fails, fall back to raw urlString
       pathPart = urlString;
     }
-
-    String lower = pathPart.toLowerCase(Locale.ROOT);
-    // .zip is the only definitve extension. tar has too many and
-    // will be considered the default
-    if (lower.endsWith(".zip")) {
-      curlAndUnzip(urlString, destPath);
-    } else {
-      curlAndUntar(urlString, destPath);
-    }
+    return pathPart.toLowerCase(Locale.ROOT);
   }
 }

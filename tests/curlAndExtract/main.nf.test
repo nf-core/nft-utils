@@ -1,52 +1,10 @@
 nextflow_process {
 
-    name "Test Process curlAndUntar"
+    name "Test Process curlAndExtract"
     script "./main.nf"
     process "TEST_MODULE"
 
     tag "test"
-
-    test("test curlAndUntar - tar file") {
-
-        setup {
-            curlAndUntar("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", "${launchDir}/dbs")
-        }
-        then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
-            assert snapshot(files).match()
-        }
-        cleanup {
-            new File("${launchDir}/dbs").deleteDir()
-        }
-    }
-
-    test("test curlAndUntar - tar.gz file") {
-
-        setup {
-            curlAndUntar("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs")
-        }
-        then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
-            assert snapshot(files).match()
-        }
-        cleanup {
-            new File("${launchDir}/dbs").deleteDir()
-        }
-    }
-
-    test("test curlAndUnzip") {
-
-        setup {
-            curlAndUnzip("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", "${launchDir}/dbs")
-        }
-        then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
-            assert snapshot(files).match()
-        }
-        cleanup {
-            new File("${launchDir}/dbs").deleteDir()
-        }
-    }
 
     test("test curlAndExtract - tar file") {
 

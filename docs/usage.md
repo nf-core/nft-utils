@@ -543,72 +543,28 @@ then {
 }
 ```
 
-### `curlAndUntar()` - Download and extract a Tar archive
-
-The `curlAndUntar()` function is used to download a tar archive (possibly compressed)
-from the Internet with `curl` and extract it in the required destination
-directory. `tar` automatically recognises compressed archives such as `tar.gz`, `tar.bz2`, etc.
-
-You are responsible for deleting the data in the `cleanup` phase.
-
-```groovy
-setup {
-    curlAndUntar("https://www.example.com/database.tar.gz", "${launchDir}/data_dir")
-}
-
-when {
-  params {
-    db_path = "${launchDir}/data_dir/db/"
-  }
-}
-
-cleanup {
-    new File("${launchDir}/data_dir/db").deleteDir()
-}
-```
-
-### `curlAndUnzip()` - Download and extract a Zip archive
-
-The `curlAndUnzip()` function is used to download a zip archive
-from the Internet with `curl` and extract it in the required destination
-directory.
-
-You are responsible for deleting the data in the `cleanup` phase.
-
-```groovy
-setup {
-    curlAndUnzip("https://www.example.com/database.zip", "${launchDir}/data_dir")
-}
-
-when {
-  params {
-    db_path = "${launchDir}/data_dir/db/"
-  }
-}
-
-cleanup {
-    new File("${launchDir}/data_dir/db").deleteDir()
-}
-```
-
 ### `curlAndExtract()` - Download and extract an archive
 
 The `curlAndExtract()` function is used to download an archive
 from the Internet with `curl` and extract it in the required destination
 directory.
-Zip and Tar archives are currently supported, thanks to the above
-`curlAndUntar` and `curlAndUnzip`.
+Zip and Tar archives are currently supported. Tar archives can be compressed
+with any of these algorithms: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd.
+The choice of archive format and compression algorithm is based on
+the name of the archive.
 
 You are responsible for deleting the data in the `cleanup` phase.
 
 ```groovy
 setup {
-    curlAndExtract("https://www.example.com/database.zip", "${launchDir}/data_dir")
+    curlAndExtract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
+    curlAndExtract("https://www.example.com/beautiful_database.tar.gz", "${launchDir}/data_dir")
 }
 
 when {
   params {
-    db_path = "${launchDir}/data_dir/db/"
+    pretty_db_path = "${launchDir}/data_dir/pretty_db"
+    beautiful_db_path = "${launchDir}/data_dir/db/beauty_db"
   }
 }
 
