@@ -573,6 +573,6 @@ when {
 }
 
 cleanup {
-    new File("${launchDir}/data_dir/db").deleteDir()
+    new File("${launchDir}/data_dir").deleteDir()
 }
 ```
