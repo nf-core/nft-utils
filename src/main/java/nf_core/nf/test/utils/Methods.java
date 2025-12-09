@@ -881,7 +881,7 @@ public class Methods {
    * @throws IOException on failure or if archive type is unsupported
    */
   public static void curlAndExtract(String urlString, String destPath) throws IOException {
-    String lower = getURLFileName(urlString);
+    String lower = Utils.getURLFileName(urlString);
     // .zip is the only definitve extension. tar has too many and
     // will be considered the default
     if (lower.endsWith(".zip")) {
@@ -903,20 +903,5 @@ public class Methods {
     } else {
       curlAndUntar(urlString, destPath, null);
     }
-  }
-
-  private static String getURLFileName(String urlString) {
-    // Try to extract a path portion from the URL (strip query strings)
-    String pathPart = urlString;
-    try {
-      java.net.URI uri = new java.net.URI(urlString);
-      if (uri.getPath() != null && !uri.getPath().isEmpty()) {
-        pathPart = uri.getPath();
-      }
-    } catch (Exception e) {
-      // If parsing fails, fall back to raw urlString
-      pathPart = urlString;
-    }
-    return pathPart.toLowerCase(Locale.ROOT);
   }
 }

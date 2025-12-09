@@ -3,6 +3,7 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Locale;
 
 public class Utils {
 
@@ -40,5 +41,20 @@ public class Utils {
   public static String shellEscape(String s) {
     if (s == null) return "''";
     return "'" + s.replace("'", "'" + "\"'\"" + "'") + "'";
+  }
+
+  public static String getURLFileName(String urlString) {
+    // Try to extract a path portion from the URL (strip query strings)
+    String pathPart = urlString;
+    try {
+      java.net.URI uri = new java.net.URI(urlString);
+      if (uri.getPath() != null && !uri.getPath().isEmpty()) {
+        pathPart = uri.getPath();
+      }
+    } catch (Exception e) {
+      // If parsing fails, fall back to raw urlString
+      pathPart = urlString;
+    }
+    return pathPart.toLowerCase(Locale.ROOT);
   }
 }
