@@ -37,12 +37,21 @@ public class Utils {
     return new ProcessResult(exitCode, stderr.toString());
   }
 
-  // Helper to single-quote a string for safe shell usage: '...'
+  /**
+   * Shell escape a string by wrapping in single quotes and escaping existing single quotes.
+   * @param s
+   * @return The shell-escaped string
+   */
   public static String shellEscape(String s) {
     if (s == null) return "''";
     return "'" + s.replace("'", "'" + "\"'\"" + "'") + "'";
   }
 
+  /**
+   * Extract a lower-cased file name portion from a URL string for extension checking.
+   * @param urlString The URL string
+   * @return The lower-cased file name portion of the URL
+   */
   public static String getURLFileName(String urlString) {
     // Try to extract a path portion from the URL (strip query strings)
     String pathPart = urlString;
