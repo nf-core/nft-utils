@@ -17,6 +17,7 @@ We'd like to thank the following people:
 - [Jonathan Manning](https://github.com/pinin4fjords)
 - [Lukas Forer](https://github.com/lukfor)
 - [Matthias Zepper](https://github.com/MatthiasZepper)
+- [Matthieu Muffato](https://github.com/muffato)
 - [Maxime U. Garcia](https://github.com/maxulysse)
 - [Nicolas Vannieuwkerke](https://github.com/nvnieuwk)
 - [Sateesh Peri](https://github.com/sateeshperi)
