@@ -22,6 +22,10 @@ public class NfCoreUtils {
       File modulesDir = new File(libDir + "/modules");
       modulesDir.mkdirs();
 
+      // Create state directory for tracking installed modules
+      File stateDir = new File(libDir + "/state");
+      stateDir.mkdirs();
+
       // Create .nf-core.yml file
       File nfcoreYml = new File(libDir + "/.nf-core.yml");
       try (FileWriter writer = new FileWriter(nfcoreYml)) {
@@ -84,6 +88,16 @@ public class NfCoreUtils {
    */
   private static void installModule(String libDir, String name, String sha, String remote) {
     try {
+      // Create a cache key based on module parameters
+      String cacheKey = createModuleCacheKey(name, sha, remote);
+      File stateFile = new File(libDir + "/state/" + cacheKey + ".installed");
+
+      // Check if module is already installed
+      if (stateFile.exists()) {
+        System.out.println("Module already installed (cached): " + name);
+        return;
+      }
+
       StringBuilder command = new StringBuilder("cd " + libDir + " && nf-core --verbose modules");
 
       if (remote != null && !remote.isEmpty()) {
@@ -107,12 +121,60 @@ public class NfCoreUtils {
         System.err.println(result.stderr);
       } else {
         System.out.println("Successfully installed module: " + name);
+        // Write state file to mark module as installed
+        writeModuleStateFile(stateFile);
       }
     } catch (IOException | InterruptedException e) {
       System.err.println("Error installing module " + name + ": " + e.getMessage());
       if (e instanceof InterruptedException) {
         Thread.currentThread().interrupt();
       }
+    }
+  }
+
+  /**
+   * Create a cache key for a module based on its parameters
+   * @param name The module name
+   * @param sha The SHA hash (optional)
+   * @param remote The remote repository (optional)
+   * @return A hashed cache key string
+   */
+  private static String createModuleCacheKey(String name, String sha, String remote) {
+    StringBuilder key = new StringBuilder(name);
+    if (sha != null && !sha.isEmpty()) {
+      key.append("_").append(sha);
+    }
+    if (remote != null && !remote.isEmpty()) {
+      key.append("_").append(remote);
+    }
+
+    try {
+      java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+      byte[] messageDigest = md.digest(key.toString().getBytes());
+      StringBuilder hexString = new StringBuilder();
+      for (byte b : messageDigest) {
+        String hex = Integer.toHexString(0xff & b);
+        if (hex.length() == 1) hexString.append('0');
+        hexString.append(hex);
+      }
+      return hexString.toString();
+    } catch (java.security.NoSuchAlgorithmException e) {
+      System.err.println("Warning: MD5 algorithm not available, using unhashed key");
+      return key.toString();
+    }
+  }
+
+  /**
+   * Write a state file to mark a module as installed
+   * @param stateFile The state file to create
+   */
+  private static void writeModuleStateFile(File stateFile) {
+    try {
+      if (!stateFile.exists()) {
+        stateFile.createNewFile();
+      }
+    } catch (IOException e) {
+      System.err.println("Warning: Could not write state file for caching: " + e.getMessage());
     }
   }
 
