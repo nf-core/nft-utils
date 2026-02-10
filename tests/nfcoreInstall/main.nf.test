@@ -21,6 +21,38 @@ nextflow_process {
             )
         }
 
+        cleanup {
+          new File("${launchDir}/library/").deleteDir()
+        }
+
+    }
+
+    test("test module list - reinstall") {
+
+        setup {
+            // Install module
+            nfcoreInitialise("${launchDir}/library/")
+            nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
+
+            // Delete module files
+            new File("${launchDir}/library/modules/nf-core/minimap2/").deleteDir()
+            new File("${launchDir}/library/modules.json").delete()
+
+            // Install module again (shouldn't create new files)
+            nfcoreInstall("${launchDir}/library/", ["minimap2/index"])
+        }
+
+        then {
+            assertAll(
+                { assert !path("${launchDir}/library/modules.json").exists() },
+                { assert !path("${launchDir}/library/modules/nf-core/minimap2/").exists() }
+            )
+        }
+
+        cleanup {
+          new File("${launchDir}/library/").deleteDir()
+        }
+
     }
 
     test("test module map") {
@@ -70,6 +102,10 @@ nextflow_process {
                 }
 
             )
+        }
+
+        cleanup {
+          new File("${launchDir}/library/").deleteDir()
         }
 
     }

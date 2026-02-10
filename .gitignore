@@ -37,3 +37,6 @@ work/
 
 # Text editor
 .vscode
+
+# macOS
+.DS_Store
