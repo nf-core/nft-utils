@@ -736,11 +736,12 @@ public class Methods {
     return filtered;
   }
 
-  public static TreeMap<String,Object> sanitizeOutput(TreeMap<String,Object> channel) {
-    return sanitizeOutput(new HashMap<String,Object>(), channel);
+  public static TreeMap<String, Object> sanitizeOutput(TreeMap<String, Object> channel) {
+    return sanitizeOutput(new HashMap<String, Object>(), channel);
   }
 
-  public static TreeMap<String,Object> sanitizeOutput(HashMap<String,Object> options, TreeMap<String,Object> channel) {
+  public static TreeMap<String, Object> sanitizeOutput(HashMap<String, Object> options,
+      TreeMap<String, Object> channel) {
     return OutputSanitizer.sanitizeOutput(options, channel);
   }
 
@@ -750,10 +751,11 @@ public class Methods {
    * The compression type must be provided if applicable.
    * Uses safe single-quoting for the URL and destination path.
    *
-   * @param urlString the URL to fetch
-   * @param destPath directory to extract the tarball into
-   * @param compression compression type: tar, gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
-   *        or any of these prefixed with "tar." or "t"
+   * @param urlString   the URL to fetch
+   * @param destPath    directory to extract the tarball into
+   * @param compression compression type: tar, gzip, gz, bzip2, bz2, xz, lz4,
+   *                    lzma, lzop, zstd
+   *                    or any of these prefixed with "tar." or "t"
    * @throws IOException on failure
    */
   private static void curlAndUntar(String urlString, String destPath, String compression) throws IOException {
@@ -797,7 +799,8 @@ public class Methods {
     try {
       Utils.ProcessResult result = Utils.runProcess(pb);
       if (result.exitCode != 0) {
-        System.err.println("Error downloading and extracting file " + urlString + ": exit code " + result.exitCode + "\n");
+        System.err
+            .println("Error downloading and extracting file " + urlString + ": exit code " + result.exitCode + "\n");
         System.out.println("Bash command: \n" + cmd);
         System.err.println("command output: \n");
         System.err.println(result.stderr);
@@ -818,7 +821,7 @@ public class Methods {
    * call `unzip` and delete the temporary file.
    *
    * @param urlString the URL to fetch
-   * @param destPath directory to extract the zip into
+   * @param destPath  directory to extract the zip into
    * @throws IOException on failure
    */
   private static void curlAndUnzip(String urlString, String destPath) throws IOException {
@@ -836,8 +839,7 @@ public class Methods {
         "5",
         "-o",
         tempFile.toString(),
-        urlString
-    );
+        urlString);
 
     try {
       Utils.ProcessResult result = Utils.runProcess(pb);
@@ -854,8 +856,7 @@ public class Methods {
           "-o",
           tempFile.toString(),
           "-d",
-          destPath
-      );
+          destPath);
       result = Utils.runProcess(pb);
       if (result.exitCode != 0) {
         System.err.println("Error extracting zip " + tempFile + ": exit code " + result.exitCode + "\n");
@@ -881,12 +882,70 @@ public class Methods {
   }
 
   /**
+   * Get all file paths from a Nextflow channel output.
+   * This method collects, flattens, and filters a channel to return only absolute
+   * file paths (strings starting with "/").
+   * Maps and non-absolute paths are filtered out.
+   *
+   * @param channel the channel output to process (typically a Groovy collection)
+   * @return a flattened list containing only absolute file paths
+   */
+  public static List getAllFilesFromChannel(Object channel) {
+    List result = new ArrayList<>();
+
+    if (channel == null) {
+      return result;
+    }
+
+    // Flatten and filter the channel
+    flattenAndFilter(channel, result);
+
+    return result;
+  }
+
+  /**
+   * Helper method to recursively flatten nested collections and filter items.
+   * Keeps only String items that start with "/" (absolute paths), excludes Maps.
+   */
+  private static void flattenAndFilter(Object obj, List result) {
+    if (obj == null) {
+      return;
+    }
+
+    // Skip Maps
+    if (obj instanceof Map) {
+      return;
+    }
+
+    // If it's a collection/iterable, recursively process each element
+    if (obj instanceof Iterable) {
+      for (Object item : (Iterable) obj) {
+        flattenAndFilter(item, result);
+      }
+    }
+    // If it's a string starting with "/", add it
+    else if (obj instanceof String) {
+      String str = (String) obj;
+      if (str.startsWith("/")) {
+        result.add(str);
+      }
+    }
+    // For arrays
+    else if (obj.getClass().isArray()) {
+      int length = java.lang.reflect.Array.getLength(obj);
+      for (int i = 0; i < length; i++) {
+        flattenAndFilter(java.lang.reflect.Array.get(obj, i), result);
+      }
+    }
+  }
+
+  /**
    * Download an archive and extract it in the given destination directory.
    * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
    * tar archives based on the URL's file extension.
    *
    * @param urlString the URL to fetch
-   * @param destPath directory to extract the archive into
+   * @param destPath  directory to extract the archive into
    * @throws IOException on failure or if archive type is unsupported
    */
   public static void curlAndExtract(String urlString, String destPath) throws IOException {
@@ -897,7 +956,7 @@ public class Methods {
       return;
     }
 
-    for (String suffix: new String [] {"gz", "bz2", "xz", "lz4", "lzma", "lzop", "zst", "zstd"}) {
+    for (String suffix : new String[] { "gz", "bz2", "xz", "lz4", "lzma", "lzop", "zst", "zstd" }) {
       if (lower.endsWith(".tar." + suffix) || lower.endsWith(".t" + suffix)) {
         curlAndUntar(urlString, destPath, suffix);
         return;
@@ -917,9 +976,10 @@ public class Methods {
    * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
    * tar archives based on the `compression` parameter.
    *
-   * @param urlString the URL to fetch
-   * @param destPath directory to extract the archive into
-   * @param compression compression type: zip, tar, or any of the following prefixed with "tar." or "t":
+   * @param urlString   the URL to fetch
+   * @param destPath    directory to extract the archive into
+   * @param compression compression type: zip, tar, or any of the following
+   *                    prefixed with "tar." or "t":
    *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
    * @throws IOException on failure or if archive type is unsupported
    */
