@@ -366,15 +366,6 @@ test("Process output test") {
 }
 ```
 
-#### What gets filtered
-
-The function automatically:
-
-- **Includes:** Absolute file paths (strings starting with "/")
-- **Excludes:** Metadata maps (like `[id: 'sample1', single_end: true]`)
-- **Excludes:** Relative paths or non-path strings
-- **Handles:** Nested structures, arrays, and various collection types
-
 ### `listToMD5()`
 
 This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.
