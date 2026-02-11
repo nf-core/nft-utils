@@ -313,10 +313,17 @@ When working with nf-test snapshots of process aka modules or subworkflows outpu
 Previously, this required repetitive code like:
 
 ```groovy
+file(process.out.zip[0][3][0]).name,
+file(process.out.zip[0][3][1]).name,
+```
+
+Which could be simplified to:
+
+```groovy
 process.out.html[0][3].collect { f -> file(f).name }
 ```
 
-or if you wanted to be less specific about the structure of the channel output, you might have used a more verbose pattern like:
+But if you wanted to be less specific about the structure of the channel output, you might have used a more verbose pattern like:
 
 ```groovy
 process.out.html.collect().flatten().findAll { !(it instanceof Map) && it.startsWith("/") }
