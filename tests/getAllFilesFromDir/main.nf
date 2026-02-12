@@ -1,5 +1,4 @@
 workflow {
-
     def trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
     // stable_content

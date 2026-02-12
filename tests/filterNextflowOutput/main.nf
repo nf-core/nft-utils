@@ -1,14 +1,14 @@
 include { FASTQC } from './modules/local/fastqc'
 
-params.failure         = false
-params.outdir          = "results"
-params.monochrome_logs = false
+params {
+    failure         : Boolean = false
+    outdir          : String = "results"
+    monochrome_logs : Boolean = false
+}
 
 workflow {
-
-    colors = getColors(params.monochrome_logs)
-
-    input = channel.of(
+    def colors = getColors(params.monochrome_logs)
+    def input = channel.of(
         'sample_1',
         'sample_2',
         'sample_3',

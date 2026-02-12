@@ -1,5 +1,4 @@
 workflow {
-
     channel.of(
             """
             Workflow:
