@@ -52,30 +52,25 @@ public class NfCoreUtils {
       throw new IllegalArgumentException("Modules list not provided or is empty!");
     }
 
-    // We need to check whether we have a list or a map
-    // Can't write overloaded function for java reasons beyond me
-    Object firstElement = modules.get(0);
-
-    if (firstElement instanceof String) {
-      for (Object module : modules) {
-        installModule(libDir, (String) module, null, null);
-      }
-    } else if (firstElement instanceof LinkedHashMap || firstElement instanceof Map) {
-      for (Object moduleObj : modules) {
+    for (Object moduleObj : modules) {
+      if (moduleObj instanceof String) {
+        installModule(libDir, (String) moduleObj, null, null);
+      } else if (moduleObj instanceof LinkedHashMap || moduleObj instanceof Map) {
         Map<String, String> moduleMap = (Map<String, String>) moduleObj;
         String name = moduleMap.get("name");
         String sha = moduleMap.get("sha");
         String remote = moduleMap.get("remote");
 
         if (name == null || name.isEmpty()) {
-          System.err.println("Error: Module name is required");
-          continue;
+          throw new IllegalArgumentException("Module name is required");
         }
 
         installModule(libDir, name, sha, remote);
+      } else {
+        throw new RuntimeException(
+          "Unsupported module type: " + moduleObj.getClass().getSimpleName() + ". Expected String or Map."
+        );
       }
-    } else {
-      System.err.println("Error: Unsupported module type. Expected String or Map.");
     }
   }
 
@@ -159,8 +154,7 @@ public class NfCoreUtils {
       }
       return hexString.toString();
     } catch (java.security.NoSuchAlgorithmException e) {
-      System.err.println("Warning: MD5 algorithm not available, using unhashed key");
-      return key.toString();
+      throw new RuntimeException("MD5 algorithm not available on this system", e);
     }
   }
 
@@ -174,7 +168,7 @@ public class NfCoreUtils {
         stateFile.createNewFile();
       }
     } catch (IOException e) {
-      System.err.println("Warning: Could not write state file for caching: " + e.getMessage());
+      throw new RuntimeException("Could not write module state file", e);
     }
   }
 
