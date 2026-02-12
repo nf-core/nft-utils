@@ -3,7 +3,7 @@
         "content": [
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -55,7 +55,7 @@
             ],
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -105,17 +105,17 @@
                 "WARN: log.warn with path: [PATH]/.nf-test/tests/[NFT_HASH]/results/test.txt"
             ]
         ],
+        "timestamp": "2026-02-12T15:55:29.423157804",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.0"
-        },
-        "timestamp": "2025-10-28T11:56:48.873208114"
+            "nf-test": "0.9.4",
+            "nextflow": "26.01.1"
+        }
     },
     "Capture both stdout and stderr and keep ANSI codes - monochrome": {
         "content": [
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -164,7 +164,7 @@
             "no stderr",
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -214,17 +214,17 @@
                 "[NXF_HASH] Submitted process > FASTQC (sample_3)"
             ]
         ],
+        "timestamp": "2026-02-12T15:55:32.8221042",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.0"
-        },
-        "timestamp": "2025-10-28T11:47:22.144274019"
+            "nf-test": "0.9.4",
+            "nextflow": "26.01.1"
+        }
     },
     "Capture both stdout and stderr and keep ANSI codes": {
         "content": [
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
                 "\u001b[2m----------------------------------------------------\u001b[0m-",
                 "                                        \u001b[0;32m,--.\u001b[0;30m/\u001b[0;32m,-.\u001b[0m",
                 "\u001b[0;34m        ___     __   __   __   ___     \u001b[0;32m/,-._.--~'\u001b[0m",
@@ -273,7 +273,7 @@
             "no stderr",
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
                 "\u001b[2m----------------------------------------------------\u001b[0m-",
                 "                                        \u001b[0;32m,--.\u001b[0;30m/\u001b[0;32m,-.\u001b[0m",
                 "\u001b[0;34m        ___     __   __   __   ___     \u001b[0;32m/,-._.--~'\u001b[0m",
@@ -323,10 +323,10 @@
                 "[NXF_HASH] Submitted process > FASTQC (sample_3)"
             ]
         ],
+        "timestamp": "2026-02-12T15:55:36.185814302",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.0"
-        },
-        "timestamp": "2025-10-28T11:56:58.291151246"
+            "nf-test": "0.9.4",
+            "nextflow": "26.01.1"
+        }
     }
 }
