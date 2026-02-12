@@ -3,7 +3,7 @@
         "content": [
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -55,7 +55,7 @@
             ],
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -115,7 +115,7 @@
         "content": [
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -164,7 +164,7 @@
             "no stderr",
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
                 "-----------------------------------------------------",
                 "                                        ,--./,-.",
                 "        ___     __   __   __   ___     /,-._.--~'",
@@ -224,7 +224,7 @@
         "content": [
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
                 "\u001b[2m----------------------------------------------------\u001b[0m-",
                 "                                        \u001b[0;32m,--.\u001b[0;30m/\u001b[0;32m,-.\u001b[0m",
                 "\u001b[0;34m        ___     __   __   __   ___     \u001b[0;32m/,-._.--~'\u001b[0m",
@@ -273,7 +273,7 @@
             "no stderr",
             [
                 "N E X T F L O W  ~  version [VERSION]",
-                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] - revision: [REVISION]",
+                "Launching `[PATH]/tests/filterNextflowOutput/./main.nf` [RUN_NAME] DSL2 - revision: [REVISION]",
                 "\u001b[2m----------------------------------------------------\u001b[0m-",
                 "                                        \u001b[0;32m,--.\u001b[0;30m/\u001b[0;32m,-.\u001b[0m",
                 "\u001b[0;34m        ___     __   __   __   ___     \u001b[0;32m/,-._.--~'\u001b[0m",
