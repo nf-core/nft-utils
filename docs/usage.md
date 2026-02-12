@@ -413,7 +413,7 @@ The plugin also adds the following functions to manage dependences of tests on n
 
 ### `nfcoreInitialise()` - set up a temporary nf-core library
 
-In a setup block, use the `nfcoreInitialise()` function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is recommended to use a location inside `launchDir` as this will initialise a test-specific library.
+In a setup block, use the `nfcoreInitialise()` function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is suggested to use a location inside the `.nf-test/` directory to keep this library contained with other nf-test files. You could also include the library inside `${launchDir}` and this will instatiate a test-specific library that is separate from other tests.
 
 ```groovy
 setup {
@@ -449,6 +449,8 @@ setup {
     )
 }
 ```
+
+Inside an initialised library, a `state/` directory is created which tracks which contains files to track which modules have been installed. If, when trying to install a module, a state file for the module exists (matching the name, and `sha` and `remote` if provided), installation will be skipped to save time.
 
 ### `nfcoreLink()` - Link a temporary library to your modules directory
 
