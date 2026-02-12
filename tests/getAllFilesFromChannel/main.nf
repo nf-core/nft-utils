@@ -7,7 +7,8 @@ process FASTQC {
 
     output:
     tuple val(meta), val("${task.process}"), val('fastqc'), path("*.html"), topic: multiqc_files, emit: html
-    tuple val(meta), val("${task.process}"), val('fastqc'), path("*.zip"), topic: multiqc_files, emit: zip
+    tuple val(meta), val("${task.process}"), val('fastqc'), path("*{1,2}*.zip"), topic: multiqc_files, emit: zip
+    tuple val(meta), val("${task.process}"), val('fastqc'), path("*.html"), path("*.zip"), topic: multiqc_files, emit: all
 
     script:
     """

@@ -11,9 +11,9 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = Channel.of([
+                input[0] = Channel.of(
                     [ id: 'test', single_end:true ]
-                ])
+                )
                 """
             }
         }
@@ -22,6 +22,8 @@ nextflow_process {
             assert process.success
             assertAll (
                 { assert snapshot(
+                    getAllFilesFromChannel(process.out.all).collect{f -> file(f).name},
+                    getAllFilesFromChannel(process.out.all),
                     getAllFilesFromChannel(process.out.html).collect{f -> file(f).name},
                     getAllFilesFromChannel(process.out.html),
                     getAllFilesFromChannel(process.out.zip).collect{f -> file(f).name},

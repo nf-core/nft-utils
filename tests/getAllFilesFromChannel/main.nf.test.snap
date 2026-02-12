@@ -2,24 +2,34 @@
     "sarscov2 single-end [fastq]": {
         "content": [
             [
-                "[test]_fastqc.html"
+                "test_fastqc.html",
+                "test_1_fastqc.zip",
+                "test_2_fastqc.zip"
             ],
             [
-                "[test]_fastqc.html:md5,974f1f8565c4d460464a83c56a9dcda1"
+                "test_fastqc.html:md5,24854f9d4c2bc9e908174cabefb1cf07",
+                "test_1_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59",
+                "test_2_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59"
             ],
             [
-                "[test]_1_fastqc.zip",
-                "[test]_2_fastqc.zip"
+                "test_fastqc.html"
             ],
             [
-                "[test]_1_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59",
-                "[test]_2_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59"
+                "test_fastqc.html:md5,24854f9d4c2bc9e908174cabefb1cf07"
+            ],
+            [
+                "test_1_fastqc.zip",
+                "test_2_fastqc.zip"
+            ],
+            [
+                "test_1_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59",
+                "test_2_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59"
             ]
         ],
+        "timestamp": "2026-02-12T17:14:16.362536892",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-02-11T16:11:31.577506948"
+            "nf-test": "0.9.4",
+            "nextflow": "26.01.1"
+        }
     }
 }
