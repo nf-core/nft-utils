@@ -305,6 +305,67 @@ def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore
 def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
 ```
 
+### `getAllFilesFromChannel()`
+
+This function simplifies the extraction of absolute file paths from Nextflow channel outputs by automating the collection, flattening, and filtering process.
+
+When working with nf-test snapshots of process aka modules or subworkflows outputs, you often need to extract file paths from channels.
+Previously, this required repetitive code like:
+
+```groovy
+file(process.out.zip[0][3][0]).name,
+file(process.out.zip[0][3][1]).name,
+```
+
+Which could be simplified to:
+
+```groovy
+process.out.html[0][3].collect { f -> file(f).name }
+```
+
+But if you wanted to be less specific about the structure of the channel output, you might have used a more verbose pattern like:
+
+```groovy
+process.out.html.collect().flatten().findAll { !(it instanceof Map) && it.startsWith("/") }
+```
+
+The `getAllFilesFromChannel()` function replaces this verbose pattern with a simple, reusable call that:
+
+- Collects and flattens nested channel structures
+- Filters out metadata maps
+- Returns only absolute file paths (strings starting with "/")
+- Handles various collection types (lists, arrays, iterables)
+
+#### Basic usage
+
+```groovy
+test("Process output test") {
+    then {
+        assert snapshot(
+            getAllFilesFromChannel(process.out.html),
+            getAllFilesFromChannel(process.out.zip)
+        ).match()
+    }
+}
+```
+
+#### Usage with file names
+
+You can combine the function with Groovy's `.collect()` to extract just the file names:
+
+```groovy
+test("Process output test") {
+    then {
+        assert snapshot(
+            // Get just the file names
+            getAllFilesFromChannel(process.out.html).collect { f -> file(f).name },
+            // Get the full paths
+            getAllFilesFromChannel(process.out.html)
+        ).match()
+    }
+}
+```
+
 ### `listToMD5()`
 
 This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.

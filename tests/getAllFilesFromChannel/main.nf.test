@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test getAllFilesFromChannel"
+    script "./main.nf"
+    process "FASTQC"
+
+    tag "getAllFilesFromChannel"
+
+    test("sarscov2 single-end [fastq]") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of(
+                    [ id: 'test', single_end:true ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll (
+                { assert snapshot(
+                    getAllFilesFromChannel(process.out.all).collect{f -> file(f).name},
+                    getAllFilesFromChannel(process.out.all),
+                    getAllFilesFromChannel(process.out.html).collect{f -> file(f).name},
+                    getAllFilesFromChannel(process.out.html),
+                    getAllFilesFromChannel(process.out.zip).collect{f -> file(f).name},
+                    getAllFilesFromChannel(process.out.zip)
+                ).match() }
+            )
+        }
+    }
+}
