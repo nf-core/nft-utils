@@ -53,7 +53,7 @@ public class OutputSanitizer {
       for (Object item : listValue) {
         fixedList.add(fixUnstable(item));
       }
-      return fixedList;
+      return fixedList.sort();
     } else if (value instanceof Map) {
       Map mapValue = (Map) value;
       Map fixedMap = new TreeMap();
