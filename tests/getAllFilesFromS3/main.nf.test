@@ -1,0 +1,39 @@
+nextflow_pipeline {
+
+    name "Test getAllFilesFromS3"
+    script "./main.nf"
+    tag "getAllFilesFromS3"
+
+    // S3 path produced by a previous Nextflow run — no pipeline execution needed.
+    // The function lists the bucket contents and snapshots the result so that
+    // any unexpected addition or deletion is caught on re-run.
+    def S3_PATH = "s3://nf-core-awsmegatests/sarek/results-4bd2948f98c5bf7b785c91cf6708fffccab25467/test_full_germline_aws/"
+
+    test("getAllFilesFromS3") {
+        then {
+            // Snapshot all file paths relative to the S3 prefix
+            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+
+            assert snapshot(s3Files).match()
+        }
+    }
+
+    test("getAllFilesFromS3 with ignore filter") {
+        then {
+            // Exclude files whose relative paths match a glob pattern
+            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+
+            assert snapshot(s3Files).match()
+        }
+    }
+
+    test("getAllFilesFromS3 with include filter") {
+        then {
+            // Only list files under a specific sub-prefix
+            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, include: ['variant_calling/**'], ignore: ['pipeline_info/execution_*.{html,txt}'])
+
+            assert snapshot(s3Files).match()
+        }
+    }
+}
+

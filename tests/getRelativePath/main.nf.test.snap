@@ -6,11 +6,11 @@
                 "stable/stable_name.txt"
             ]
         ],
+        "timestamp": "2024-10-07T17:40:15.046091",
         "meta": {
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
-        },
-        "timestamp": "2024-10-07T17:40:15.046091"
+        }
     },
     "getRelativePath": {
         "content": [
@@ -21,10 +21,10 @@
                 "stable/stable_name.txt"
             ]
         ],
+        "timestamp": "2024-10-07T16:03:43.069945",
         "meta": {
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
-        },
-        "timestamp": "2024-10-07T16:03:43.069945"
+        }
     }
 }

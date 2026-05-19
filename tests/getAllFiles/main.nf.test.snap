@@ -1,0 +1,28 @@
+{
+    "getAllFiles - local path with named params": {
+        "content": [
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt"
+            ]
+        ],
+        "timestamp": "2026-05-19T19:16:16.257916466",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    }
+}

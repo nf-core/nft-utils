@@ -1,0 +1,33 @@
+nextflow_pipeline {
+
+    name "Test getAllFiles"
+    script "./main.nf"
+    tag "getAllFiles"
+
+    test("getAllFiles - local path with named params") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            // Default: all files, excluding the unstable trace file
+            def all_files = getAllFiles(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+            // Include directory entries, also ignoring unstable trace file
+            def with_dirs = getAllFiles(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+            // Scoped to a sub-directory glob
+            def stable_only = getAllFiles(params.outdir, includeDir: true, include: ['stable/*'])
+            // Ignore unstable files using ignoreFile
+            def stable_content = getAllFiles(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFiles/.nftignore')
+
+            assert snapshot(
+                all_files,
+                with_dirs*.toString(),
+                stable_only*.toString(),
+                stable_content
+            ).match()
+        }
+    }
+
+}

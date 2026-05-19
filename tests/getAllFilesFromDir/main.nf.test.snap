@@ -15,11 +15,11 @@
                 "stable_content.txt:md5,f6d73f703cda1c725ea78369a6c3a48d"
             ]
         ],
+        "timestamp": "2024-10-07T16:53:04.994417",
         "meta": {
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
-        },
-        "timestamp": "2024-10-07T16:53:04.994417"
+        }
     },
     "getAllFilesFromDir": {
         "content": [
@@ -37,10 +37,10 @@
                 "stable_content.txt:md5,f6d73f703cda1c725ea78369a6c3a48d"
             ]
         ],
+        "timestamp": "2024-10-07T16:53:01.146706",
         "meta": {
             "nf-test": "0.9.0",
             "nextflow": "24.09.0"
-        },
-        "timestamp": "2024-10-07T16:53:01.146706"
+        }
     }
 }

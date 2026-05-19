@@ -139,6 +139,65 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 - When using wildcard patterns, all matching files will be processed and their results merged together.
 - The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
+### `getAllFiles()`
+
+:::warning
+This function requires absolute paths and does not support relative paths to `params.outdir`.
+Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
+cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
+
+```groovy
+  when {
+    params {
+      outdir = "$outputDir" // Use nf-test global variable to output dir
+    }
+  }
+```
+
+:::
+
+A unified replacement for `getAllFilesFromDir()` (relative paths) and `getAllFilesFromS3()` that works for **local paths and cloud storage** (S3, GCS, Azure Blob, …) transparently, by delegating path resolution to Nextflow's own filesystem layer via `nextflow.file.FileHelper.asPath()`.
+
+Returns a **sorted list of relative `String` paths** (relative to the given root).
+
+Supported named parameters:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `ignore` | `List<String>` | `[]` | Glob patterns to exclude |
+| `include` | `List<String>` | `["**", "*"]` | Glob patterns to include |
+| `includeDir` | `Boolean` | `false` | Also emit directory entries |
+| `ignoreFile` | `String` | — | Path to a local file containing additional ignore globs (one per line) |
+
+#### Local usage
+
+```groovy
+// All files, ignoring unstable trace files
+def stable_files = getAllFiles(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+
+// Include directory entries, scoped to a sub-path
+def with_dirs = getAllFiles(params.outdir, includeDir: true, include: ['stable/*'])
+
+// Use an .nftignore file for additional exclusions
+def stable_content = getAllFiles(
+    params.outdir,
+    ignore: ['pipeline_info/execution_*.{html,txt}'],
+    ignoreFile: 'tests/mytest/.nftignore'
+)
+
+assert snapshot(stable_files, with_dirs, stable_content).match()
+```
+
+#### Cloud (S3 / GCS / Azure) usage
+
+```groovy
+// Works identically for cloud paths – no aws CLI required
+def s3_files = getAllFiles("s3://my-bucket/results/", ignore: ['pipeline_info/**'])
+assert snapshot(s3_files).match()
+```
+
+Cloud credentials are resolved via the standard Nextflow configuration (profiles, `aws.accessKey`, environment variables, IAM roles, etc.).
+
 ### `getAllFilesFromDir()`
 
 :::warning

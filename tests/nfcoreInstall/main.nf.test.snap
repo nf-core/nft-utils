@@ -22,11 +22,11 @@
                 "meta.yml:md5,dc579195e211eaf80b35a36b3a58d36b"
             ]
         ],
+        "timestamp": "2025-06-26T09:43:44.521124",
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.04.2"
-        },
-        "timestamp": "2025-06-26T09:43:44.521124"
+        }
     },
     "test module list": {
         "content": [
@@ -38,10 +38,10 @@
                 "tests/main.nf.test.snap"
             ]
         ],
+        "timestamp": "2025-06-26T09:43:24.564405",
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.04.2"
-        },
-        "timestamp": "2025-06-26T09:43:24.564405"
+        }
     }
 }
