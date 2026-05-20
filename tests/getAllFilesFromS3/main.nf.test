@@ -12,7 +12,7 @@ nextflow_pipeline {
     test("getAllFilesFromS3") {
         then {
             // Snapshot all file paths relative to the S3 prefix
-            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, ignore: ['pipeline_info/*.{html,json,txt}'])
 
             assert snapshot(s3Files).match()
         }
@@ -21,7 +21,7 @@ nextflow_pipeline {
     test("getAllFilesFromS3 with ignore filter") {
         then {
             // Exclude files whose relative paths match a glob pattern
-            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, ignore: ['pipeline_info/*.{html,json,txt}'])
 
             assert snapshot(s3Files).match()
         }
@@ -30,7 +30,7 @@ nextflow_pipeline {
     test("getAllFilesFromS3 with include filter") {
         then {
             // Only list files under a specific sub-prefix
-            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, include: ['variant_calling/**'], ignore: ['pipeline_info/execution_*.{html,txt}'])
+            def s3Files = getAllFilesFromS3(S3_PATH, noSignRequest: true, include: ['variant_calling/**'], ignore: ['pipeline_info/*.{html,json,txt}'])
 
             assert snapshot(s3Files).match()
         }

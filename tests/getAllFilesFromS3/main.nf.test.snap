@@ -37,15 +37,7 @@
                 "multiqc_plots/svg/",
                 "multiqc_report.html",
                 "pipeline_info/",
-                "pipeline_info/manifest_2026-02-13_11-00-55.bco.json",
-                "pipeline_info/manifest_2026-03-27_07-28-20.bco.json",
                 "pipeline_info/nf_core_sarek_software_mqc_versions.yml",
-                "pipeline_info/params_2026-02-12_09-21-04.json",
-                "pipeline_info/params_2026-02-13_11-02-45.json",
-                "pipeline_info/params_2026-03-27_07-30-13.json",
-                "pipeline_info/pipeline_dag_2026-02-12_09-19-32.html",
-                "pipeline_info/pipeline_dag_2026-02-13_11-00-55.html",
-                "pipeline_info/pipeline_dag_2026-03-27_07-28-20.html",
                 "preprocessing/",
                 "preprocessing/converted/cram_to_bam/NA12878/",
                 "preprocessing/converted/cram_to_bam/NA12878/NA12878.bam",
@@ -120,7 +112,7 @@
                 "variant_calling/tiddit/NA12878/"
             ]
         ],
-        "timestamp": "2026-05-19T18:26:50.590920595",
+        "timestamp": "2026-05-20T09:52:58.284283185",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.1"
@@ -164,15 +156,7 @@
                 "multiqc_plots/svg/",
                 "multiqc_report.html",
                 "pipeline_info/",
-                "pipeline_info/manifest_2026-02-13_11-00-55.bco.json",
-                "pipeline_info/manifest_2026-03-27_07-28-20.bco.json",
                 "pipeline_info/nf_core_sarek_software_mqc_versions.yml",
-                "pipeline_info/params_2026-02-12_09-21-04.json",
-                "pipeline_info/params_2026-02-13_11-02-45.json",
-                "pipeline_info/params_2026-03-27_07-30-13.json",
-                "pipeline_info/pipeline_dag_2026-02-12_09-19-32.html",
-                "pipeline_info/pipeline_dag_2026-02-13_11-00-55.html",
-                "pipeline_info/pipeline_dag_2026-03-27_07-28-20.html",
                 "preprocessing/",
                 "preprocessing/converted/cram_to_bam/NA12878/",
                 "preprocessing/converted/cram_to_bam/NA12878/NA12878.bam",
@@ -247,7 +231,7 @@
                 "variant_calling/tiddit/NA12878/"
             ]
         ],
-        "timestamp": "2026-05-19T19:25:51.154517278",
+        "timestamp": "2026-05-20T09:52:53.246222858",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.1"
