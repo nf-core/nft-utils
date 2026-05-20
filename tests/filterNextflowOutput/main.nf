@@ -1,9 +1,9 @@
 include { FASTQC } from './modules/local/fastqc'
 
 params {
-    failure         : Boolean = false
-    outdir          : String = "results"
-    monochrome_logs : Boolean = false
+    failure: Boolean = false
+    outdir: String = "results"
+    monochrome_logs: Boolean = false
 }
 
 workflow {
