@@ -1236,6 +1236,77 @@ public class Methods {
   }
 
   /**
+   * Downloads a single file from S3 to a temporary local directory and returns the
+   * local {@link Path}. The destination path mirrors the S3 key structure under a
+   * plugin-specific temp directory so repeated calls for the same URI are idempotent.
+   *
+   * <p>Uses Groovy named-parameter syntax:
+   * {@code downloadFromS3("s3://my-bucket/path/to/file.vcf.gz", noSignRequest: true)}
+   *
+   * <p>Supported options:
+   * <ul>
+   *   <li>{@code noSignRequest} – {@code Boolean} pass {@code --no-sign-request}
+   *   to the AWS CLI for publicly readable buckets (default: {@code false})</li>
+   * </ul>
+   *
+   * @param s3Uri   The S3 URI of the file to download (e.g., {@code "s3://my-bucket/dir/file.txt"})
+   * @return A {@link Path} pointing to the downloaded local file
+   * @throws IOException          if the AWS CLI fails or is not available
+   * @throws InterruptedException if the process is interrupted
+   */
+  public static Path downloadFromS3(String s3Uri) throws IOException, InterruptedException {
+    return downloadFromS3(new LinkedHashMap<String, Object>(), s3Uri);
+  }
+
+  /**
+   * Downloads a single file from S3 to a temporary local directory and returns the
+   * local {@link Path}, with options. See {@link #downloadFromS3(String)} for details.
+   *
+   * @param options Named options map (automatically created by Groovy named params)
+   * @param s3Uri   The S3 URI of the file to download
+   * @return A {@link Path} pointing to the downloaded local file
+   * @throws IOException          if the AWS CLI fails or is not available
+   * @throws InterruptedException if the process is interrupted
+   */
+  public static Path downloadFromS3(LinkedHashMap<String, Object> options, String s3Uri)
+      throws IOException, InterruptedException {
+    if (s3Uri == null || s3Uri.isEmpty()) {
+      throw new IllegalArgumentException("The 's3Uri' parameter is required.");
+    }
+    if (!s3Uri.startsWith("s3://")) {
+      throw new IllegalArgumentException("The 's3Uri' parameter must start with 's3://'.");
+    }
+
+    Boolean noSignRequest = (Boolean) options.getOrDefault("noSignRequest", false);
+
+    // Derive a stable local destination: <tmpdir>/nft-utils-s3/<key>
+    String keyPart = s3Uri.substring("s3://".length()); // "bucket/path/to/file"
+    int firstSlash = keyPart.indexOf('/');
+    String relativeKey = firstSlash >= 0 ? keyPart.substring(firstSlash + 1) : keyPart;
+
+    Path destFile = Paths.get(System.getProperty("java.io.tmpdir"), "nft-utils-s3", relativeKey);
+    Files.createDirectories(destFile.getParent());
+
+    List<String> cmd = new ArrayList<>(Arrays.asList("aws", "s3", "cp"));
+    if (noSignRequest) {
+      cmd.add("--no-sign-request");
+    }
+    cmd.add(s3Uri);
+    cmd.add(destFile.toString());
+
+    ProcessBuilder pb = new ProcessBuilder(cmd);
+    pb.redirectErrorStream(false);
+    Process process = pb.start();
+    int exitCode = process.waitFor();
+    if (exitCode != 0) {
+      throw new IOException(
+          "AWS CLI returned exit code " + exitCode + " when downloading: " + s3Uri);
+    }
+
+    return destFile;
+  }
+
+  /**
    * Download an archive and extract it in the given destination directory.
    * Dispatches to `curlAndUnzip` for ZIP files and to `curlAndUntar` for
    * tar archives based on the `compression` parameter.
