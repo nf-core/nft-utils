@@ -142,14 +142,14 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 ### `getAllFiles()`
 
 :::warning
-This function requires absolute paths and does not support relative paths to `params.outdir`.
-Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
-cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
+When using this function with nf-test outputs, prefer assigning the nf-test `outputDir` variable to `params.outdir`.
+Relative local paths may work, but using `$outputDir` is the recommended nf-test setup for predictable path resolution.
+See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
 
 ```groovy
   when {
     params {
-      outdir = "$outputDir" // Use nf-test global variable to output dir
+      outdir = "$outputDir" // Use nf-test global variable as output dir
     }
   }
 ```
