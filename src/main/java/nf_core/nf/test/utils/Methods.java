@@ -980,16 +980,17 @@ public class Methods {
    * <p>Transparently supports local paths <em>and</em> any cloud URI recognised by
    * Nextflow (e.g. {@code s3://}, {@code gs://}, {@code az://}) by delegating path
    * resolution to {@code nextflow.file.FileHelper.asPath()} when that class is
-   * available on the runtime classpath (as it is when running inside nf-test).
-   * Falls back to {@link java.nio.file.Paths#get} for plain local paths when
-   * Nextflow is not present.
+   * available on the runtime classpath (as it is when running inside a Nextflow process).
+   * When Nextflow is not present (e.g. in nf-test's evaluation JVM) and the path is
+   * an S3 URI, falls back to the AWS CLI.
    *
    * @param path The path to list – a local directory or a cloud URI
    *             (e.g. {@code "s3://my-bucket/results/"})
    * @return A sorted list of relative file paths under {@code path}
-   * @throws IOException if the path cannot be walked
+   * @throws IOException          if the path cannot be walked or the AWS CLI fails
+   * @throws InterruptedException if the AWS CLI process is interrupted
    */
-  public static List<String> getAllFiles(String path) throws IOException {
+  public static List<String> getAllFiles(String path) throws IOException, InterruptedException {
     return getAllFiles(new LinkedHashMap<String, Object>(), path);
   }
 
@@ -1008,15 +1009,19 @@ public class Methods {
    *       (default: {@code false})</li>
    *   <li>{@code ignoreFile} – {@code String} path to a local file whose lines are
    *       treated as additional ignore globs (e.g. {@code ".nftignore"})</li>
+   *   <li>{@code noSignRequest} – {@code Boolean} pass {@code --no-sign-request} to
+   *       the AWS CLI when listing a public S3 bucket without credentials; only used
+   *       when Nextflow is not on the classpath (default: {@code false})</li>
    * </ul>
    *
    * @param options Named options map (automatically created by Groovy named params)
    * @param path    The path to list – a local directory or a cloud URI
    * @return A sorted list of relative file paths under {@code path}
-   * @throws IOException if the path cannot be walked
+   * @throws IOException          if the path cannot be walked or the AWS CLI fails
+   * @throws InterruptedException if the AWS CLI process is interrupted
    */
   public static List<String> getAllFiles(LinkedHashMap<String, Object> options, String path)
-      throws IOException {
+      throws IOException, InterruptedException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException("The 'path' parameter is required.");
     }
@@ -1027,6 +1032,7 @@ public class Methods {
         (List<String>) options.getOrDefault("include", Arrays.asList("**", "*"));
     Boolean includeDir = (Boolean) options.getOrDefault("includeDir", false);
     String ignoreFilePath = (String) options.get("ignoreFile");
+    Boolean noSignRequest = (Boolean) options.getOrDefault("noSignRequest", false);
 
     List<String> allIgnoreGlobs = new ArrayList<>(ignoreGlobs);
     if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
@@ -1045,6 +1051,12 @@ public class Methods {
       if (glob != null && !glob.isEmpty()) {
         includeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
       }
+    }
+
+    // When Nextflow is not on the classpath (e.g. nf-test's evaluation JVM) and the
+    // path is an S3 URI, fall back to the AWS CLI.
+    if (path.startsWith("s3://") && !isNextflowAvailable()) {
+      return getAllFilesFromS3ViaCli(path, includeMatchers, excludeMatchers, includeDir, noSignRequest);
     }
 
     Path root = resolveNextflowPath(path);
@@ -1092,6 +1104,83 @@ public class Methods {
   }
 
   /**
+   * Returns {@code true} when Nextflow's {@code FileHelper} class is available on the
+   * runtime classpath (i.e. the code is running inside a Nextflow process or an
+   * environment that bundles Nextflow).
+   */
+  private static boolean isNextflowAvailable() {
+    try {
+      Class.forName("nextflow.file.FileHelper");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Lists files under an S3 prefix using the AWS CLI ({@code aws s3 ls --recursive}),
+   * applying the same include/exclude glob filtering used by the local walk.
+   * S3 key suffixes ending in {@code /} are treated as directory markers and emitted
+   * only when {@code includeDir} is {@code true}.
+   */
+  private static List<String> getAllFilesFromS3ViaCli(
+      String s3Path,
+      List<PathMatcher> includeMatchers,
+      List<PathMatcher> excludeMatchers,
+      boolean includeDir,
+      boolean noSignRequest) throws IOException, InterruptedException {
+
+    String normalizedPath = s3Path.endsWith("/") ? s3Path : s3Path + "/";
+    String bucketAndPrefix = normalizedPath.substring("s3://".length());
+    int firstSlash = bucketAndPrefix.indexOf('/');
+    String prefix = firstSlash >= 0 ? bucketAndPrefix.substring(firstSlash + 1) : "";
+
+    List<String> cmd = new ArrayList<>(Arrays.asList("aws", "s3", "ls", "--recursive"));
+    if (noSignRequest) {
+      cmd.add("--no-sign-request");
+    }
+    cmd.add(normalizedPath);
+
+    ProcessBuilder pb = new ProcessBuilder(cmd);
+    pb.redirectErrorStream(false);
+    Process process = pb.start();
+
+    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    List<String> files = new ArrayList<>();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      // Output format: "2024-01-01 12:00:00      12345 prefix/path/to/file.txt"
+      String[] parts = line.trim().split("\\s+", 4);
+      if (parts.length < 4) continue;
+
+      String fullKey = parts[3];
+      String relativePath = (!prefix.isEmpty() && fullKey.startsWith(prefix))
+          ? fullKey.substring(prefix.length())
+          : fullKey;
+      if (relativePath.isEmpty()) continue;
+
+      boolean isDir = relativePath.endsWith("/");
+      if (isDir && !includeDir) continue;
+
+      Path relPath = Paths.get(isDir ? relativePath.substring(0, relativePath.length() - 1) : relativePath);
+      boolean included = includeMatchers.isEmpty()
+          || includeMatchers.stream().anyMatch(m -> m.matches(relPath));
+      boolean excluded = excludeMatchers.stream().anyMatch(m -> m.matches(relPath));
+      if (included && !excluded) {
+        files.add(relativePath);
+      }
+    }
+
+    int exitCode = process.waitFor();
+    if (exitCode != 0) {
+      throw new IOException(
+          "AWS CLI returned exit code " + exitCode + " when listing: " + normalizedPath);
+    }
+
+    return files.stream().sorted().collect(Collectors.toList());
+  }
+
+  /**
    * Resolves a path string to a NIO {@link Path} using Nextflow's
    * {@code FileHelper.asPath()} when available on the runtime classpath, so that
    * cloud URIs ({@code s3://}, {@code gs://}, {@code az://}, …) are transparently
@@ -1109,130 +1198,6 @@ public class Methods {
       throw new RuntimeException(
           "Failed to resolve path '" + pathString + "': " + cause.getMessage(), cause);
     }
-  }
-
-  /**
-   * Lists all files in an S3 bucket path using the AWS CLI.
-   * Returns relative file paths (relative to the given S3 prefix) for stable
-   * snapshot comparison. Requires the {@code aws} CLI to be available on PATH
-   * and configured with credentials that have {@code s3:ListBucket} access,
-   * or the bucket must be publicly readable (use {@code noSignRequest: true}).
-   *
-   * @param s3Path The S3 path to list (e.g., {@code "s3://my-bucket/results/"})
-   * @return A sorted list of relative file paths within the S3 prefix
-   * @throws IOException          if the AWS CLI fails or is not available
-   * @throws InterruptedException if the process is interrupted
-   * @deprecated Use {@link #getAllFiles(String)} instead, which delegates to Nextflow's
-   *             native filesystem and no longer requires the AWS CLI.
-   */
-  @Deprecated
-  public static List<String> getAllFilesFromS3(String s3Path) throws IOException, InterruptedException {
-    return getAllFilesFromS3(new LinkedHashMap<String, Object>(), s3Path);
-  }
-
-  /**
-   * Lists all files in an S3 bucket path using the AWS CLI, with filtering
-   * options. Uses Groovy named-parameter syntax:
-   * {@code getAllFilesFromS3(s3Path, ignore: ['*.log'], include: ['**'])}
-   *
-   * <p>Supported options:
-   * <ul>
-   *   <li>{@code ignore} – {@code List<String>} of glob patterns to exclude
-   *   (matched against the relative path, e.g. {@code ['pipeline_info/**']})</li>
-   *   <li>{@code include} – {@code List<String>} of glob patterns to include
-   *   (default: {@code ["**"]})</li>
-   *   <li>{@code noSignRequest} – {@code Boolean} pass {@code --no-sign-request}
-   *   to the AWS CLI for publicly readable buckets (default: {@code false})</li>
-   * </ul>
-   *
-   * @param options Named options map (automatically created by Groovy named params)
-   * @param s3Path  The S3 path to list (e.g., {@code "s3://my-bucket/results/"})
-   * @return A sorted list of relative file paths within the S3 prefix
-   * @throws IOException          if the AWS CLI fails or is not available
-   * @throws InterruptedException if the process is interrupted
-   * @deprecated Use {@link #getAllFiles(LinkedHashMap, String)} instead, which delegates
-   *             to Nextflow's native filesystem and no longer requires the AWS CLI.
-   */
-  @Deprecated
-  public static List<String> getAllFilesFromS3(LinkedHashMap<String, Object> options, String s3Path)
-      throws IOException, InterruptedException {
-    if (s3Path == null || s3Path.isEmpty()) {
-      throw new IllegalArgumentException("The 's3Path' parameter is required.");
-    }
-    if (!s3Path.startsWith("s3://")) {
-      throw new IllegalArgumentException("The 's3Path' parameter must start with 's3://'.");
-    }
-
-    // Normalize: ensure trailing slash for consistent prefix stripping
-    String normalizedPath = s3Path.endsWith("/") ? s3Path : s3Path + "/";
-
-    // Derive the key prefix to strip from results.
-    // e.g. s3://my-bucket/results/ → "results/"
-    String bucketAndPrefix = normalizedPath.substring("s3://".length());
-    int firstSlash = bucketAndPrefix.indexOf('/');
-    String prefix = firstSlash >= 0 ? bucketAndPrefix.substring(firstSlash + 1) : "";
-
-    // Extract options
-    List<String> ignoreGlobs = (List<String>) options.getOrDefault("ignore", new ArrayList<String>());
-    List<String> includeGlobs = (List<String>) options.getOrDefault("include", Arrays.asList("**"));
-    Boolean noSignRequest = (Boolean) options.getOrDefault("noSignRequest", false);
-
-    List<PathMatcher> excludeMatchers = new ArrayList<>();
-    for (String glob : ignoreGlobs) {
-      if (glob != null && !glob.isEmpty()) {
-        excludeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
-      }
-    }
-
-    List<PathMatcher> includeMatchers = new ArrayList<>();
-    for (String glob : includeGlobs) {
-      if (glob != null && !glob.isEmpty()) {
-        includeMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
-      }
-    }
-
-    // Run: aws s3 ls --recursive [--no-sign-request] <s3path>
-    List<String> cmd = new ArrayList<>(Arrays.asList("aws", "s3", "ls", "--recursive"));
-    if (noSignRequest) {
-      cmd.add("--no-sign-request");
-    }
-    cmd.add(normalizedPath);
-    ProcessBuilder pb = new ProcessBuilder(cmd);
-    pb.redirectErrorStream(false);
-    Process process = pb.start();
-
-    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-    List<String> files = new ArrayList<>();
-    String line;
-    while ((line = reader.readLine()) != null) {
-      // Output format: "2024-01-01 12:00:00      12345 prefix/path/to/file.txt"
-      String[] parts = line.trim().split("\\s+", 4);
-      if (parts.length < 4) continue;
-
-      String fullKey = parts[3];
-      // Strip the prefix so the path is relative to the requested S3 path
-      String relativePath = (!prefix.isEmpty() && fullKey.startsWith(prefix))
-          ? fullKey.substring(prefix.length())
-          : fullKey;
-      if (relativePath.isEmpty()) continue;
-
-      // Apply include/exclude glob filtering
-      Path relPath = Paths.get(relativePath);
-      boolean included = includeMatchers.isEmpty()
-          || includeMatchers.stream().anyMatch(m -> m.matches(relPath));
-      boolean excluded = excludeMatchers.stream().anyMatch(m -> m.matches(relPath));
-      if (included && !excluded) {
-        files.add(relativePath);
-      }
-    }
-
-    int exitCode = process.waitFor();
-    if (exitCode != 0) {
-      throw new IOException(
-          "AWS CLI returned exit code " + exitCode + " when listing: " + normalizedPath);
-    }
-
-    return files.stream().sorted().collect(Collectors.toList());
   }
 
   /**

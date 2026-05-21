@@ -4,6 +4,33 @@ nextflow_pipeline {
     script "./main.nf"
     tag "getAllFiles"
 
+    def path_s3_bucket = "s3://nf-core-awsmegatests/sarek/results-4bd2948f98c5bf7b785c91cf6708fffccab25467/test_full_germline_aws/"
+
+    test("getAllFiles - S3 path") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def all_files = getAllFiles(path_s3_bucket, noSignRequest: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            def version   = getAllFiles(path_s3_bucket, noSignRequest: true, include: ['pipeline_info/**'], ignore: ['pipeline_info/*.{html,json,txt}'])
+            def vcf_files = getAllFiles(path_s3_bucket, noSignRequest: true, include: ['variant_calling/deepvariant/**/*.vcf.gz'], ignore: ['variant_calling/deepvariant/**/*.g.vcf.gz'])
+
+            assert snapshot(
+                all_files,
+                version.collect { relPath ->
+                    path(downloadFromS3("${path_s3_bucket}${relPath}", noSignRequest: true).toString())
+                },
+                vcf_files.collect { relPath ->
+                    def local = downloadFromS3("${path_s3_bucket}${relPath}", noSignRequest: true)
+                    "${local.fileName}:variantMD5," + path(local.toString()).vcf.variantsMD5
+                }
+            ).match()
+        }
+    }
+
     test("getAllFiles - local path with named params") {
         when {
             params {
