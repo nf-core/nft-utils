@@ -162,12 +162,12 @@ Returns a **sorted list of relative `String` paths** (relative to the given root
 
 Supported named parameters:
 
-| Option          | Type           | Default       | Description                                                                                  |
-| --------------- | -------------- | ------------- | -------------------------------------------------------------------------------------------- |
-| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                     |
-| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                     |
-| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                  |
-| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                       |
+| Option          | Type           | Default       | Description                                                                                 |
+| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                    |
+| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                    |
+| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                 |
+| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                      |
 | `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials |
 
 #### Local usage
@@ -216,9 +216,9 @@ assert snapshot(path(local_file.toString())).match()
 
 Supported named parameters:
 
-| Option          | Type      | Default | Description                                                                           |
-| --------------- | --------- | ------- | ------------------------------------------------------------------------------------- |
-| `noSignRequest` | `Boolean` | `false` | Pass `--no-sign-request` to the AWS CLI for publicly readable buckets                |
+| Option          | Type      | Default | Description                                                           |
+| --------------- | --------- | ------- | --------------------------------------------------------------------- |
+| `noSignRequest` | `Boolean` | `false` | Pass `--no-sign-request` to the AWS CLI for publicly readable buckets |
 
 ```groovy
 // Download a file from a public bucket
