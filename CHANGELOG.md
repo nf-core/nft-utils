@@ -3,11 +3,18 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.0.9dev
+## 1.0.0
+
+### New features
+
+- Added `getAllFilesFromPath()` to retrieve files from a local or S3 path, with support for `include`/`ignore` glob patterns, `includeDir`, and `noSignRequest` for S3.
+
+## 0.0.9
 
 ### New features
 
 - `nfcoreInstall()` now tracks installed modules using state files in the library, skipping installation for already installed modules.
+- Added `filterNextflowOutput()` to clean Nextflow stdout/stderr, with support for `include`/`ignore` filters and `keepAnsi` option.
 
 ## 0.0.8
 
