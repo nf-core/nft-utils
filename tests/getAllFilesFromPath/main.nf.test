@@ -1,0 +1,65 @@
+nextflow_pipeline {
+
+    name "Test getAllFilesFromPath"
+    script "./main.nf"
+    tag "getAllFilesFromPath"
+
+    def path_s3_bucket = "s3://nf-core-awsmegatests/sarek/results-4bd2948f98c5bf7b785c91cf6708fffccab25467/test_full_germline_aws/"
+
+    test("getAllFilesFromPath - S3 path") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def all_files = getAllFilesFromPath(path_s3_bucket, noSignRequest: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            def version   = getAllFilesFromPath(path_s3_bucket, noSignRequest: true, include: ['pipeline_info/**'], ignore: ['pipeline_info/*.{html,json,txt}'])
+            def vcf_files = getAllFilesFromPath(path_s3_bucket, noSignRequest: true, include: ['variant_calling/deepvariant/**/*.vcf.gz'], ignore: ['variant_calling/deepvariant/**/*.g.vcf.gz'])
+
+            assert snapshot(
+                all_files,
+                version.collect { relPath ->
+                    path(downloadFromS3("${path_s3_bucket}${relPath}").toString())
+                },
+                vcf_files.collect { relPath ->
+                    def local = downloadFromS3("${path_s3_bucket}${relPath}")
+                    "${local.fileName}:variantMD5," + path(local.toString()).vcf.variantsMD5
+                }
+            ).match()
+        }
+    }
+
+    test("getAllFilesFromPath - local path") {
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            // Default: all files, excluding the unstable trace file
+            def all_files = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+            // Include directory entries, also ignoring unstable trace file
+            def with_dirs = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+            // Scoped to a sub-directory glob
+            def stable_only = getAllFilesFromPath(params.outdir, includeDir: true, include: ['stable/*'])
+            // All files and directories with explicit include: ['**'] (should match with_dirs)
+            def stable_name = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'], include: ['**'])
+            // Ignore unstable files using ignoreFile
+            def stable_content = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromPath/.nftignore')
+            // Ignore unstable files using ignoreFile with explicit include: ['**'] (should match stable_content)
+            def stable_content_explicit = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromPath/.nftignore', include: ['**'])
+
+            assert snapshot(
+                all_files,
+                with_dirs,
+                stable_only,
+                stable_name,
+                stable_content,
+                stable_content_explicit
+            ).match()
+        }
+    }
+}

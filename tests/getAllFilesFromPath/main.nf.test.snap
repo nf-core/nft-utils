@@ -1,5 +1,40 @@
 {
-    "getAllFiles - S3 path": {
+    "getAllFilesFromPath - local path": {
+        "content": [
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt"
+            ],
+            [
+                "stable/stable_content.txt"
+            ]
+        ],
+        "timestamp": "2026-05-22T10:07:10.409073307",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "getAllFilesFromPath - S3 path": {
         "content": [
             [
                 "annotation/deepvariant/NA12878/NA12878.deepvariant.bcftools_filtered_VEP.ann.vcf.gz",
@@ -53,32 +88,6 @@
             ]
         ],
         "timestamp": "2026-05-21T13:57:44.526252311",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.04.1"
-        }
-    },
-    "getAllFiles - local path with named params": {
-        "content": [
-            [
-                "stable/stable_content.txt",
-                "stable/stable_name.txt"
-            ],
-            [
-                "pipeline_info",
-                "stable",
-                "stable/stable_content.txt",
-                "stable/stable_name.txt"
-            ],
-            [
-                "stable/stable_content.txt",
-                "stable/stable_name.txt"
-            ],
-            [
-                "stable/stable_content.txt"
-            ]
-        ],
-        "timestamp": "2026-05-19T19:16:16.257916466",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.1"

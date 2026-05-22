@@ -6,8 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -977,27 +975,22 @@ public class Methods {
   /**
    * Lists all files at the given path, returning sorted relative paths.
    *
-   * <p>Transparently supports local paths <em>and</em> any cloud URI recognised by
-   * Nextflow (e.g. {@code s3://}, {@code gs://}, {@code az://}) by delegating path
-   * resolution to {@code nextflow.file.FileHelper.asPath()} when that class is
-   * available on the runtime classpath (as it is when running inside a Nextflow process).
-   * When Nextflow is not present (e.g. in nf-test's evaluation JVM) and the path is
-   * an S3 URI, falls back to the AWS CLI.
+   * <p>Supports local paths and S3 URIs. S3 URIs are listed via the AWS CLI.
    *
-   * @param path The path to list – a local directory or a cloud URI
+   * @param path The path to list – a local directory or an S3 URI
    *             (e.g. {@code "s3://my-bucket/results/"})
    * @return A sorted list of relative file paths under {@code path}
    * @throws IOException          if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
-  public static List<String> getAllFiles(String path) throws IOException, InterruptedException {
-    return getAllFiles(new LinkedHashMap<String, Object>(), path);
+  public static List<String> getAllFilesFromPath(String path) throws IOException, InterruptedException {
+    return getAllFilesFromPath(new LinkedHashMap<String, Object>(), path);
   }
 
   /**
    * Lists all files at the given path (local or cloud), returning sorted relative
    * paths, with filtering options. Uses Groovy named-parameter syntax:
-   * {@code getAllFiles(path, ignore: ['*.log'], include: ['**'])}
+   * {@code getAllFilesFromPath(path, ignore: ['*.log'], include: ['**'])}
    *
    * <p>Supported options:
    * <ul>
@@ -1010,8 +1003,8 @@ public class Methods {
    *   <li>{@code ignoreFile} – {@code String} path to a local file whose lines are
    *       treated as additional ignore globs (e.g. {@code ".nftignore"})</li>
    *   <li>{@code noSignRequest} – {@code Boolean} pass {@code --no-sign-request} to
-   *       the AWS CLI when listing a public S3 bucket without credentials; only used
-   *       when Nextflow is not on the classpath (default: {@code false})</li>
+   *       the AWS CLI when listing a public S3 bucket without credentials
+   *       (default: {@code false})</li>
    * </ul>
    *
    * @param options Named options map (automatically created by Groovy named params)
@@ -1020,7 +1013,7 @@ public class Methods {
    * @throws IOException          if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
-  public static List<String> getAllFiles(LinkedHashMap<String, Object> options, String path)
+  public static List<String> getAllFilesFromPath(LinkedHashMap<String, Object> options, String path)
       throws IOException, InterruptedException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException("The 'path' parameter is required.");
@@ -1053,13 +1046,11 @@ public class Methods {
       }
     }
 
-    // When Nextflow is not on the classpath (e.g. nf-test's evaluation JVM) and the
-    // path is an S3 URI, fall back to the AWS CLI.
-    if (path.startsWith("s3://") && !isNextflowAvailable()) {
+    if (path.startsWith("s3://")) {
       return getAllFilesFromS3ViaCli(path, includeMatchers, excludeMatchers, includeDir, noSignRequest);
     }
 
-    Path root = resolveNextflowPath(path);
+    Path root = Paths.get(path);
     List<String> files = new ArrayList<>();
 
     Files.walkFileTree(
@@ -1101,20 +1092,6 @@ public class Methods {
         });
 
     return files.stream().sorted().collect(Collectors.toList());
-  }
-
-  /**
-   * Returns {@code true} when Nextflow's {@code FileHelper} class is available on the
-   * runtime classpath (i.e. the code is running inside a Nextflow process or an
-   * environment that bundles Nextflow).
-   */
-  private static boolean isNextflowAvailable() {
-    try {
-      Class.forName("nextflow.file.FileHelper");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
   }
 
   /**
@@ -1181,91 +1158,59 @@ public class Methods {
   }
 
   /**
-   * Resolves a path string to a NIO {@link Path} using Nextflow's
-   * {@code FileHelper.asPath()} when available on the runtime classpath, so that
-   * cloud URIs ({@code s3://}, {@code gs://}, {@code az://}, …) are transparently
-   * supported.  Falls back to {@link Paths#get} for plain local paths.
-   */
-  private static Path resolveNextflowPath(String pathString) {
-    try {
-      Class<?> cls = Class.forName("nextflow.file.FileHelper");
-      Method method = cls.getMethod("asPath", String.class);
-      return (Path) method.invoke(null, pathString);
-    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-      return Paths.get(pathString);
-    } catch (InvocationTargetException e) {
-      Throwable cause = e.getCause();
-      throw new RuntimeException(
-          "Failed to resolve path '" + pathString + "': " + cause.getMessage(), cause);
-    }
-  }
-
-  /**
-   * Downloads a single file from S3 to a temporary local directory and returns the
-   * local {@link Path}. The destination path mirrors the S3 key structure under a
+   * Downloads a single file from a cloud URI to a temporary local directory and returns the
+   * local {@link Path}. The destination path mirrors the key structure under a
    * plugin-specific temp directory so repeated calls for the same URI are idempotent.
    *
+   * <p>Uses {@code nextflow fs cp} under the hood, so any cloud provider supported by
+   * Nextflow (S3, GCS, Azure) is transparently handled. Authentication is configured
+   * via the project's {@code nextflow.config}.
+   *
    * <p>Uses Groovy named-parameter syntax:
-   * {@code downloadFromS3("s3://my-bucket/path/to/file.vcf.gz", noSignRequest: true)}
+   * {@code downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")}
    *
-   * <p>Supported options:
-   * <ul>
-   *   <li>{@code noSignRequest} – {@code Boolean} pass {@code --no-sign-request}
-   *   to the AWS CLI for publicly readable buckets (default: {@code false})</li>
-   * </ul>
-   *
-   * @param s3Uri   The S3 URI of the file to download (e.g., {@code "s3://my-bucket/dir/file.txt"})
+   * @param cloudUri The cloud URI of the file to download (e.g., {@code "s3://my-bucket/dir/file.txt"})
    * @return A {@link Path} pointing to the downloaded local file
-   * @throws IOException          if the AWS CLI fails or is not available
+   * @throws IOException          if {@code nextflow fs cp} fails or is not available
    * @throws InterruptedException if the process is interrupted
    */
-  public static Path downloadFromS3(String s3Uri) throws IOException, InterruptedException {
-    return downloadFromS3(new LinkedHashMap<String, Object>(), s3Uri);
+  public static Path downloadFromS3(String cloudUri) throws IOException, InterruptedException {
+    return downloadFromS3(new LinkedHashMap<String, Object>(), cloudUri);
   }
 
   /**
-   * Downloads a single file from S3 to a temporary local directory and returns the
-   * local {@link Path}, with options. See {@link #downloadFromS3(String)} for details.
+   * Downloads a single file from a cloud URI to a temporary local directory and returns the
+   * local {@link Path}. See {@link #downloadFromS3(String)} for details.
    *
-   * @param options Named options map (automatically created by Groovy named params)
-   * @param s3Uri   The S3 URI of the file to download
+   * @param options Reserved for future use (currently unused)
+   * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
-   * @throws IOException          if the AWS CLI fails or is not available
+   * @throws IOException          if {@code nextflow fs cp} fails or is not available
    * @throws InterruptedException if the process is interrupted
    */
-  public static Path downloadFromS3(LinkedHashMap<String, Object> options, String s3Uri)
+  public static Path downloadFromS3(LinkedHashMap<String, Object> options, String cloudUri)
       throws IOException, InterruptedException {
-    if (s3Uri == null || s3Uri.isEmpty()) {
-      throw new IllegalArgumentException("The 's3Uri' parameter is required.");
-    }
-    if (!s3Uri.startsWith("s3://")) {
-      throw new IllegalArgumentException("The 's3Uri' parameter must start with 's3://'.");
+    if (cloudUri == null || cloudUri.isEmpty()) {
+      throw new IllegalArgumentException("The 'cloudUri' parameter is required.");
     }
 
-    Boolean noSignRequest = (Boolean) options.getOrDefault("noSignRequest", false);
+    // Derive a stable local destination mirroring the key path: <tmpdir>/nft-utils-cloud/<key>
+    int schemeEnd = cloudUri.indexOf("://");
+    String withoutScheme = schemeEnd >= 0 ? cloudUri.substring(schemeEnd + 3) : cloudUri;
+    int firstSlash = withoutScheme.indexOf('/');
+    String relativeKey = firstSlash >= 0 ? withoutScheme.substring(firstSlash + 1) : withoutScheme;
 
-    // Derive a stable local destination: <tmpdir>/nft-utils-s3/<key>
-    String keyPart = s3Uri.substring("s3://".length()); // "bucket/path/to/file"
-    int firstSlash = keyPart.indexOf('/');
-    String relativeKey = firstSlash >= 0 ? keyPart.substring(firstSlash + 1) : keyPart;
-
-    Path destFile = Paths.get(System.getProperty("java.io.tmpdir"), "nft-utils-s3", relativeKey);
+    Path destFile = Paths.get(System.getProperty("java.io.tmpdir"), "nft-utils-cloud", relativeKey);
     Files.createDirectories(destFile.getParent());
 
-    List<String> cmd = new ArrayList<>(Arrays.asList("aws", "s3", "cp"));
-    if (noSignRequest) {
-      cmd.add("--no-sign-request");
-    }
-    cmd.add(s3Uri);
-    cmd.add(destFile.toString());
-
+    List<String> cmd = Arrays.asList("nextflow", "fs", "cp", cloudUri, destFile.toString());
     ProcessBuilder pb = new ProcessBuilder(cmd);
     pb.redirectErrorStream(false);
     Process process = pb.start();
     int exitCode = process.waitFor();
     if (exitCode != 0) {
       throw new IOException(
-          "AWS CLI returned exit code " + exitCode + " when downloading: " + s3Uri);
+          "nextflow fs cp returned exit code " + exitCode + " when downloading: " + cloudUri);
     }
 
     return destFile;
