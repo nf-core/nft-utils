@@ -156,7 +156,7 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 
 :::
 
-Works for **local paths and cloud storage** (S3, GCS, Azure Blob, …) transparently, by delegating path resolution to Nextflow's own filesystem layer via `nextflow.file.FileHelper.asPath()`.
+Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
 
 Returns a **sorted list of relative `String` paths** (relative to the given root).
 
@@ -189,15 +189,19 @@ def stable_content = getAllFilesFromPath(
 assert snapshot(stable_files, with_dirs, stable_content).match()
 ```
 
-#### Cloud (S3 / GCS / Azure) usage
+#### S3 usage
 
 ```groovy
-// Works identically for cloud paths – no aws CLI required
+// Requires the AWS CLI to be available on the path
 def s3_files = getAllFilesFromPath("s3://my-bucket/results/", ignore: ['pipeline_info/**'])
 assert snapshot(s3_files).match()
 ```
 
-Cloud credentials are resolved via the standard Nextflow configuration (profiles, `aws.accessKey`, environment variables, IAM roles, etc.).
+AWS credentials are resolved by the AWS CLI (environment variables, `~/.aws/credentials`, IAM roles, etc.).
+
+:::note
+Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future version.
+:::
 
 ### `downloadFromS3()`
 
@@ -230,6 +234,10 @@ assert snapshot(
 ```
 
 ### `getAllFilesFromDir()`
+
+:::caution
+**This function will be deprecated in a future version.** Prefer [`getAllFilesFromPath()`](#getallfilesfrompath), which provides the same functionality with added S3 support.
+:::
 
 :::warning
 This function requires absolute paths and does not support relative paths to `params.outdir`.
