@@ -1,0 +1,96 @@
+{
+    "getAllFilesFromPath - local path": {
+        "content": [
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ],
+            [
+                "stable/stable_content.txt"
+            ],
+            [
+                "stable/stable_content.txt"
+            ]
+        ],
+        "timestamp": "2026-05-22T10:07:10.409073307",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "getAllFilesFromPath - S3 path": {
+        "content": [
+            [
+                "annotation/deepvariant/NA12878/NA12878.deepvariant.bcftools_filtered_VEP.ann.vcf.gz",
+                "annotation/deepvariant/NA12878/NA12878.deepvariant.bcftools_filtered_snpEff.ann.vcf.gz",
+                "annotation/freebayes/NA12878/NA12878.freebayes.filtered.bcftools_filtered_VEP.ann.vcf.gz",
+                "annotation/freebayes/NA12878/NA12878.freebayes.filtered.bcftools_filtered_snpEff.ann.vcf.gz",
+                "annotation/haplotypecaller/NA12878/NA12878.haplotypecaller.filtered.bcftools_filtered_VEP.ann.vcf.gz",
+                "annotation/haplotypecaller/NA12878/NA12878.haplotypecaller.filtered.bcftools_filtered_snpEff.ann.vcf.gz",
+                "annotation/strelka/NA12878/NA12878.strelka.variants.bcftools_filtered_VEP.ann.vcf.gz",
+                "annotation/strelka/NA12878/NA12878.strelka.variants.bcftools_filtered_snpEff.ann.vcf.gz",
+                "annotation/tiddit/NA12878/NA12878.tiddit_snpEff.ann.vcf.gz",
+                "csv/markduplicates.csv",
+                "csv/markduplicates_no_table.csv",
+                "csv/recalibrated.csv",
+                "csv/variantcalled.csv",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc_data/multiqc_data.json",
+                "multiqc_report.html",
+                "pipeline_info/nf_core_sarek_software_mqc_versions.yml",
+                "preprocessing/converted/cram_to_bam/NA12878/NA12878.bam",
+                "preprocessing/converted/cram_to_bam/NA12878/NA12878.bam.bai",
+                "preprocessing/markduplicates/NA12878/NA12878.md.cram",
+                "preprocessing/recalibrated/NA12878/NA12878.recal.cram",
+                "reports/mosdepth/NA12878/NA12878.md.mosdepth.global.dist.txt",
+                "reports/mosdepth/NA12878/NA12878.md.regions.bed.gz",
+                "reports/mosdepth/NA12878/NA12878.recal.regions.bed.gz",
+                "reports/vcftools/freebayes/NA12878/NA12878.freebayes.filtered.TsTv.qual",
+                "variant_calling/cnvkit/NA12878/NA12878-diagram.pdf",
+                "variant_calling/cnvkit/NA12878/NA12878.cnr",
+                "variant_calling/cnvkit/NA12878/NA12878.targetcoverage.cnn",
+                "variant_calling/cnvkit/NA12878/reference.cnn",
+                "variant_calling/cnvkit/NA12878/wgs_calling_regions_noseconds.hg38.target.bed",
+                "variant_calling/deepvariant/NA12878/NA12878.deepvariant.g.vcf.gz",
+                "variant_calling/deepvariant/NA12878/NA12878.deepvariant.vcf.gz",
+                "variant_calling/filtered/NA12878/NA12878.deepvariant.bcftools_filtered.vcf.gz",
+                "variant_calling/filtered/NA12878/NA12878.freebayes.filtered.bcftools_filtered.vcf.gz",
+                "variant_calling/filtered/NA12878/NA12878.haplotypecaller.filtered.bcftools_filtered.vcf.gz",
+                "variant_calling/filtered/NA12878/NA12878.strelka.variants.bcftools_filtered.vcf.gz",
+                "variant_calling/freebayes/NA12878/NA12878.freebayes.filtered.vcf.gz",
+                "variant_calling/freebayes/NA12878/NA12878.freebayes.vcf.gz",
+                "variant_calling/haplotypecaller/NA12878/NA12878.haplotypecaller.filtered.vcf.gz",
+                "variant_calling/haplotypecaller/NA12878/NA12878.haplotypecaller.vcf.gz",
+                "variant_calling/strelka/NA12878/NA12878.strelka.genome.vcf.gz",
+                "variant_calling/strelka/NA12878/NA12878.strelka.variants.vcf.gz"
+            ],
+            [
+                "nf_core_sarek_software_mqc_versions.yml:md5,6d0b70b6cc12735d519aeab71be7ca24"
+            ],
+            [
+                "NA12878.deepvariant.vcf.gz:variantMD5,17f8bb1984e47c061751f0c8c3321265"
+            ]
+        ],
+        "timestamp": "2026-05-21T13:57:44.526252311",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    }
+}

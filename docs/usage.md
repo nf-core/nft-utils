@@ -139,7 +139,105 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 - When using wildcard patterns, all matching files will be processed and their results merged together.
 - The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
 
+### `getAllFilesFromPath()`
+
+:::warning
+When using this function with nf-test outputs, prefer assigning the nf-test `outputDir` variable to `params.outdir`.
+Relative local paths may work, but using `$outputDir` is the recommended nf-test setup for predictable path resolution.
+See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
+
+```groovy
+  when {
+    params {
+      outdir = "$outputDir" // Use nf-test global variable as output dir
+    }
+  }
+```
+
+:::
+
+Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
+
+Returns a **sorted list of relative `String` paths** (relative to the given root).
+
+Supported named parameters:
+
+| Option          | Type           | Default       | Description                                                                                 |
+| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                    |
+| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                    |
+| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                 |
+| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                      |
+| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials |
+
+#### Local usage
+
+```groovy
+// All files, ignoring unstable trace files
+def stable_files = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+
+// Include directory entries, scoped to a sub-path
+def with_dirs = getAllFilesFromPath(params.outdir, includeDir: true, include: ['stable/*'])
+
+// Use an .nftignore file for additional exclusions
+def stable_content = getAllFilesFromPath(
+    params.outdir,
+    ignore: ['pipeline_info/execution_*.{html,txt}'],
+    ignoreFile: 'tests/mytest/.nftignore'
+)
+
+assert snapshot(stable_files, with_dirs, stable_content).match()
+```
+
+#### S3 usage
+
+```groovy
+// Requires the AWS CLI to be available on the path
+def s3_files = getAllFilesFromPath("s3://my-bucket/results/", ignore: ['pipeline_info/**'])
+assert snapshot(s3_files).match()
+```
+
+AWS credentials are resolved by the AWS CLI (environment variables, `~/.aws/credentials`, IAM roles, etc.).
+
+:::note
+Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future version.
+:::
+
+### `downloadFromS3()`
+
+Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.
+
+This function requires the AWS CLI to be available on the path.
+
+```groovy
+def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")
+assert snapshot(path(local_file.toString())).match()
+```
+
+Supported named parameters:
+
+| Option          | Type      | Default | Description                                                           |
+| --------------- | --------- | ------- | --------------------------------------------------------------------- |
+| `noSignRequest` | `Boolean` | `false` | Pass `--no-sign-request` to the AWS CLI for publicly readable buckets |
+
+```groovy
+// Download a file from a public bucket
+def local_file = downloadFromS3("s3://my-public-bucket/data/sample.vcf.gz", noSignRequest: true)
+
+// Combine with getAllFilesFromPath to download and snapshot specific files
+def vcf_files = getAllFilesFromPath("s3://my-bucket/results/", noSignRequest: true, include: ['**/*.vcf.gz'])
+assert snapshot(
+    vcf_files.collect { relPath ->
+        path(downloadFromS3("s3://my-bucket/results/${relPath}", noSignRequest: true).toString())
+    }
+).match()
+```
+
 ### `getAllFilesFromDir()`
+
+:::caution
+**This function will be deprecated in a future version.** Prefer [`getAllFilesFromPath()`](#getallfilesfrompath), which provides the same functionality with added S3 support.
+:::
 
 :::warning
 This function requires absolute paths and does not support relative paths to `params.outdir`.
