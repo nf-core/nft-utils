@@ -7,13 +7,15 @@ Please read the [documentation](./docs) for more information.
 
 ## Development
 
-The `nft-utils` plugin needs Nextflow, nf-core and nf-test to be installed.
-You can then install it with maven.
+The `nft-utils` plugin needs Nextflow and nf-test.
+It use maven for compilation and nf-core for testing.
 A conda environment is available and can be used for development
 
 ```bash
+# Install conda environment
 mamba env create -f environment.yml
 mamba activate env_nft_utils
+
 # Compile the package
 mvn package
 
