@@ -8,7 +8,7 @@ process TEST {
     output:
     tuple val(meta), path("*.html"), emit: html
     tuple val(meta), path("*.zip") , emit: zip
-    tuple val(meta), path("test/")  , emit: folder
+    tuple val(meta), path("folder/")  , emit: folder
     path ("*.zip")                 , emit: zip_only
     val meta.id, emit: id
 
@@ -16,8 +16,9 @@ process TEST {
     """
     echo "<html>FastQC Report for ${meta.id}</html>" > ${meta.id}_fastqc.html
     echo "FastQC zip data" > ${meta.id}_fastqc.zip
-    mkdir -p "test"
-    touch test/test1.txt
-    touch test/test2.txt
+    mkdir -p "folder/sub_folder"
+    touch folder/test1.txt
+    touch folder/test2.txt
+    touch folder/sub_folder/test3.txt
     """
 }
