@@ -40,13 +40,26 @@ public class OutputSanitizer {
   }
 
   private static Object fixUnstable(Object value) {
+    System.out.println("value class=" + value.getClass());
+    System.out.println("value=" + value);
     if (value instanceof String) {
       String strValue = (String) value;
-      if(Files.exists(Paths.get(strValue))) {
-        return strValue.substring(strValue.lastIndexOf('/') + 1);
-      } else {
-        return strValue;
+      java.nio.file.Path path = Paths.get(strValue);
+      if (Files.isDirectory(path)) {
+        ArrayList<Object> fixedList = new ArrayList<>();
+        try {
+          Files.list(path)
+            .sorted()
+            .forEach(child -> fixedList.add(fixUnstable(child.toString())));
+          return fixedList;
+        } catch (java.io.IOException e) {
+          throw new RuntimeException("Failed to read directory: " + path, e);
+        }
       }
+      if (Files.exists(path)) {
+        return path.getFileName().toString();
+      }
+      return strValue;
     } else if (value instanceof ArrayList || value instanceof Vector) {
       List listValue = (List) value;
       ArrayList fixedList = new ArrayList();

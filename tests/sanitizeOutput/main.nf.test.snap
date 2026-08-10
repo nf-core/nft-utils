@@ -7,7 +7,13 @@
                         {
                             "id": "test"
                         },
-                        "folder"
+                        [
+                            [
+                                "test3.txt"
+                            ],
+                            "test1.txt",
+                            "test2.txt"
+                        ]
                     ]
                 ],
                 "html": [
@@ -34,7 +40,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-08-10T20:18:24.618149367",
+        "timestamp": "2026-08-10T20:34:00.498011401",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
