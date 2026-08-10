@@ -20,4 +20,18 @@ nextflow_process {
             assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
         }
     }
+
+    test("Default sanitize output - with ignoreKeys zip + html") {
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, ignoreKeys:["zip", "html"])).match()
+        }
+    }
 }

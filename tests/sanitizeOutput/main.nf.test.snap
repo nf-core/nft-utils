@@ -1,4 +1,21 @@
 {
+    "Default sanitize output - with ignoreKeys zip + html": {
+        "content": [
+            {
+                "id": [
+                    "test"
+                ],
+                "zip_only": [
+                    "test_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59"
+                ]
+            }
+        ],
+        "timestamp": "2026-08-10T22:36:08.810863842",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
     "Default sanitize output": {
         "content": [
             {
@@ -26,10 +43,10 @@
                 ]
             }
         ],
+        "timestamp": "2025-09-11T14:51:48.072281016",
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.04.6"
-        },
-        "timestamp": "2025-09-11T14:51:48.072281016"
+        }
     }
 }
