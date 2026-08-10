@@ -7,9 +7,9 @@ process TEST {
 
     output:
     tuple val(meta), path("*.html"), emit: html
-    tuple val(meta), path("*.zip") , emit: zip
-    tuple val(meta), path("folder/")  , emit: folder
-    path ("*.zip")                 , emit: zip_only
+    tuple val(meta), path("*.zip"), emit: zip
+    tuple val(meta), path("folder/"), emit: folder
+    path ("*.zip"), emit: zip_only
     val meta.id, emit: id
 
     script:
