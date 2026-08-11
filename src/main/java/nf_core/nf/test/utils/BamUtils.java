@@ -31,29 +31,38 @@ public class BamUtils {
     return false;
   }
 
-  public static Object bamMD5(Object value) {
+  public static Object bamMD5(Object value, String fasta) {
+    Path pathFasta = fasta == null || fasta.isEmpty()
+      ? null
+      : Paths.get(fasta);
     return OutputSanitizer.recursiveParse(value, strValue -> {
-      Path path = Paths.get(strValue);
+      Path pathBam = Paths.get(strValue);
 
-      if (!Files.exists(path)) {
+      if (!Files.exists(pathBam)) {
         return strValue;
       }
-      String extension = Utils.getExtension(path, false);
-      if (!"bam".equals(extension) && !"sam".equals(extension)) {
+      String extension = Utils.getExtension(pathBam, false);
+      if ("bam".equals(extension) && !"sam".equals(extension) && !"cram".equals(extension)) {
         return strValue;
       }
-      return path.getFileName().toString() + ":md5Reads," + getReadsMD5(path);
+      if ("cram".equals(extension) && pathFasta == null) {
+        throw new RuntimeException(
+          "A pathBam FASTA file is required to calculate reads MD5 for CRAM file: "
+            + pathBam
+        );
+      }
+      return pathBam.getFileName().toString() + ":md5Reads," + getReadsMD5(pathBam, pathFasta);
     });
   }
 
-  private static String getReadsMD5(Path path) {
+  private static String getReadsMD5(Path pathBam, Path pathFasta) {
     try {
       Class<?> alignmentFileClass = getNftBamClass();
       Constructor<?> constructor = alignmentFileClass.getConstructor(
         LinkedHashMap.class, Path.class, Path.class
       );
       Object alignmentFile = constructor.newInstance(
-        new LinkedHashMap<String, Object>(), path, null
+        new LinkedHashMap<String, Object>(), pathBam, pathFasta
       );
       Method getReadsMD5 = alignmentFileClass.getMethod("getReadsMD5");
 
@@ -61,7 +70,7 @@ public class BamUtils {
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(
-        "Failed to calculate reads MD5 for file: " + path, e
+        "Failed to calculate reads MD5 for file: " + pathBam, e
       );
     }
   }

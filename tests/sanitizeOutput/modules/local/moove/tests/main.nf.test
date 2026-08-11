@@ -24,6 +24,29 @@ nextflow_process {
         }
     }
 
+    test("cram - with bamKeys") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/cram/test.paired_end.sorted.cram', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(
+                    process.out, bamKeys: ["output"],
+                    fasta: file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta', checkIfExists: true)
+                )).match()}
+            )
+        }
+    }
+
     test("vcf.gz - with vcfKeys") {
         when {
             process {
