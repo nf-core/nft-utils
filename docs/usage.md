@@ -704,6 +704,14 @@ then {
 }
 ```
 
+- `ignoreKeys`: A list of keys to exclude from the snapshot. This is useful for output entries where the file name may vary between runs.
+
+```groovy
+then {
+  assert snapshot(sanitizeOutput(process.out, ignoreKeys:["log"])).match()
+}
+```
+
 ### `curlAndExtract()` - Download and extract an archive
 
 The `curlAndExtract()` function is used to download an archive

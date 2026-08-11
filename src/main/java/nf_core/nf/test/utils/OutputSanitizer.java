@@ -11,6 +11,19 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class OutputSanitizer {
+  static void validateUnstableKeys(
+    List<String> unstableKeys,
+    Map<String, Object> channel) {
+
+    for (String unstableKey : unstableKeys) {
+      if (!channel.containsKey(unstableKey)) {
+        throw new RuntimeException(
+          "Unstable key '" + unstableKey +
+          "' not present in channel"
+        );
+      }
+    }
+  }
   public static TreeMap<String,Object> sanitizeOutput(HashMap<String,Object> options, TreeMap<String,Object> channel) {
     String className = channel.getClass().getName();
     // Can't do valid type checking here because the Channels type is not exposed from nf-test
@@ -19,7 +32,11 @@ public class OutputSanitizer {
     }
 
     // Fetch options
-    ArrayList<String> unstableKeys = (ArrayList<String>) options.getOrDefault("unstableKeys", new java.util.ArrayList<String>());
+    List<String> unstableKeys = (List<String>) options.getOrDefault("unstableKeys", List.of());
+    validateUnstableKeys(unstableKeys, channel);
+
+    List<String> ignoreKeys = (List<String>) options.getOrDefault("ignoreKeys", List.of());
+    validateUnstableKeys(ignoreKeys, channel);
 
     TreeMap<String,Object> output = new TreeMap<String,Object>();
     Integer channelSize = (Integer) channel.size();
@@ -30,6 +47,10 @@ public class OutputSanitizer {
         // Skip numeric keys if there is more than one entry in the channel
         continue;
       }
+      if (ignoreKeys.contains(key)) {
+        continue;
+      }
+
       if(unstableKeys.contains(key)) {
         output.put(key, fixUnstable(value));
       } else {
