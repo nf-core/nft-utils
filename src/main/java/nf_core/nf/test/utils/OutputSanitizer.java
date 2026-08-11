@@ -9,6 +9,11 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.function.Function;
 
 public class OutputSanitizer {
   static void validateUnstableKeys(
@@ -24,6 +29,7 @@ public class OutputSanitizer {
       }
     }
   }
+
   public static TreeMap<String,Object> sanitizeOutput(HashMap<String,Object> options, TreeMap<String,Object> channel) {
     String className = channel.getClass().getName();
     // Can't do valid type checking here because the Channels type is not exposed from nf-test
@@ -37,6 +43,21 @@ public class OutputSanitizer {
 
     List<String> ignoreKeys = (List<String>) options.getOrDefault("ignoreKeys", List.of());
     validateUnstableKeys(ignoreKeys, channel);
+
+    List<String> vcfKeys = (List<String>) options.getOrDefault("vcfKeys", List.of());
+    validateUnstableKeys(vcfKeys, channel);
+
+    List<String> bamKeys = (List<String>) options.getOrDefault("bamKeys", List.of());
+    validateUnstableKeys(bamKeys, channel);
+
+    if (!bamKeys.isEmpty() && !BamUtils.isNftBamAvailable()) {
+      System.err.println(
+        "WARNING: nft-bam is not installed. " +
+        "Cannot calculate reads MD5 for BAM/SAM files; " +
+        "output may be unstable."
+      );
+      bamKeys = List.of();
+    }
 
     TreeMap<String,Object> output = new TreeMap<String,Object>();
     Integer channelSize = (Integer) channel.size();
@@ -53,6 +74,8 @@ public class OutputSanitizer {
 
       if(unstableKeys.contains(key)) {
         output.put(key, fixUnstable(value));
+      } else if(bamKeys.contains(key)) {
+        output.put(key, BamUtils.bamMD5(value));
       } else {
         output.put(key, value);
       }
@@ -60,7 +83,7 @@ public class OutputSanitizer {
     return output;
   }
 
-  private static Object fixUnstable(Object value) {
+  static Object recursiveParse(Object value, Function<String, Object> applyFct) {
     if (value instanceof String) {
       String strValue = (String) value;
       java.nio.file.Path path = Paths.get(strValue);
@@ -69,33 +92,45 @@ public class OutputSanitizer {
         try {
           Files.list(path)
             .sorted()
-            .forEach(child -> fixedList.add(fixUnstable(child.toString())));
+            .forEach(child -> fixedList.add(
+              recursiveParse(child.toString(), applyFct)
+            ));
+
           return fixedList;
         } catch (java.io.IOException e) {
           throw new RuntimeException("Failed to read directory: " + path, e);
         }
       }
-      if (Files.exists(path)) {
-        return path.getFileName().toString();
-      }
-      return strValue;
+      return applyFct.apply(strValue);
     } else if (value instanceof ArrayList || value instanceof Vector) {
-      List listValue = (List) value;
-      ArrayList fixedList = new ArrayList();
+      List<?> listValue = (List<?>) value;
+      ArrayList<Object> fixedList = new ArrayList<>();
       for (Object item : listValue) {
-        fixedList.add(fixUnstable(item));
+        fixedList.add(recursiveParse(item, applyFct));
       }
       return fixedList;
     } else if (value instanceof Map) {
-      Map mapValue = (Map) value;
-      Map fixedMap = new TreeMap();
-      for (Object entryObj : mapValue.entrySet()) {
-        Map.Entry entry = (Map.Entry) entryObj;
-        fixedMap.put(entry.getKey(), fixUnstable(entry.getValue()));
+      Map<?, ?> mapValue = (Map<?, ?>) value;
+      Map<Object, Object> fixedMap = new TreeMap<>();
+      for (Map.Entry<?, ?> entry : mapValue.entrySet()) {
+        fixedMap.put(
+          entry.getKey(),
+          recursiveParse(entry.getValue(), applyFct)
+        );
       }
       return fixedMap;
     } else {
       return value;
     }
+  }
+
+  private static Object fixUnstable(Object value) {
+    return recursiveParse(value, strValue -> {
+      java.nio.file.Path path = Paths.get(strValue);
+      if (Files.exists(path)) {
+        return path.getFileName().toString();
+      }
+      return strValue;
+    });
   }
 }

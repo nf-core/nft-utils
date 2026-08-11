@@ -3,6 +3,7 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.Locale;
 
 public class Utils {
@@ -65,5 +66,19 @@ public class Utils {
       pathPart = urlString;
     }
     return pathPart.toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * Extract the last extension from a file path.
+   * @param Path path The file path
+   * @return The extension of the path
+   */
+  public static String getExtension(Path path) {
+    String fileName = path.getFileName().toString();
+    int lastDot = fileName.lastIndexOf('.');
+    if (lastDot <= 0 || lastDot == fileName.length() - 1) {
+      return "";
+    }
+    return fileName.substring(lastDot + 1).toLowerCase();
   }
 }

@@ -23,6 +23,8 @@ mvn package
 nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
 # or a single one and update the snapshot
 nf-test test --plugins target/nft-utils-*.jar --update-snapshot tests/sanitizeOutput/
+# and the test with no plugins installed
+nf-test test --plugins target/nft-utils-*.jar --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/
 ```
 
 ## Credits

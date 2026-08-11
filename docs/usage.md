@@ -712,6 +712,15 @@ then {
 }
 ```
 
+- `bamKeys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam>` extension will be replaces by the reads MD5 sum using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugins.
+The latter should be added in the `plugins {}` section of the `nf-test.config`.
+
+```groovy
+then {
+  assert snapshot(sanitizeOutput(process.out, bamKeys:["bam"])).match()
+}
+```
+
 ### `curlAndExtract()` - Download and extract an archive
 
 The `curlAndExtract()` function is used to download an archive
