@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class OutputSanitizerTest {
 
     @Test
-    void shouldAcceptUnstableKeyPresentInChannel() {
+    void shouldAcceptKeyPresentInChannel() {
         Map<String, Object> channel = Map.of(
             "foo", "some-value",
             "bar", "another-value"
         );
         assertDoesNotThrow(() ->
-            OutputSanitizer.validateUnstableKeys(
+            OutputSanitizer.validateKeysInChannel(
                 List.of("foo"),
                 channel
             )
@@ -24,33 +24,33 @@ class OutputSanitizerTest {
     }
 
     @Test
-    void shouldRejectUnstableKeyNotPresentInChannel() {
+    void shouldRejectKeyNotPresentInChannel() {
         Map<String, Object> channel = Map.of(
             "foo", "some-value",
             "bar", "another-value"
         );
         RuntimeException exception = assertThrows(
             RuntimeException.class,
-            () -> OutputSanitizer.validateUnstableKeys(
+            () -> OutputSanitizer.validateKeysInChannel(
                 List.of("baz"),
                 channel
             )
         );
         assertEquals(
-            "Unstable key 'baz' not present in channel",
+            "Key 'baz' not present in channel",
             exception.getMessage()
         );
     }
 
     @Test
-    void shouldAcceptMultipleValidUnstableKeys() {
+    void shouldAcceptMultipleValidKeysList() {
         Map<String, Object> channel = Map.of(
             "foo", "value1",
             "bar", "value2",
             "baz", "value3"
         );
         assertDoesNotThrow(() ->
-            OutputSanitizer.validateUnstableKeys(
+            OutputSanitizer.validateKeysInChannel(
                 List.of("foo", "bar"),
                 channel
             )
@@ -58,34 +58,63 @@ class OutputSanitizerTest {
     }
 
     @Test
-    void shouldRejectWhenOneUnstableKeyIsMissing() {
+    void shouldRejectWhenOneKeyIsMissing() {
         Map<String, Object> channel = Map.of(
             "foo", "value1",
             "bar", "value2"
         );
         RuntimeException exception = assertThrows(
             RuntimeException.class,
-            () -> OutputSanitizer.validateUnstableKeys(
+            () -> OutputSanitizer.validateKeysInChannel(
                 List.of("foo", "missing"),
                 channel
             )
         );
         assertEquals(
-            "Unstable key 'missing' not present in channel",
+            "Key 'missing' not present in channel",
             exception.getMessage()
         );
     }
 
     @Test
-    void shouldAcceptEmptyUnstableKeys() {
+    void shouldAcceptEmptyKeysList() {
         Map<String, Object> channel = Map.of(
             "foo", "value1"
         );
         assertDoesNotThrow(() ->
-            OutputSanitizer.validateUnstableKeys(
+            OutputSanitizer.validateKeysInChannel(
                 List.of(),
                 channel
             )
+        );
+    }
+
+    @Test
+    void shouldAcceptMutuallyExclusiveKeysList() {
+        assertDoesNotThrow(() ->
+            OutputSanitizer.validateKeyUsage(
+                List.of("KeyA", "KeyB"),
+                List.of("KeyC", "KeyD"),
+                List.of(),
+                List.of("KeyE", "KeyF")
+            )
+        );
+    }
+
+    @Test
+    void shouldRejectWhenOneKeyIsUsedMoreThanOnce() {
+        RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> OutputSanitizer.validateKeyUsage(
+                List.of("KeyA", "KeyB"),
+                List.of("KeyC", "KeyA"),
+                List.of(),
+                List.of("KeyA", "KeyF")
+            )
+        );
+        assertEquals(
+            "Key 'KeyA' is used in both 'unstableKeys' and 'ignoreKeys'",
+            exception.getMessage()
         );
     }
 }

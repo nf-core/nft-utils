@@ -16,17 +16,47 @@ import java.util.LinkedHashMap;
 import java.util.function.Function;
 
 public class OutputSanitizer {
-  static void validateUnstableKeys(
-    List<String> unstableKeys,
+  static void validateKeysInChannel(
+    List<String> keysList,
     Map<String, Object> channel) {
 
-    for (String unstableKey : unstableKeys) {
-      if (!channel.containsKey(unstableKey)) {
+    for (String keyList : keysList) {
+      if (!channel.containsKey(keyList)) {
         throw new RuntimeException(
-          "Unstable key '" + unstableKey +
+          "Key '" + keyList +
           "' not present in channel"
         );
       }
+    }
+  }
+  static void validateKeyUsage(
+    List<String> unstableKeys,
+    List<String> ignoreKeys,
+    List<String> bamKeys,
+    List<String> vcfKeys
+  ) {
+    Map<String, String> keyUsage = new HashMap<>();
+
+    addKeyUsage(keyUsage, unstableKeys, "unstableKeys");
+    addKeyUsage(keyUsage, ignoreKeys, "ignoreKeys");
+    addKeyUsage(keyUsage, bamKeys, "bamKeys");
+    addKeyUsage(keyUsage, vcfKeys, "vcfKeys");
+  }
+
+  private static void addKeyUsage(
+    Map<String, String> keyUsage,
+    List<String> keys,
+    String option
+  ) {
+    for (String key : keys) {
+      if (keyUsage.containsKey(key)) {
+        throw new RuntimeException(
+          "Key '" + key + "' is used in both '" +
+          keyUsage.get(key) + "' and '" + option + "'"
+        );
+      }
+
+      keyUsage.put(key, option);
     }
   }
 
@@ -39,16 +69,16 @@ public class OutputSanitizer {
 
     // Fetch options
     List<String> unstableKeys = (List<String>) options.getOrDefault("unstableKeys", List.of());
-    validateUnstableKeys(unstableKeys, channel);
-
     List<String> ignoreKeys = (List<String>) options.getOrDefault("ignoreKeys", List.of());
-    validateUnstableKeys(ignoreKeys, channel);
-
     List<String> bamKeys = (List<String>) options.getOrDefault("bamKeys", List.of());
-    validateUnstableKeys(bamKeys, channel);
-
     List<String> vcfKeys = (List<String>) options.getOrDefault("vcfKeys", List.of());
-    validateUnstableKeys(vcfKeys, channel);
+
+    validateKeyUsage( unstableKeys, ignoreKeys, bamKeys, vcfKeys);
+
+    validateKeysInChannel(unstableKeys, channel);
+    validateKeysInChannel(ignoreKeys, channel);
+    validateKeysInChannel(bamKeys, channel);
+    validateKeysInChannel(vcfKeys, channel);
 
     if (!bamKeys.isEmpty() && !BamUtils.isNftBamAvailable()) {
       System.err.println(
