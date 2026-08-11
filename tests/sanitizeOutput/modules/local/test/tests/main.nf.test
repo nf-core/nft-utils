@@ -1,0 +1,49 @@
+nextflow_process {
+
+    name "Test sanitizeOutput"
+    script "../main.nf"
+    process "TEST"
+    tag "sanitizeOutput"
+
+    test("Default sanitize output - with unstableKeys") {
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip", "folder"])).match()
+        }
+    }
+
+    test("Default sanitize output - without unstableKeys") {
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out)).match()
+        }
+    }
+
+    test("Default sanitize output - with ignoreKeys zip + html") {
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, ignoreKeys:["zip", "html"])).match()
+        }
+    }
+}

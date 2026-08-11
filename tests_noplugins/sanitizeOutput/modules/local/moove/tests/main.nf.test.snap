@@ -1,0 +1,38 @@
+{
+    "bam - with bamKeys": {
+        "content": [
+            {
+                "bam": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.paired_end.bam:md5,d8037d0ae720c219d5d8cff45988483d"
+                    ]
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "test.paired_end.bam:md5,d8037d0ae720c219d5d8cff45988483d"
+                            ],
+                            "test.paired_end.bam:md5,d8037d0ae720c219d5d8cff45988483d",
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "sam": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-08-11T14:55:37.373461067",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}
