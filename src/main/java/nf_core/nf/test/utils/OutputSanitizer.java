@@ -40,8 +40,6 @@ public class OutputSanitizer {
   }
 
   private static Object fixUnstable(Object value) {
-    System.out.println("value class=" + value.getClass());
-    System.out.println("value=" + value);
     if (value instanceof String) {
       String strValue = (String) value;
       java.nio.file.Path path = Paths.get(strValue);
