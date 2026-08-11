@@ -38,7 +38,7 @@ public class BamUtils {
       if (!Files.exists(path)) {
         return strValue;
       }
-      String extension = Utils.getExtension(path);
+      String extension = Utils.getExtension(path, false);
       if (!"bam".equals(extension) && !"sam".equals(extension)) {
         return strValue;
       }

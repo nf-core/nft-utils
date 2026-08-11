@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 public class Utils {
@@ -71,14 +72,26 @@ public class Utils {
   /**
    * Extract the last extension from a file path.
    * @param Path path The file path
+   * @param boolean keepGz Should `.gz` compression extension be kept
    * @return The extension of the path
    */
   public static String getExtension(Path path) {
+    return getExtension(path, true);
+  }
+
+  public static String getExtension(Path path, boolean keepGz) {
     String fileName = path.getFileName().toString();
     int lastDot = fileName.lastIndexOf('.');
     if (lastDot <= 0 || lastDot == fileName.length() - 1) {
       return "";
     }
-    return fileName.substring(lastDot + 1).toLowerCase();
+    String extension = fileName.substring(lastDot + 1).toLowerCase();
+    if (extension.equals("gz") && !keepGz) {
+      return getExtension(
+        Paths.get(fileName.substring(0, lastDot)),
+        false
+      );
+    }
+    return extension;
   }
 }

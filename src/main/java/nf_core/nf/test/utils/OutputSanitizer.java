@@ -44,11 +44,11 @@ public class OutputSanitizer {
     List<String> ignoreKeys = (List<String>) options.getOrDefault("ignoreKeys", List.of());
     validateUnstableKeys(ignoreKeys, channel);
 
-    List<String> vcfKeys = (List<String>) options.getOrDefault("vcfKeys", List.of());
-    validateUnstableKeys(vcfKeys, channel);
-
     List<String> bamKeys = (List<String>) options.getOrDefault("bamKeys", List.of());
     validateUnstableKeys(bamKeys, channel);
+
+    List<String> vcfKeys = (List<String>) options.getOrDefault("vcfKeys", List.of());
+    validateUnstableKeys(vcfKeys, channel);
 
     if (!bamKeys.isEmpty() && !BamUtils.isNftBamAvailable()) {
       System.err.println(
@@ -57,6 +57,14 @@ public class OutputSanitizer {
         "output may be unstable."
       );
       bamKeys = List.of();
+    }
+    if (!vcfKeys.isEmpty() && !VcfUtils.isNftVcfAvailable()) {
+      System.err.println(
+        "WARNING: nft-vcf is not installed. " +
+        "Cannot calculate variants MD5 for VCF files; " +
+        "output may be unstable."
+      );
+      vcfKeys = List.of();
     }
 
     TreeMap<String,Object> output = new TreeMap<String,Object>();
@@ -76,6 +84,8 @@ public class OutputSanitizer {
         output.put(key, fixUnstable(value));
       } else if(bamKeys.contains(key)) {
         output.put(key, BamUtils.bamMD5(value));
+      } else if(vcfKeys.contains(key)) {
+        output.put(key, VcfUtils.vcfMD5(value));
       } else {
         output.put(key, value);
       }

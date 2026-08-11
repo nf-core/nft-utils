@@ -9,6 +9,7 @@ process MOOVE {
     tuple val(meta), path("output/"), emit: output
     tuple val(meta), path("output/*.bam"), emit: bam, optional: true
     tuple val(meta), path("output/*.sam"), emit: sam, optional: true
+    tuple val(meta), path("output/*.vcf{,.gz}"), emit: vcf, optional: true
 
     when:
     task.ext.when == null || task.ext.when

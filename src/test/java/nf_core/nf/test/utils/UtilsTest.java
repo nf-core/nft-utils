@@ -50,4 +50,18 @@ class UtilsTest {
     Path path = Paths.get("/tmp/some.directory/example.bam");
     assertEquals("bam", Utils.getExtension(path));
   }
+
+  @Test
+  void shouldIgnoreGzExtension() {
+    Path path = Paths.get("/tmp/some.directory/example.vcf.gz");
+    assertEquals("vcf", Utils.getExtension(path, false));
+    assertEquals("gz", Utils.getExtension(path, true));
+  }
+
+  @Test
+  void shouldIgnoreNestedGzExtension() {
+    Path path = Paths.get("/tmp/some.directory/example.vcf.gz.gz");
+    assertEquals("vcf", Utils.getExtension(path, false));
+    assertEquals("gz", Utils.getExtension(path, true));
+  }
 }

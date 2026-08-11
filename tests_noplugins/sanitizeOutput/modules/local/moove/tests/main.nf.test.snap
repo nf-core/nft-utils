@@ -1,4 +1,35 @@
 {
+    "vcf.gz - with vcfKeys": {
+        "content": [
+            {
+                "bam": [
+                    
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9",
+                            [
+                                "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9"
+                            ],
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "sam": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-08-11T19:10:30.869183115",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
     "bam - with bamKeys": {
         "content": [
             {
