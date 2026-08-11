@@ -5,7 +5,7 @@ nextflow_process {
     process "TEST"
     tag "sanitizeOutput"
 
-    test("Default sanitize output") {
+    test("Default sanitize output - with unstableKeys") {
         when {
           process {
             """
@@ -13,11 +13,23 @@ nextflow_process {
             """
           }
         }
-
-
         then {
             assert process.success
-            assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip"])).match()
+            assert snapshot(sanitizeOutput(process.out, unstableKeys:["zip", "folder"])).match()
+        }
+    }
+
+    test("Default sanitize output - without unstableKeys") {
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out)).match()
         }
     }
 
