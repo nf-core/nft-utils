@@ -1,0 +1,110 @@
+{
+    "bam - with readsMD5Keys": {
+        "content": [
+            {
+                "bam": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.paired_end.bam:md5,d8037d0ae720c219d5d8cff45988483d"
+                    ]
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "test.paired_end.bam:md5Reads,762e859a3d0ed1553655cde77665c940"
+                            ],
+                            "test.paired_end.bam:md5Reads,762e859a3d0ed1553655cde77665c940",
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "vcf": [
+
+                ]
+            }
+        ],
+        "timestamp": "2026-08-12T12:24:12.336981514",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "cram - with readsMD5Keys": {
+        "content": [
+            {
+                "bam": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31"
+                    ]
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "test.paired_end.sorted.cram:md5Reads,2f11e4fe3390b8ad0a1852616fd1da04"
+                            ],
+                            "test.paired_end.sorted.cram:md5Reads,2f11e4fe3390b8ad0a1852616fd1da04",
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "vcf": [
+
+                ]
+            }
+        ],
+        "timestamp": "2026-08-12T12:24:18.868723573",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "vcf.gz - with variantsMD5Keys": {
+        "content": [
+            {
+                "bam": [
+
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "NA12878_GIAB.chr21_22.vcf.gz:md5Variants,894e7b71e7b443c8e45942a57786ed43",
+                            [
+                                "NA12878_GIAB.chr21_22.vcf.gz:md5Variants,894e7b71e7b443c8e45942a57786ed43"
+                            ],
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-12T12:24:26.621159572",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

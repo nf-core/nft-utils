@@ -1,0 +1,70 @@
+nextflow_process {
+
+    name "Test Process MOOVE"
+    script "../main.nf"
+    process "MOOVE"
+
+    test("bam - with readsMD5Keys") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/sarscov2/illumina/bam/test.paired_end.bam', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(process.out, readsMD5Keys: ["output"])).match()}
+            )
+        }
+    }
+
+    test("cram - with readsMD5Keys") {
+        tag "test"
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/illumina/cram/test.paired_end.sorted.cram', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(
+                    process.out, readsMD5Keys: ["output"],
+                    referenceFasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta'
+                )).match()}
+            )
+        }
+    }
+
+    test("vcf.gz - with variantsMD5Keys") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file('https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/illumina/vcf/NA12878_GIAB.chr21_22.vcf.gz', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(process.out, variantsMD5Keys: ["output"])).match()}
+            )
+        }
+    }
+}

@@ -3,12 +3,20 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 public class Utils {
 
+  private Utils() {
+  }
+
   /**
    * Result of running a process started from a {@link ProcessBuilder}.
+   *
+   * @param exitCode the exit code of the process
+   * @param stderr the captured standard error output of the process
    */
   public static class ProcessResult {
     public final int exitCode;
@@ -65,5 +73,36 @@ public class Utils {
       pathPart = urlString;
     }
     return pathPart.toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * Extract the last extension from a file path.
+   * @param path File path to get extension from
+   * @return The extension of the path
+   */
+  public static String getExtension(final Path path) {
+    return getExtension(path, true);
+  }
+
+  /**
+   * Extract the last extension from a file path.
+   * @param path File path to get extension from
+   * @param keepGz Should `.gz` compression extension be kept
+   * @return The extension of the path
+   */
+  public static String getExtension(final Path path, final boolean keepGz) {
+    String fileName = path.getFileName().toString();
+    int lastDot = fileName.lastIndexOf('.');
+    if (lastDot <= 0 || lastDot == fileName.length() - 1) {
+      return "";
+    }
+    String extension = fileName.substring(lastDot + 1).toLowerCase();
+    if (extension.equals("gz") && !keepGz) {
+      return getExtension(
+        Paths.get(fileName.substring(0, lastDot)),
+        false
+      );
+    }
+    return extension;
   }
 }
