@@ -712,7 +712,7 @@ then {
 }
 ```
 
-- `bamMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam,.cram>` extension will be replaced by the reads MD5 (i.e. md5Reads) sum using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
+- `bamMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam,.cram>` extension will be replaced by an md5 computed only on the reads (i.e. equivalent of `bam(...).getReadsMD5()`) using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
   The latter should be added in the `plugins {}` section of the `nf-test.config`.
   For `.cram` files, you also need to pass the reference genome `.fasta` (the `.fai` is automatically detected by `nft-bam`).
 
