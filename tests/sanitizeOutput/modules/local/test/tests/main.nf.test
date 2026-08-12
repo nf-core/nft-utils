@@ -46,4 +46,34 @@ nextflow_process {
             assert snapshot(sanitizeOutput(process.out, ignoreKeys:["zip", "html"])).match()
         }
     }
+
+    test("Default sanitize output - with ignorePattern test1") {
+        tag "test2"
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, ignorePattern:[".*test1.*"])).match()
+        }
+    }
+
+    test("Default sanitize output - with unstablePattern test1") {
+        tag "test2"
+        when {
+          process {
+            """
+            input[0] = [id:"test"]
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, unstablePattern:[".*test1.*"])).match()
+        }
+    }
 }

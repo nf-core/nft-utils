@@ -2,6 +2,8 @@ package nf_core.nf.test.utils;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -117,4 +119,53 @@ class OutputSanitizerTest {
             exception.getMessage()
         );
     }
+
+    @Test
+    void checkPatternFailMatchBothIgnoreAndUnstable() {
+        RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> OutputSanitizer.checkPattern(
+                List.of("MyFile.bam", "MyFile.vcf"),
+                List.of(".*\\.bam$", ".*\\.vcf$"),
+                List.of(".*\\.vcf$")
+            )
+        );
+
+        assertEquals(
+            "Value 'MyFile.vcf' matches both ignorePattern and unstablePattern",
+            exception.getMessage()
+        );
+    }
+
+  @Test
+  void checkPatternShouldIgnoreTxtFileAndSimplifyBamInList() {
+    Object outputCheck = OutputSanitizer.checkPattern(
+      List.of(
+        "/tmp/some.directory/example.bam",
+        "/tmp/some.directory/example.txt"
+      ),
+      List.of(".*\\.bam$"),
+      List.of(".*\\.txt$")
+    );
+    assertEquals(
+      outputCheck,
+      List.of("example.bam")
+    );
+  }
+
+  @Test
+  void checkPatternShouldIgnoreTxtFileAndSimplifyBamInMap() {
+    Object outputCheck = OutputSanitizer.checkPattern(
+      Map.of(
+        "bam", "/tmp/some.directory/example.bam",
+        "txt", "/tmp/some.directory/example.txt"
+      ),
+      List.of(".*\\.bam$"),
+      List.of(".*\\.txt$")
+    );
+    assertEquals(
+      outputCheck,
+      Map.of("bam", "example.bam")
+    );
+  }
 }

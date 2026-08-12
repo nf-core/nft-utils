@@ -712,6 +712,14 @@ then {
 }
 ```
 
+- `ignoreKeys`: A list of keys to exclude from the snapshot. This is useful for output entries where the file name may vary between runs.
+
+```groovy
+then {
+  assert snapshot(sanitizeOutput(process.out, ignoreKeys:["log"])).match()
+}
+```
+
 - `readsMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam,.cram>` extension will be replaced by an md5 computed only on the reads (i.e. equivalent of `bam(...).getReadsMD5()`) using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
   The latter should be added in the `plugins {}` section of the `nf-test.config`.
   For `.cram` files, you also need to pass the reference genome `.fasta` (the `.fai` is automatically detected by `nft-bam`).
@@ -729,6 +737,16 @@ then {
 ```groovy
 then {
   assert snapshot(sanitizeOutput(process.out, variantsMD5Keys:["vcf"])).match()
+}
+```
+
+- `unstablePattern` and `ignorePattern`: Lists of regex pattern that will be matched against each value of the channel. If a match is found for a given file, `unstablePattern` will remove the md5sum, and `ignorePattern` will completely ignore the file from the snapshot.
+  Beware that patterns across `unstablePattern` and `ignorePattern` should be mutually exclusive.
+  Channel key provided by `unstableKeys`, `ignoreKeys`, `readsMD5Keys` and `variantsMD5Keys` will not be matched agains these pattern.
+
+```groovy
+then {
+  assert snapshot(sanitizeOutput(process.out, unstablePattern:[".*\\.log$"], ignorePattern:["VERSION\\_.*$"])).match()
 }
 ```
 
