@@ -1,9 +1,9 @@
 {
-    "cram - with bamKeys": {
+    "cram - with bamMD5Keys": {
         "content": [
             {
                 "bam": [
-                    
+
                 ],
                 "output": [
                     [
@@ -20,24 +20,24 @@
                     ]
                 ],
                 "sam": [
-                    
+
                 ],
                 "vcf": [
-                    
+
                 ]
             }
         ],
-        "timestamp": "2026-08-12T10:48:26.200258988",
+        "timestamp": "2026-08-12T11:39:49.399621509",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
         }
     },
-    "vcf.gz - with vcfKeys": {
+    "vcf.gz - with vcfMD5Keys": {
         "content": [
             {
                 "bam": [
-                    
+
                 ],
                 "output": [
                     [
@@ -54,7 +54,7 @@
                     ]
                 ],
                 "sam": [
-                    
+
                 ],
                 "vcf": [
                     [
@@ -66,13 +66,13 @@
                 ]
             }
         ],
-        "timestamp": "2026-08-11T19:10:04.190805152",
+        "timestamp": "2026-08-12T11:40:52.057187227",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
         }
     },
-    "bam - with bamKeys": {
+    "bam - with bamMD5Keys": {
         "content": [
             {
                 "bam": [
@@ -98,14 +98,14 @@
                     ]
                 ],
                 "sam": [
-                    
+
                 ],
                 "vcf": [
-                    
+
                 ]
             }
         ],
-        "timestamp": "2026-08-12T10:48:21.716966698",
+        "timestamp": "2026-08-12T11:39:43.144809074",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

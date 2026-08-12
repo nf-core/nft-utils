@@ -1,9 +1,40 @@
 {
-    "vcf.gz - with vcfKeys": {
+    "cram - with bamMD5Keys": {
         "content": [
             {
                 "bam": [
-                    
+
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31"
+                            ],
+                            "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31",
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "sam": [
+
+                ]
+            }
+        ],
+        "timestamp": "2026-08-12T11:41:26.389931368",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "vcf.gz - with vcfMD5Keys": {
+        "content": [
+            {
+                "bam": [
+
                 ],
                 "output": [
                     [
@@ -20,7 +51,7 @@
                     ]
                 ],
                 "sam": [
-                    
+
                 ]
             }
         ],
@@ -30,7 +61,7 @@
             "nextflow": "26.04.6"
         }
     },
-    "bam - with bamKeys": {
+    "bam - with bamMD5Keys": {
         "content": [
             {
                 "bam": [
@@ -56,7 +87,7 @@
                     ]
                 ],
                 "sam": [
-                    
+
                 ]
             }
         ],

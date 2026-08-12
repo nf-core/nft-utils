@@ -12,23 +12,29 @@ public class VcfUtils {
   private static final String VARIANT_FILE_CLASS =
     "genepi.nf.test.vcf.VcfFile";
 
-  private static Class<?> getNftVcfClass() {
-    try {
-      return Class.forName(VARIANT_FILE_CLASS);
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
+  private static Class<?> getNftVcfClass() throws ClassNotFoundException {
+    return Class.forName(VARIANT_FILE_CLASS);
   }
 
   public static boolean isNftVcfAvailable() {
-    Class<?> clazz = getNftVcfClass();
-    if (clazz != null) {
+    try {
+      Class<?> vcfFileClass = getNftVcfClass();
+      vcfFileClass.getConstructor();
+      vcfFileClass.getMethod("setVcfFilename", String.class);
+      vcfFileClass.getMethod("getVariantsMD5");
       return true;
+    } catch (ClassNotFoundException e) {
+      System.err.println(
+        "Could not find the VcfFile class of the nft-vcf plugin"
+      );
+      return false;
+    } catch (NoSuchMethodException e) {
+      System.err.println(
+        "Installed nft-vcf version is incompatible with nft-utils. " +
+        "Expected VcfFile(), setVcfFilename(String) and getVariantsMD5()."
+      );
+      return false;
     }
-    System.err.println(
-      "Could not find the VcfFile class of the nft-vcf plugin"
-    );
-    return false;
   }
 
   public static Object vcfMD5(Object value) {
@@ -59,8 +65,14 @@ public class VcfUtils {
       Method getVariantsMD5 = vcfFileClass.getMethod("getVariantsMD5");
 
       return (String) getVariantsMD5.invoke(vcfFile);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(
+        "The installed version of nft-vcf is incompatible with " +
+        "nft-utils. Expected VcfFile(), setVcfFilename(String) " +
+        "and getVariantsMD5().",
+        e
+      );
     } catch (Exception e) {
-      e.printStackTrace();
       throw new RuntimeException(
         "Failed to calculate variants MD5 for file: " + path, e
       );

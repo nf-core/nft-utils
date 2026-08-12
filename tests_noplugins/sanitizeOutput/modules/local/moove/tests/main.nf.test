@@ -4,7 +4,7 @@ nextflow_process {
     script "../main.nf"
     process "MOOVE"
 
-    test("bam - with bamKeys") {
+    test("bam - with bamMD5Keys") {
         when {
             process {
                 """
@@ -19,12 +19,37 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(sanitizeOutput(process.out, bamKeys: ["output"])).match()}
+                { assert snapshot(sanitizeOutput(process.out, bamMD5Keys: ["output"])).match()}
             )
         }
     }
 
-    test("vcf.gz - with vcfKeys") {
+    test("cram - with bamMD5Keys") {
+        tag "test"
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/illumina/cram/test.paired_end.sorted.cram', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(
+                    process.out, bamMD5Keys: ["output"],
+                    fasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta',
+                    fai: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta.fai'
+                )).match()}
+            )
+        }
+    }
+
+    test("vcf.gz - with vcfMD5Keys") {
         when {
             process {
                 """
@@ -39,7 +64,7 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(sanitizeOutput(process.out, vcfKeys: ["output"])).match()}
+                { assert snapshot(sanitizeOutput(process.out, vcfMD5Keys: ["output"])).match()}
             )
         }
     }

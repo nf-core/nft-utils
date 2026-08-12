@@ -13,23 +13,34 @@ public class BamUtils {
   private static final String ALIGNMENT_FILE_CLASS =
     "nvnieuwk.nf.test.bam.AlignmentFile";
 
-  private static Class<?> getNftBamClass() {
-    try {
-      return Class.forName(ALIGNMENT_FILE_CLASS);
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
+  private static Class<?> getNftBamClass() throws ClassNotFoundException {
+    return Class.forName(ALIGNMENT_FILE_CLASS);
   }
 
   public static boolean isNftBamAvailable() {
-    Class<?> clazz = getNftBamClass();
-    if (clazz != null) {
+    try {
+      Class<?> alignmentFileClass = getNftBamClass();
+      alignmentFileClass.getConstructor(
+        LinkedHashMap.class,
+        Path.class,
+        Path.class
+      );
+      alignmentFileClass.getMethod("getReadsMD5");
       return true;
+    } catch (ClassNotFoundException e) {
+      System.err.println(
+        "Could not find the AlignmentFile class of the nft-bam plugin"
+      );
+      return false;
+
+    } catch (NoSuchMethodException e) {
+      System.err.println(
+        "Installed nft-bam version is incompatible with nft-utils. " +
+        "Expected AlignmentFile(LinkedHashMap, Path, Path) " +
+        "and getReadsMD5()."
+      );
+      return false;
     }
-    System.err.println(
-      "Could not find the AlignmentFile class of the nft-bam plugin"
-    );
-    return false;
   }
 
   private static Path resolveReference(String refFile, Path referenceTmpDir) {
@@ -90,10 +101,17 @@ public class BamUtils {
       Method getReadsMD5 = alignmentFileClass.getMethod("getReadsMD5");
 
       return (String) getReadsMD5.invoke(alignmentFile);
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (NoSuchMethodException e) {
       throw new RuntimeException(
-        "Failed to calculate reads MD5 for file: " + pathBam, e
+        "The installed version of nft-bam is incompatible with " +
+        "nft-utils. Expected AlignmentFile(LinkedHashMap, Path, Path) " +
+        "and getReadsMD5()",
+        e
+      );
+    } catch (Exception e) {
+      throw new RuntimeException(
+        "Failed to calculate reads MD5 for file: " + pathBam,
+        e
       );
     }
   }

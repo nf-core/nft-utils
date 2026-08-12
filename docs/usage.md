@@ -712,21 +712,23 @@ then {
 }
 ```
 
-- `bamKeys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam>` extension will be replaces by the reads MD5 sum using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
+- `bamMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam,.cram>` extension will be replaced by the reads MD5 (i.e. md5Reads) sum using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
   The latter should be added in the `plugins {}` section of the `nf-test.config`.
+  For `.cram` files, you also need to pass the reference fasta and fai.
 
 ```groovy
 then {
-  assert snapshot(sanitizeOutput(process.out, bamKeys:["bam"])).match()
+  assert snapshot(sanitizeOutput(process.out, bamMD5Keys:["bam"])).match()
+  assert snapshot(sanitizeOutput(process.out, bamMD5Keys:["bam"], fasta: "https://url/reference.fa", fai: "https://url/reference.fa.fai")).match() // for cram files
 }
 ```
 
-- `vcfKeys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.vcf,.vcf.gz>` extension will be replaces by the reads MD5 sum using the [`nft-vcf`](https://github.com/seppinho/nft-vcf) plugin. BCF extensions are not yet supported by `nft-vcf`.
+- `vcfMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.vcf,.vcf.gz>` extension will be replaces by the reads MD5 sum using the [`nft-vcf`](https://github.com/seppinho/nft-vcf) plugin. BCF extensions are not yet supported by `nft-vcf`.
   The latter should be added in the `plugins {}` section of the `nf-test.config`.
 
 ```groovy
 then {
-  assert snapshot(sanitizeOutput(process.out, vcfKeys:["vcf"])).match()
+  assert snapshot(sanitizeOutput(process.out, vcfMD5Keys:["vcf"])).match()
 }
 ```
 
