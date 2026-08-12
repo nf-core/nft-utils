@@ -48,7 +48,6 @@ nextflow_process {
     }
 
     test("Default sanitize output - with ignorePattern test1") {
-        tag "test2"
         when {
           process {
             """
@@ -63,7 +62,6 @@ nextflow_process {
     }
 
     test("Default sanitize output - with unstablePattern test1") {
-        tag "test2"
         when {
           process {
             """
