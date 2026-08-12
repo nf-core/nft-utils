@@ -42,8 +42,7 @@ nextflow_process {
                 { assert process.success },
                 { assert snapshot(sanitizeOutput(
                     process.out, bamMD5Keys: ["output"],
-                    fasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta',
-                    fai: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta.fai'
+                    referenceFasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta'
                 )).match()}
             )
         }

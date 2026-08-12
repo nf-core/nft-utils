@@ -1,66 +1,4 @@
 {
-    "cram - with bamMD5Keys": {
-        "content": [
-            {
-                "bam": [
-
-                ],
-                "output": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        [
-                            [
-                                "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31"
-                            ],
-                            "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31",
-                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
-                        ]
-                    ]
-                ],
-                "sam": [
-
-                ]
-            }
-        ],
-        "timestamp": "2026-08-12T11:41:26.389931368",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.04.6"
-        }
-    },
-    "vcf.gz - with vcfMD5Keys": {
-        "content": [
-            {
-                "bam": [
-
-                ],
-                "output": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        [
-                            "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9",
-                            [
-                                "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9"
-                            ],
-                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
-                        ]
-                    ]
-                ],
-                "sam": [
-
-                ]
-            }
-        ],
-        "timestamp": "2026-08-11T19:10:30.869183115",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.04.6"
-        }
-    },
     "bam - with bamMD5Keys": {
         "content": [
             {
@@ -86,12 +24,84 @@
                         ]
                     ]
                 ],
-                "sam": [
-
+                "vcf": [
+                    
                 ]
             }
         ],
-        "timestamp": "2026-08-11T14:55:37.373461067",
+        "timestamp": "2026-08-12T12:26:02.16005504",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "cram - with bamMD5Keys": {
+        "content": [
+            {
+                "bam": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31"
+                    ]
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31"
+                            ],
+                            "test.paired_end.sorted.cram:md5,e0146aa3a5a196e4cb5593f545e95c31",
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "vcf": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-08-12T12:26:08.138818782",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "vcf.gz - with vcfMD5Keys": {
+        "content": [
+            {
+                "bam": [
+                    
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9",
+                            [
+                                "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9"
+                            ],
+                            "test.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "NA12878_GIAB.chr21_22.vcf.gz:md5,c6258cbde976ec65ca3de2089bfa08a9"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-12T12:26:14.141013839",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

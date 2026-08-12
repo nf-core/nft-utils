@@ -714,12 +714,12 @@ then {
 
 - `bamMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam,.cram>` extension will be replaced by the reads MD5 (i.e. md5Reads) sum using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
   The latter should be added in the `plugins {}` section of the `nf-test.config`.
-  For `.cram` files, you also need to pass the reference fasta and fai.
+  For `.cram` files, you also need to pass the reference genome `.fasta` (the `.fai` is automatically detected by `nft-bam`).
 
 ```groovy
 then {
   assert snapshot(sanitizeOutput(process.out, bamMD5Keys:["bam"])).match()
-  assert snapshot(sanitizeOutput(process.out, bamMD5Keys:["bam"], fasta: "https://url/reference.fa", fai: "https://url/reference.fa.fai")).match() // for cram files
+  assert snapshot(sanitizeOutput(process.out, bamMD5Keys:["bam"], referenceFasta: "https://url/reference.fa")).match() // for cram files
 }
 ```
 

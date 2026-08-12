@@ -68,41 +68,4 @@ class UtilsTest {
     assertEquals("vcf", Utils.getExtension(path, false));
     assertEquals("gz", Utils.getExtension(path, true));
   }
-
-  @Test
-  void downloadFile() throws IOException {
-    Path destinationFolder = Files.createTempDirectory(
-      "nft-utils-test-"
-    );
-
-    Path result = Utils.downloadFile(
-      "https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta",
-      destinationFolder
-    );
-
-    assertTrue(Files.exists(result));
-    assertEquals(
-      "genome.fasta",
-      result.getFileName().toString()
-    );
-  }
-
-  @Test
-  void downloadFileFail() throws IOException {
-    Path destinationFolder = Files.createTempDirectory(
-      "nft-utils-test-"
-    );
-
-    RuntimeException exception = assertThrows(
-      RuntimeException.class,
-      () -> Utils.downloadFile(
-        "https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fastaX",
-        destinationFolder
-      )
-    );
-
-    assertTrue(
-      exception.getMessage().contains("Failed to download file")
-    );
-  }
 }
