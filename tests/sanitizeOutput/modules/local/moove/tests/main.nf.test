@@ -25,12 +25,13 @@ nextflow_process {
     }
 
     test("cram - with bamKeys") {
+        tag "test"
         when {
             process {
                 """
                 input[0] = [
                     [ id:'test' ],
-                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/cram/test.paired_end.sorted.cram', checkIfExists: true)
+                    file('https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/illumina/cram/test.paired_end.sorted.cram', checkIfExists: true)
                 ]
                 """
             }
@@ -41,7 +42,8 @@ nextflow_process {
                 { assert process.success },
                 { assert snapshot(sanitizeOutput(
                     process.out, bamKeys: ["output"],
-                    fasta: file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta', checkIfExists: true)
+                    fasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta',
+                    fai: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta.fai'
                 )).match()}
             )
         }

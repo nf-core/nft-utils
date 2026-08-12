@@ -26,7 +26,7 @@ public class VcfUtils {
       return true;
     }
     System.err.println(
-      "Could not find nft-vcf VcfFile"
+      "Could not find the VcfFile class of the nft-vcf plugin"
     );
     return false;
   }

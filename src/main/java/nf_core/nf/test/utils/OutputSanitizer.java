@@ -74,6 +74,7 @@ public class OutputSanitizer {
     List<String> vcfKeys = (List<String>) options.getOrDefault("vcfKeys", List.of());
 
     String fasta = (String) options.getOrDefault("fasta", "");
+    String fai = (String) options.getOrDefault("fai", "");
 
     validateKeyUsage( unstableKeys, ignoreKeys, bamKeys, vcfKeys);
 
@@ -115,7 +116,7 @@ public class OutputSanitizer {
       if(unstableKeys.contains(key)) {
         output.put(key, fixUnstable(value));
       } else if(bamKeys.contains(key)) {
-        output.put(key, BamUtils.bamMD5(value, fasta));
+        output.put(key, BamUtils.bamMD5(value, fasta, fai));
       } else if(vcfKeys.contains(key)) {
         output.put(key, VcfUtils.vcfMD5(value));
       } else {

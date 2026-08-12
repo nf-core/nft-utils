@@ -3,6 +3,11 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -93,5 +98,51 @@ public class Utils {
       );
     }
     return extension;
+  }
+
+  /**
+   * Download a file from a URL to a temporary location and return the path.
+   * @param String urlString The URL string
+   * @return The path to the downloaded file
+   */
+  static Path downloadFile(String urlString, Path destinationFolder) {
+    try {
+      URI uri = URI.create(urlString);
+      String fileName = Paths.get(uri.getPath()).getFileName().toString();
+      if (fileName.isEmpty()) {
+        throw new RuntimeException(
+          "Could not determine filename from URL: " + urlString
+        );
+      }
+      Files.createDirectories(destinationFolder);
+      Path destination = destinationFolder.resolve(fileName);
+
+      HttpClient client = HttpClient.newHttpClient();
+      HttpRequest request = HttpRequest.newBuilder()
+        .uri(uri)
+        .GET()
+        .build();
+
+      HttpResponse<Path> response = client.send(
+        request,
+        HttpResponse.BodyHandlers.ofFile(destination)
+      );
+
+      if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        Files.deleteIfExists(destination);
+
+        throw new RuntimeException(
+          "Failed to download file: HTTP " +
+          response.statusCode()
+        );
+      }
+      return destination;
+
+    } catch (Exception e) {
+      throw new RuntimeException(
+        "Failed to download file: " + urlString,
+        e
+      );
+    }
   }
 }
