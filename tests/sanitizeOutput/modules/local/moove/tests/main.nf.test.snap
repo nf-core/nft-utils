@@ -1,5 +1,5 @@
 {
-    "bam - with bamMD5Keys": {
+    "bam - with readsMD5Keys": {
         "content": [
             {
                 "bam": [
@@ -35,7 +35,7 @@
             "nextflow": "26.04.6"
         }
     },
-    "cram - with bamMD5Keys": {
+    "cram - with readsMD5Keys": {
         "content": [
             {
                 "bam": [
@@ -71,7 +71,7 @@
             "nextflow": "26.04.6"
         }
     },
-    "vcf.gz - with vcfMD5Keys": {
+    "vcf.gz - with variantsMD5Keys": {
         "content": [
             {
                 "bam": [

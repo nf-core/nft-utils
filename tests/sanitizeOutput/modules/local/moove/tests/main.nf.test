@@ -4,7 +4,7 @@ nextflow_process {
     script "../main.nf"
     process "MOOVE"
 
-    test("bam - with bamMD5Keys") {
+    test("bam - with readsMD5Keys") {
         when {
             process {
                 """
@@ -19,12 +19,12 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(sanitizeOutput(process.out, bamMD5Keys: ["output"])).match()}
+                { assert snapshot(sanitizeOutput(process.out, readsMD5Keys: ["output"])).match()}
             )
         }
     }
 
-    test("cram - with bamMD5Keys") {
+    test("cram - with readsMD5Keys") {
         tag "test"
         when {
             process {
@@ -41,14 +41,14 @@ nextflow_process {
             assertAll(
                 { assert process.success },
                 { assert snapshot(sanitizeOutput(
-                    process.out, bamMD5Keys: ["output"],
+                    process.out, readsMD5Keys: ["output"],
                     referenceFasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta'
                 )).match()}
             )
         }
     }
 
-    test("vcf.gz - with vcfMD5Keys") {
+    test("vcf.gz - with variantsMD5Keys") {
         when {
             process {
                 """
@@ -63,7 +63,7 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(sanitizeOutput(process.out, vcfMD5Keys: ["output"])).match()}
+                { assert snapshot(sanitizeOutput(process.out, variantsMD5Keys: ["output"])).match()}
             )
         }
     }

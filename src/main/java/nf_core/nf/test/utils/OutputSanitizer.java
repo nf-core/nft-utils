@@ -31,15 +31,15 @@ public final class OutputSanitizer {
   static void validateKeyUsage(
     final List<String> unstableKeys,
     final List<String> ignoreKeys,
-    final List<String> bamMD5Keys,
-    final List<String> vcfMD5Keys
+    final List<String> readsMD5Keys,
+    final List<String> variantsMD5Keys
   ) {
     Map<String, String> keyUsage = new HashMap<>();
 
     addKeyUsage(keyUsage, unstableKeys, "unstableKeys");
     addKeyUsage(keyUsage, ignoreKeys, "ignoreKeys");
-    addKeyUsage(keyUsage, bamMD5Keys, "bamMD5Keys");
-    addKeyUsage(keyUsage, vcfMD5Keys, "vcfMD5Keys");
+    addKeyUsage(keyUsage, readsMD5Keys, "readsMD5Keys");
+    addKeyUsage(keyUsage, variantsMD5Keys, "variantsMD5Keys");
   }
 
   private static void addKeyUsage(
@@ -86,36 +86,36 @@ public final class OutputSanitizer {
     List<String> ignoreKeys =
       (List<String>) options.getOrDefault("ignoreKeys", List.of());
 
-    List<String> bamMD5Keys =
-      (List<String>) options.getOrDefault("bamMD5Keys", List.of());
+    List<String> readsMD5Keys =
+      (List<String>) options.getOrDefault("readsMD5Keys", List.of());
 
-    List<String> vcfMD5Keys =
-      (List<String>) options.getOrDefault("vcfMD5Keys", List.of());
+    List<String> variantsMD5Keys =
+      (List<String>) options.getOrDefault("variantsMD5Keys", List.of());
 
     String referenceFasta = (String) options.getOrDefault("referenceFasta", "");
 
-    validateKeyUsage(unstableKeys, ignoreKeys, bamMD5Keys, vcfMD5Keys);
+    validateKeyUsage(unstableKeys, ignoreKeys, readsMD5Keys, variantsMD5Keys);
 
     validateKeysInChannel(unstableKeys, channel);
     validateKeysInChannel(ignoreKeys, channel);
-    validateKeysInChannel(bamMD5Keys, channel);
-    validateKeysInChannel(vcfMD5Keys, channel);
+    validateKeysInChannel(readsMD5Keys, channel);
+    validateKeysInChannel(variantsMD5Keys, channel);
 
-    if (!bamMD5Keys.isEmpty() && !BamUtils.isNftBamAvailable()) {
+    if (!readsMD5Keys.isEmpty() && !BamUtils.isNftBamAvailable()) {
       System.err.println(
         "WARNING: A compatible version of nft-bam is not available. "
         + "Cannot calculate reads MD5 for BAM/SAM/CRAM files; "
         + "output may be unstable."
       );
-      bamMD5Keys = List.of();
+      readsMD5Keys = List.of();
     }
-    if (!vcfMD5Keys.isEmpty() && !VcfUtils.isNftVcfAvailable()) {
+    if (!variantsMD5Keys.isEmpty() && !VcfUtils.isNftVcfAvailable()) {
       System.err.println(
         "WARNING: A compatible version of nft-vcf is not available. "
         + "Cannot calculate variants MD5 for VCF files; "
         + "output may be unstable."
       );
-      vcfMD5Keys = List.of();
+      variantsMD5Keys = List.of();
     }
 
     TreeMap<String, Object> output = new TreeMap<String, Object>();
@@ -133,9 +133,9 @@ public final class OutputSanitizer {
 
       if (unstableKeys.contains(key)) {
         output.put(key, fixUnstable(value));
-      } else if (bamMD5Keys.contains(key)) {
+      } else if (readsMD5Keys.contains(key)) {
         output.put(key, BamUtils.bamMD5(value, referenceFasta));
-      } else if (vcfMD5Keys.contains(key)) {
+      } else if (variantsMD5Keys.contains(key)) {
         output.put(key, VcfUtils.vcfMD5(value));
       } else {
         output.put(key, value);
