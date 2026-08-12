@@ -3,19 +3,20 @@ package nf_core.nf.test.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
 public class Utils {
 
+  private Utils() {
+  }
+
   /**
    * Result of running a process started from a {@link ProcessBuilder}.
+   *
+   * @param exitCode the exit code of the process
+   * @param stderr the captured standard error output of the process
    */
   public static class ProcessResult {
     public final int exitCode;
@@ -76,15 +77,20 @@ public class Utils {
 
   /**
    * Extract the last extension from a file path.
-   * @param Path path The file path
-   * @param boolean keepGz Should `.gz` compression extension be kept
+   * @param path File path to get extension from
    * @return The extension of the path
    */
-  public static String getExtension(Path path) {
+  public static String getExtension(final Path path) {
     return getExtension(path, true);
   }
 
-  public static String getExtension(Path path, boolean keepGz) {
+  /**
+   * Extract the last extension from a file path.
+   * @param path File path to get extension from
+   * @param keepGz Should `.gz` compression extension be kept
+   * @return The extension of the path
+   */
+  public static String getExtension(final Path path, final boolean keepGz) {
     String fileName = path.getFileName().toString();
     int lastDot = fileName.lastIndexOf('.');
     if (lastDot <= 0 || lastDot == fileName.length() - 1) {
