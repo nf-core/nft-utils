@@ -33,7 +33,6 @@ public final class BamUtils {
     return Class.forName(METHODS_CLASS);
   }
 
-
   /**
    * Checks whether a compatible version of nft-bam is available.
    *
