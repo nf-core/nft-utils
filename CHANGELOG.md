@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `unstableKeys` usage for `sanitizeOutput` when a folder is passed.
 - Add `ignoreKeys` for `sanitizeOutput` and key presence check. Add jupiter test.
 - Add `readsMD5Keys` and `variantsMD5Keys` for `sanitizeOutput` so that md5 is the one from the reads and from the variants.
+- Add `unstablePattern` and `ignorePattern` to `sanitizeOutput` for more fine grained parsing.
 - Fix linting with `mvn checkstyle:check`
 
 ## 1.0.0
