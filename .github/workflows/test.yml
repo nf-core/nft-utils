@@ -52,7 +52,7 @@ jobs:
           which nextflow
           nextflow -version
           which nf-test
-          nf-test --version
+          nf-test version
           which nf-core
           nf-core --version
 
