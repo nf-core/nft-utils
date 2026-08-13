@@ -169,7 +169,7 @@ public final class OutputSanitizer {
       for (Object item : listValue) {
         fixedList.add(recursiveParse(item, applyFct));
       }
-      return fixedList;
+      return fixedList.sort();
     } else if (value instanceof Map) {
       Map<?, ?> mapValue = (Map<?, ?>) value;
       Map<Object, Object> fixedMap = new TreeMap<>();
