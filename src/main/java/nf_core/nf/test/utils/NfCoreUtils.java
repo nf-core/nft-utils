@@ -8,13 +8,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NfCoreUtils {
+public final class NfCoreUtils {
+
+  private NfCoreUtils() {
+  }
 
   /**
-   * Sets up a temporary nf-core library directory structure
+   * Sets up a temporary nf-core library directory structure.
    * @param libDir The directory path where the nf-core library should be created
    */
-  public static void nfcoreInitialise(String libDir) {
+  public static void nfcoreInitialise(final String libDir) {
     System.out.println("\n");
     System.out.println("Creating a temporary nf-core library at " + libDir);
     try {
@@ -45,7 +48,7 @@ public class NfCoreUtils {
    * @param modules List of module names (strings) or module maps with keys: name (required), sha (optional), remote (optional)
    */
   @SuppressWarnings("unchecked")
-  public static void nfcoreInstall(String libDir, List<?> modules) {
+  public static void nfcoreInstall(final String libDir, final List<?> modules) {
     System.out.println("Installing nf-core modules...");
 
     if (modules == null || modules.isEmpty()) {
@@ -81,7 +84,7 @@ public class NfCoreUtils {
    * @param sha The SHA hash (optional)
    * @param remote The remote repository (optional)
    */
-  private static void installModule(String libDir, String name, String sha, String remote) {
+  private static void installModule(final String libDir, final String name, final String sha, final String remote) {
     try {
       // Create a cache key based on module parameters
       String cacheKey = createModuleCacheKey(name, sha, remote);
@@ -134,7 +137,7 @@ public class NfCoreUtils {
    * @param remote The remote repository (optional)
    * @return A hashed cache key string
    */
-  private static String createModuleCacheKey(String name, String sha, String remote) {
+  private static String createModuleCacheKey(final String name, final String sha, final String remote) {
     StringBuilder key = new StringBuilder(name);
     if (sha != null && !sha.isEmpty()) {
       key.append("_").append(sha);
@@ -162,7 +165,7 @@ public class NfCoreUtils {
    * Write a state file to mark a module as installed
    * @param stateFile The state file to create
    */
-  private static void writeModuleStateFile(File stateFile) {
+  private static void writeModuleStateFile(final File stateFile) {
     try {
       if (!stateFile.exists()) {
         stateFile.createNewFile();
@@ -179,7 +182,7 @@ public class NfCoreUtils {
    * @param libDir An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
    */
-  public static void nfcoreLibraryLinker(String libDir, String modulesDir, String mode) {
+  public static void nfcoreLibraryLinker(final String libDir, final String modulesDir, final String mode) {
     try {
       File libModulesDir = new File(libDir + "/modules");
       File destModulesDir = new File(modulesDir);
@@ -225,7 +228,7 @@ public class NfCoreUtils {
    * @param destDir The destination directory
    * @throws IOException If file operations fail
    */
-  private static void recurseLink(File libDir, File destDir) throws IOException {
+  private static void recurseLink(final File libDir, final File destDir) throws IOException {
     String itemName = libDir.getName();
     File destItem = new File(destDir, itemName);
 
@@ -248,7 +251,7 @@ public class NfCoreUtils {
    * @param destDir The destination directory to traverse
    * @throws IOException If file operations fail
    */
-  private static void recurseUnlink(File libDir, File destDir) throws IOException {
+  private static void recurseUnlink(final File libDir, final File destDir) throws IOException {
     if (!destDir.exists() || !destDir.isDirectory()) {
       return;
     }
@@ -285,7 +288,7 @@ public class NfCoreUtils {
    * @param directory The directory to check against
    * @return true if the file is within the directory, false otherwise
    */
-  private static boolean isWithinDirectory(File file, File directory) {
+  private static boolean isWithinDirectory(final File file, final File directory) {
     try {
       String filePath = file.getCanonicalPath();
       String dirPath = directory.getCanonicalPath();
@@ -299,7 +302,7 @@ public class NfCoreUtils {
    * Delete the temporary nf-core library
    * @param libDir The library directory path to delete
    */
-  public static void nfcoreDeleteLibrary(String libDir) {
+  public static void nfcoreDeleteLibrary(final String libDir) {
     System.out.println("Deleting temporary nf-core library: " + libDir);
 
     try {
@@ -315,7 +318,7 @@ public class NfCoreUtils {
    * Helper method to recursively delete a directory and all its contents
    * @param directory The directory to delete
    */
-  private static void deleteDirectory(File directory) {
+  private static void deleteDirectory(final File directory) {
     if (directory.exists()) {
       File[] files = directory.listFiles();
       if (files != null) {
