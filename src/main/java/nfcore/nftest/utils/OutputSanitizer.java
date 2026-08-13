@@ -1,4 +1,4 @@
-package nf_core.nf.test.utils;
+package nfcore.nftest.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
