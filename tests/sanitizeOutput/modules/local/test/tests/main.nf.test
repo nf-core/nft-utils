@@ -76,16 +76,17 @@ nextflow_process {
     }
 
     test("Default sanitize output - with unstablePattern fastq_1 inside meta") {
+        tag "test2"
         when {
           process {
             """
-            input[0] = [id:"test", fastq:"/path/to/my/fastq_1.gz"]
+            input[0] = [id:"test", fastq:"/path/to/my/fastq_1.gz", to_ignore: "123456"]
             """
           }
         }
         then {
             assert process.success
-            assert snapshot(sanitizeOutput(process.out, unstablePattern:["**/fastq_1*"])).match()
+            assert snapshot(sanitizeOutput(process.out, unstablePattern:["**/fastq_1*"], ignorePattern:["123456"])).match()
         }
     }
 }
