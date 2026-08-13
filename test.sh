@@ -10,18 +10,18 @@ PLUGIN_JAR=$(find target -maxdepth 1 -name 'nft-utils-*.jar' -type f -print -qui
 
 if [[ $# -eq 0 ]]; then
     nf-test test \
-        --plugins "$PLUGIN" \
+        --plugins "$PLUGIN_JAR" \
         --verbose \
         --debug \
         tests/
 
     nf-test test \
-        --plugins "$PLUGIN" \
+        --plugins "$PLUGIN_JAR" \
         --config tests_noplugins/nf-test_noplugins.config \
         tests_noplugins/sanitizeOutput/
 else
     nf-test test \
-        --plugins "$PLUGIN" \
+        --plugins "$PLUGIN_JAR" \
         --verbose \
         --debug \
         "$@"

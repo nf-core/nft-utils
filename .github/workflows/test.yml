@@ -23,6 +23,7 @@ jobs:
         nextflow-version:
           - "26.01.1-edge"
           - "latest-everything"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
