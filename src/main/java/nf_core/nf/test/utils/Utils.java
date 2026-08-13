@@ -7,35 +7,73 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
-public class Utils {
+public final class Utils {
 
   private Utils() {
   }
 
   /**
    * Result of running a process started from a {@link ProcessBuilder}.
-   *
-   * @param exitCode the exit code of the process
-   * @param stderr the captured standard error output of the process
    */
   public static class ProcessResult {
-    public final int exitCode;
-    public final String stderr;
+    /** The exit code returned by the process. */
+    private final int exitCode;
+    /** The standard error output captured from the process. */
+    private final String stderr;
 
-    public ProcessResult(int exitCode, String stderr) {
-      this.exitCode = exitCode;
-      this.stderr = stderr;
+    /**
+     * Creates a process result containing the exit code and captured stderr.
+     *
+     * @param processExitCode the exit code returned by the process
+     * @param processStderr the captured standard error output
+     */
+    public ProcessResult(
+        final int processExitCode,
+        final String processStderr) {
+      this.exitCode = processExitCode;
+      this.stderr = processStderr;
+    }
+
+    /**
+     * Returns the exit code of the process.
+     *
+     * @return the process exit code
+     */
+    public int getExitCode() {
+      return exitCode;
+    }
+
+    /**
+     * Returns the captured standard error output.
+     *
+     * @return the captured stderr
+     */
+    public String getStderr() {
+      return stderr;
     }
   }
 
   /**
-   * Starts the given {@link ProcessBuilder}, captures stderr, waits for exit,
-   * and returns a {@link ProcessResult}.
+   * Starts the given {@link ProcessBuilder}, discards standard output, captures
+   * standard error, waits for the process to exit, and returns a
+   * {@link ProcessResult} containing the exit code and captured error output.
+   *
+   * @param pb The {@link ProcessBuilder} used to start the process.
+   * @return A {@link ProcessResult} containing the process exit code and
+   * stderr.
+   * @throws IOException If an I/O error occurs while starting or reading from
+   *     the process.
+   * @throws InterruptedException If the current thread is interrupted while
+   *     waiting for the process to exit.
    */
-  public static ProcessResult runProcess(ProcessBuilder pb) throws IOException, InterruptedException {
+  public static ProcessResult runProcess(
+      final ProcessBuilder pb)
+      throws IOException, InterruptedException {
     pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
     Process process = pb.start();
-    BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+    BufferedReader stderrReader = new BufferedReader(
+      new InputStreamReader(process.getErrorStream())
+    );
     StringBuilder stderr = new StringBuilder();
     String line;
     while ((line = stderrReader.readLine()) != null) {
@@ -46,21 +84,27 @@ public class Utils {
   }
 
   /**
-   * Shell escape a string by wrapping in single quotes and escaping existing single quotes.
+   * Shell escape a string by wrapping in single quotes and escaping existing
+   * single quotes.
+   *
    * @param s
    * @return The shell-escaped string
    */
-  public static String shellEscape(String s) {
-    if (s == null) return "''";
+  public static String shellEscape(final String s) {
+    if (s == null) {
+      return "''";
+    }
     return "'" + s.replace("'", "'" + "\"'\"" + "'") + "'";
   }
 
   /**
-   * Extract a lower-cased file name portion from a URL string for extension checking.
+   * Extract a lower-cased file name portion from a URL string for extension
+   * checking.
+   *
    * @param urlString The URL string
    * @return The lower-cased file name portion of the URL
    */
-  public static String getURLFileName(String urlString) {
+  public static String getURLFileName(final String urlString) {
     // Try to extract a path portion from the URL (strip query strings)
     String pathPart = urlString;
     try {

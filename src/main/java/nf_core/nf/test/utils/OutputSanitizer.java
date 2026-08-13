@@ -144,7 +144,9 @@ public final class OutputSanitizer {
     return output;
   }
 
-  static Object recursiveParse(final Object value, final Function<String, Object> applyFct) {
+  static Object recursiveParse(
+      final Object value,
+      final Function<String, Object> applyFct) {
     if (value instanceof String) {
       String strValue = (String) value;
       java.nio.file.Path path = Paths.get(strValue);
