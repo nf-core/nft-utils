@@ -186,6 +186,56 @@
             "nextflow": "26.04.6"
         }
     },
+    "Default sanitize output - with unstablePattern fastq_1 inside meta": {
+        "content": [
+            {
+                "folder": [
+                    [
+                        {
+                            "fastq": "fastq_1.gz",
+                            "id": "test"
+                        },
+                        [
+                            [
+                                "test3.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "test1.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "test2.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "html": [
+                    [
+                        {
+                            "fastq": "fastq_1.gz",
+                            "id": "test"
+                        },
+                        "test_fastqc.html:md5,24854f9d4c2bc9e908174cabefb1cf07"
+                    ]
+                ],
+                "id": [
+                    "test"
+                ],
+                "zip": [
+                    [
+                        {
+                            "fastq": "fastq_1.gz",
+                            "id": "test"
+                        },
+                        "test_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59"
+                    ]
+                ],
+                "zip_only": [
+                    "test_fastqc.zip:md5,b14838a8cfd436e61fbf159d7255cc59"
+                ]
+            }
+        ],
+        "timestamp": "2026-08-13T16:42:23.417002672",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
     "Default sanitize output - with ignoreKeys zip + html": {
         "content": [
             {

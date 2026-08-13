@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.nio.file.Files;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class OutputSanitizer {
 
@@ -237,22 +240,30 @@ public final class OutputSanitizer {
    * matching both patterns causes a {@link RuntimeException}.
    *
    * @param value The value to sanitize.
-   * @param unstablePattern The regular expression patterns identifying unstable
-   * values.
-   * @param ignorePattern The regular expression patterns identifying values to
-   * ignore.
+   * @param unstablePattern The glob patterns identifying unstable values.
+   * @param ignorePattern The glob patterns identifying values to ignore.
    * @return The sanitized value.
    */
   static Object checkPattern(
-    final Object value,
-    final List<String> unstablePattern,
-    final List<String> ignorePattern) {
+      final Object value,
+      final List<String> unstablePattern,
+      final List<String> ignorePattern) {
+
+    List<PathMatcher> ignoreMatchers = ignorePattern.stream()
+      .map(pattern -> FileSystems.getDefault()
+        .getPathMatcher("glob:" + pattern))
+      .collect(Collectors.toList());
+
+    List<PathMatcher> unstableMatchers = unstablePattern.stream()
+      .map(pattern -> FileSystems.getDefault()
+        .getPathMatcher("glob:" + pattern))
+      .collect(Collectors.toList());
 
     return recursiveParse(value, strValue -> {
-      boolean matchIgnore = ignorePattern.stream()
-        .anyMatch(strValue::matches);
-      boolean matchUnstable = unstablePattern.stream()
-        .anyMatch(strValue::matches);
+      boolean matchIgnore = ignoreMatchers.stream()
+        .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
+      boolean matchUnstable = unstableMatchers.stream()
+        .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
       if (matchIgnore && matchUnstable) {
         throw new RuntimeException(
           "Value '" + strValue
