@@ -33,13 +33,14 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java-version }}
+          cache: maven
 
       - name: Setup Micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
           cache-environment: true
-      
+
       - name: Setup Nextflow
         uses: nf-core/setup-nextflow@v2
         with:
@@ -48,13 +49,10 @@ jobs:
       - name: Check tools
         shell: bash -el {0}
         run: |
-          which mvn
+          java --version
           mvn --version
-          which nextflow
           nextflow -version
-          which nf-test
           nf-test version
-          which nf-core
           nf-core --version
 
       - name: Build plugin
