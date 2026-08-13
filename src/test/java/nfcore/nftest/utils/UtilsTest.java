@@ -1,4 +1,4 @@
-package nf_core.nf.test.utils;
+package nfcore.nftest.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
