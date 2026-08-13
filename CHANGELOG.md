@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `ignoreKeys` for `sanitizeOutput` and key presence check. Add jupiter test.
 - Add `readsMD5Keys` and `variantsMD5Keys` for `sanitizeOutput` so that md5 is the one from the reads and from the variants.
 - Add `unstablePattern` and `ignorePattern` to `sanitizeOutput` for more fine grained parsing.
-- Fix linting with `mvn checkstyle:check` and change folder structure
+- Fix linting with `mvn checkstyle:check` and change folder structure.
+- Use glob pattern instead of regex pattern for `ignorePattern` and `unstablePattern`.
 
 ## 1.0.0
 

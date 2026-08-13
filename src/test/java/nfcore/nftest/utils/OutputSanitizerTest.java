@@ -126,8 +126,8 @@ class OutputSanitizerTest {
             RuntimeException.class,
             () -> OutputSanitizer.checkPattern(
                 List.of("MyFile.bam", "MyFile.vcf"),
-                List.of(".*\\.bam$", ".*\\.vcf$"),
-                List.of(".*\\.vcf$")
+                List.of("*.bam", "*.vcf"),
+                List.of("*.vcf")
             )
         );
 
@@ -144,12 +144,12 @@ class OutputSanitizerTest {
         "/tmp/some.directory/example.bam",
         "/tmp/some.directory/example.txt"
       ),
-      List.of(".*\\.bam$"),
-      List.of(".*\\.txt$")
+      List.of("**/*.bam"),
+      List.of("**/*.txt")
     );
     assertEquals(
-      outputCheck,
-      List.of("example.bam")
+      List.of("example.bam"),
+      outputCheck
     );
   }
 
@@ -160,12 +160,12 @@ class OutputSanitizerTest {
         "bam", "/tmp/some.directory/example.bam",
         "txt", "/tmp/some.directory/example.txt"
       ),
-      List.of(".*\\.bam$"),
-      List.of(".*\\.txt$")
+      List.of("**/*.bam"),
+      List.of("**/*.txt")
     );
     assertEquals(
-      outputCheck,
-      Map.of("bam", "example.bam")
+      Map.of("bam", "example.bam"),
+      outputCheck
     );
   }
 }

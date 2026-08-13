@@ -89,7 +89,7 @@ public final class Methods {
 
     PathMatcher matcher = FileSystems
       .getDefault()
-        .getPathMatcher("glob:" + fileName);
+      .getPathMatcher("glob:" + fileName);
 
     // Find matching files in the parent directory
     try {

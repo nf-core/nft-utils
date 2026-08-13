@@ -732,13 +732,14 @@ then {
 }
 ```
 
-- `unstablePattern` and `ignorePattern`: Lists of regex pattern that will be matched against each value of the channel. If a match is found for a given file, `unstablePattern` will remove the md5sum, and `ignorePattern` will completely ignore the file from the snapshot.
+- `unstablePattern` and `ignorePattern`: Lists of **glob** pattern that will be matched against each value of the channel.
+  If a match is found for a given file, `unstablePattern` will remove the md5sum, and `ignorePattern` will completely ignore the file from the snapshot.
   Beware that patterns across `unstablePattern` and `ignorePattern` should be mutually exclusive.
   Channel key provided by `unstableKeys`, `ignoreKeys`, `readsMD5Keys` and `variantsMD5Keys` will not be matched agains these pattern.
 
 ```groovy
 then {
-  assert snapshot(sanitizeOutput(process.out, unstablePattern:[".*\\.log$"], ignorePattern:["VERSION\\_.*$"])).match()
+  assert snapshot(sanitizeOutput(process.out, unstablePattern:["**/*.log"], ignorePattern:["**/VERSION_*"])).match()
 }
 ```
 
