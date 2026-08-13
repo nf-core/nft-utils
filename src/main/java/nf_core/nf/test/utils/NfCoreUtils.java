@@ -43,7 +43,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Installs nf-core modules from a list
+   * Installs nf-core modules from a list.
+   *
    * @param libDir An nf-core library initialised by nfcoreSetup()
    * @param modules List of module names (strings) or module maps with keys: name (required), sha (optional), remote (optional)
    */
@@ -78,7 +79,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Private helper method to install a single nf-core module
+   * Private helper method to install a single nf-core module.
+   *
    * @param libDir The library directory
    * @param name The module name (required)
    * @param sha The SHA hash (optional)
@@ -131,7 +133,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Create a cache key for a module based on its parameters
+   * Create a cache key for a module based on its parameters.
+   *
    * @param name The module name
    * @param sha The SHA hash (optional)
    * @param remote The remote repository (optional)
@@ -162,7 +165,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Write a state file to mark a module as installed
+   * Write a state file to mark a module as installed.
+   *
    * @param stateFile The state file to create
    */
   private static void writeModuleStateFile(final File stateFile) {
@@ -178,7 +182,8 @@ public final class NfCoreUtils {
   /**
    * Traverse through a modules directory and link modules at the lowest possible position
    * e.g. if `modules/nf-core` doesn't exist, link it
-   * but if it does, link the tool directory inside it
+   * but if it does, link the tool directory inside it.
+   *
    * @param libDir An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
    */
@@ -223,7 +228,8 @@ public final class NfCoreUtils {
 
   /**
    * Recursively iterate through a library and a target module directory and link
-   * files at the lowest-available directory level
+   * files at the lowest-available directory level.
+   * 
    * @param libDir The source library directory
    * @param destDir The destination directory
    * @throws IOException If file operations fail
@@ -246,7 +252,8 @@ public final class NfCoreUtils {
 
   /**
    * Recursively iterate through a target module directory and remove symlinks
-   * that point to anywhere within the library directory
+   * that point to anywhere within the library directory.
+   *
    * @param libDir The source library directory
    * @param destDir The destination directory to traverse
    * @throws IOException If file operations fail
@@ -283,7 +290,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Helper method to check if a file is within a given directory
+   * Helper method to check if a file is within a given directory.
+   *
    * @param file The file to check
    * @param directory The directory to check against
    * @return true if the file is within the directory, false otherwise
@@ -299,7 +307,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Delete the temporary nf-core library
+   * Delete the temporary nf-core library.
+   *
    * @param libDir The library directory path to delete
    */
   public static void nfcoreDeleteLibrary(final String libDir) {
@@ -315,7 +324,8 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Helper method to recursively delete a directory and all its contents
+   * Helper method to recursively delete a directory and all its contents.
+   *
    * @param directory The directory to delete
    */
   private static void deleteDirectory(final File directory) {
