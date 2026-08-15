@@ -13,6 +13,7 @@ permissions:
 env:
   NXF_ANSI_LOG: false
   NXF_SYNTAX_PARSER: "v2"
+  NFT_WORKDIR: "~"
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
 jobs:
