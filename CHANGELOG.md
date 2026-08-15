@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `unstablePattern` and `ignorePattern` to `sanitizeOutput` for more fine grained parsing.
 - Fix linting with `mvn checkstyle:check` and change folder structure.
 - Use glob pattern instead of regex pattern for `ignorePattern` and `unstablePattern`.
-- Update github action to use environment and cache.
+- Update github action to use environment and cache. Add linting and bug check to maven plugin lifecycle.
 
 ## 1.0.0
 
