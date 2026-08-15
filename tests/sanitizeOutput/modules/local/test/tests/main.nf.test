@@ -76,7 +76,7 @@ nextflow_process {
     }
 
     test("Default sanitize output - with unstablePattern fastq_1 inside meta") {
-        tag "test2"
+
         when {
           process {
             """

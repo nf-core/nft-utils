@@ -398,11 +398,11 @@
                 "rhesus_monkey_gl.aux:md5,92d38df5fe92bf01ff82beb62ec8e43d"
             ]
         ],
+        "timestamp": "2025-12-09T10:08:33.373288",
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-09T10:08:33.373288"
+        }
     },
     "test curlAndExtract with type - tar.gzip file": {
         "content": [
@@ -410,53 +410,11 @@
                 "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
             ]
         ],
+        "timestamp": "2025-12-08T23:27:19.495861",
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T23:27:19.495861"
-    },
-    "test curlAndExtract with type - tbzip2 file": {
-        "content": [
-            [
-                "CARD-Download-README.txt:md5,b57364cc1a5fab0541e13a01fabe5dea",
-                "PMID.tsv:md5,e3ce79c4b5dcf0a9e3117ed683f96e54",
-                "aro_categories.tsv:md5,6f9c4b0410b9e2b3cf5867a2a3f1db07",
-                "aro_categories_index.tsv:md5,d5fbc673c0de6601b07c8016b3909f8e",
-                "aro_index.tsv:md5,0f183c7869876fa32c8f86aade0df7b5",
-                "card.json:md5,72156d00155f69e637664bfb5d3b5395",
-                "nucleotide_fasta_protein_homolog_model.fasta:md5,696d1aa4f04bd08fc4bdeea33ab9db43",
-                "nucleotide_fasta_protein_knockout_model.fasta:md5,d8224ce019ad69a041d83ccf7877b4e0",
-                "nucleotide_fasta_protein_overexpression_model.fasta:md5,80a1e7957c79d311446e06c6dd49db8e",
-                "nucleotide_fasta_protein_variant_model.fasta:md5,7450e559045c9d1d8f13c73054c64f4c",
-                "nucleotide_fasta_rRNA_gene_variant_model.fasta:md5,bd53f46d630f652c9f6b7584c2126e1f",
-                "protein_fasta_protein_homolog_model.fasta:md5,36ea300133fd7c5a45de2fee4c5050bf",
-                "protein_fasta_protein_knockout_model.fasta:md5,f16667df70d1a5f910d3ae45f5250c3d",
-                "protein_fasta_protein_overexpression_model.fasta:md5,723e8762be5c96aed8c379a6499cecee",
-                "protein_fasta_protein_variant_model.fasta:md5,8c02d8fc84c9a90953f8534355244019",
-                "shortname_antibiotics.tsv:md5,9a4ba742fd8a3a49c7f50744001a4129",
-                "shortname_pathogens.tsv:md5,5211712be4f4c3306cbe4052cafae1d7",
-                "snps.txt:md5,529d4fdb74c8940c0930ec1a7a6d4980"
-            ]
-        ],
-        "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-09T11:01:00.867726"
-    },
-    "test curlAndExtract with type - zip file": {
-        "content": [
-            [
-                "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952",
-                "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
-            ]
-        ],
-        "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T23:32:07.753491"
+        }
     },
     "test curlAndExtract - tar file": {
         "content": [
@@ -857,11 +815,11 @@
                 "rhesus_monkey_gl.aux:md5,92d38df5fe92bf01ff82beb62ec8e43d"
             ]
         ],
+        "timestamp": "2025-12-09T10:08:33.373288",
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-09T10:08:33.373288"
+        }
     },
     "test curlAndExtract - tar.gz file": {
         "content": [
@@ -869,11 +827,53 @@
                 "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
             ]
         ],
+        "timestamp": "2025-12-08T23:27:19.495861",
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T23:27:19.495861"
+        }
+    },
+    "test curlAndExtract with type - tbzip2 file": {
+        "content": [
+            [
+                "CARD-Download-README.txt:md5,b57364cc1a5fab0541e13a01fabe5dea",
+                "PMID.tsv:md5,6aac0b0e6fc3ee1e1e53cf9251522af3",
+                "aro_categories.tsv:md5,1a45f02fdc6a8b0b64b84ca7cda8dff3",
+                "aro_categories_index.tsv:md5,9a65b210f7c446d7a4e6dc8aa97fd51c",
+                "aro_index.tsv:md5,57163f33db066882971eb4e4df4a062b",
+                "card.json:md5,b73e9f02206e13f02af3809a1ebdf5b5",
+                "nucleotide_fasta_protein_homolog_model.fasta:md5,e2645d3cfee5bda65d9b7e0956df6463",
+                "nucleotide_fasta_protein_knockout_model.fasta:md5,d8224ce019ad69a041d83ccf7877b4e0",
+                "nucleotide_fasta_protein_overexpression_model.fasta:md5,7d81c25204b97213d7cc7aaf16aba0ba",
+                "nucleotide_fasta_protein_variant_model.fasta:md5,7d2df2efed96e790c4c0d429025a0361",
+                "nucleotide_fasta_rRNA_gene_variant_model.fasta:md5,1321456b509ffa30f3ba69fe631b643a",
+                "protein_fasta_protein_homolog_model.fasta:md5,ba91b130bd7dd8a5eba31e600f7782cc",
+                "protein_fasta_protein_knockout_model.fasta:md5,f16667df70d1a5f910d3ae45f5250c3d",
+                "protein_fasta_protein_overexpression_model.fasta:md5,711e3e9acc87a3c1379e0ddbf6652c92",
+                "protein_fasta_protein_variant_model.fasta:md5,88e30f42525980a63667336a24945900",
+                "shortname_antibiotics.tsv:md5,eab9bb0394aef8c7d04e0453532d2581",
+                "shortname_pathogens.tsv:md5,76cd65af74163663f6fa8dc92ab30e6b",
+                "snps.txt:md5,1f4148e4a8c66f88c99652197bc73023"
+            ]
+        ],
+        "timestamp": "2026-08-15T21:27:11.394913254",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test curlAndExtract with type - zip file": {
+        "content": [
+            [
+                "ncbi.map:md5,de30dbba85f9070612b632e2a5a95952",
+                "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
+            ]
+        ],
+        "timestamp": "2025-12-08T23:32:07.753491",
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        }
     },
     "test curlAndExtract - zip file": {
         "content": [
@@ -882,10 +882,10 @@
                 "ncbi.tre:md5,4029dd2091c685b9a86ddd9d0d870db0"
             ]
         ],
+        "timestamp": "2025-12-08T23:32:07.753491",
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
-        },
-        "timestamp": "2025-12-08T23:32:07.753491"
+        }
     }
 }
