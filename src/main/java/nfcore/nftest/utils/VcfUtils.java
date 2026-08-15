@@ -5,6 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Utility methods for interacting with VCF files and the nft-vcf plugin.
+ */
 public final class VcfUtils {
 
   /**
@@ -13,6 +16,9 @@ public final class VcfUtils {
   private static final String VARIANT_FILE_CLASS =
     "genepi.nf.test.vcf.VcfFile";
 
+  /**
+   * Prevents instantiation of this utility class.
+   */
   private VcfUtils() {
   }
 
@@ -31,6 +37,7 @@ public final class VcfUtils {
    *
    * @return true if nft-vcf is available and compatible
    */
+  @SuppressWarnings("PMD.UselessPureMethodCall")
   public static boolean isNftVcfAvailable() {
     try {
       Class<?> vcfFileClass = getNftVcfClass();

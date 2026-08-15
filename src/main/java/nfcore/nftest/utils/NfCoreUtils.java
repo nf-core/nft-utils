@@ -1,15 +1,25 @@
 package nfcore.nftest.utils;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility methods for interacting with nf-core pipelines and modules.
+ */
 public final class NfCoreUtils {
 
+  /**
+   * Prevents instantiation of this utility class.
+   */
   private NfCoreUtils() {
   }
 
@@ -21,18 +31,22 @@ public final class NfCoreUtils {
   public static void nfcoreInitialise(final String libDir) {
     System.out.println("\n");
     System.out.println("Creating a temporary nf-core library at " + libDir);
+
     try {
       // Create modules directory
-      File modulesDir = new File(libDir + "/modules");
-      modulesDir.mkdirs();
+      Path modulesDir = Paths.get(libDir, "modules");
+      Files.createDirectories(modulesDir);
 
       // Create state directory for tracking installed modules
-      File stateDir = new File(libDir + "/state");
-      stateDir.mkdirs();
+      Path stateDir = Paths.get(libDir, "state");
+      Files.createDirectories(stateDir);
 
       // Create .nf-core.yml file
-      File nfcoreYml = new File(libDir + "/.nf-core.yml");
-      try (FileWriter writer = new FileWriter(nfcoreYml)) {
+      Path nfcoreYml = Paths.get(libDir, ".nf-core.yml");
+      try (BufferedWriter writer = Files.newBufferedWriter(
+          nfcoreYml,
+          StandardCharsets.UTF_8
+      )) {
         writer.write("repository_type: \"pipeline\"\n");
         writer.write("template:\n");
         writer.write("    name: test\n");
@@ -185,7 +199,9 @@ public final class NfCoreUtils {
     try {
       java.security.MessageDigest md = java.security.MessageDigest
         .getInstance("MD5");
-      byte[] messageDigest = md.digest(key.toString().getBytes());
+      byte[] messageDigest = md.digest(
+        key.toString().getBytes(StandardCharsets.UTF_8)
+      );
       StringBuilder hexString = new StringBuilder();
       for (byte b : messageDigest) {
         String hex = Integer.toHexString(BYTE_MASK & b);
@@ -209,9 +225,11 @@ public final class NfCoreUtils {
    */
   private static void writeModuleStateFile(final File stateFile) {
     try {
-      if (!stateFile.exists()) {
-        stateFile.createNewFile();
-      }
+      Files.write(
+        stateFile.toPath(),
+        new byte[0],
+        StandardOpenOption.CREATE
+      );
     } catch (IOException e) {
       throw new RuntimeException("Could not write module state file", e);
     }
@@ -260,7 +278,14 @@ public final class NfCoreUtils {
 
       // Starting at the organisation-dir (e.g. nf-core) - link it if it
       // doesn't exist, otherwise go a step deeper and link everything inside it
-      for (File orgDir : libModulesDir.listFiles()) {
+      File[] orgDirs = libModulesDir.listFiles();
+      if (orgDirs == null) {
+        throw new IOException(
+          "Unable to list library modules directory: "
+          + libModulesDir.getAbsolutePath()
+        );
+      }
+      for (File orgDir : orgDirs) {
         if (orgDir.isDirectory()) {
           if ("link".equals(mode)) {
             recurseLink(orgDir, destModulesDir);
@@ -297,8 +322,13 @@ public final class NfCoreUtils {
       Files.createSymbolicLink(destItem.toPath(), libDir.toPath());
       return;
     }
-
-    for (File subDir : libDir.listFiles()) {
+    File[] subDirs = libDir.listFiles();
+    if (subDirs == null) {
+      throw new IOException(
+        "Unable to list directory: " + libDir.getAbsolutePath()
+      );
+    }
+    for (File subDir : subDirs) {
       if (subDir.isDirectory()) {
         recurseLink(subDir, destItem);
       }
@@ -399,11 +429,24 @@ public final class NfCoreUtils {
           if (file.isDirectory()) {
             deleteDirectory(file);
           } else {
-            file.delete();
+            try {
+              Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+              throw new RuntimeException(
+                "Failed to delete file: " + file, e
+              );
+            }
           }
         }
       }
-      directory.delete();
+
+      try {
+        Files.deleteIfExists(directory.toPath());
+      } catch (IOException e) {
+        throw new RuntimeException(
+          "Failed to delete directory: " + directory, e
+        );
+      }
     }
   }
 }

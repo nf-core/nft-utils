@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 
+/**
+ * Utility methods for interacting with BAM files and the nft-bam plugin.
+ */
 public final class BamUtils {
   /**
    * Utility methods for calculating BAM/SAM/CRAM read MD5 hashes using nft-bam.
@@ -19,6 +22,9 @@ public final class BamUtils {
   private static final String ALIGNMENT_FILE_CLASS =
     "nvnieuwk.nf.test.bam.AlignmentFile";
 
+  /**
+   * Prevents instantiation of this utility class.
+   */
   private BamUtils() {
   }
 
@@ -115,11 +121,16 @@ public final class BamUtils {
         CharSequence.class,
         CharSequence.class
       );
+
+      String fastaPath = pathFasta;
+      if (fastaPath == null) {
+        fastaPath = "";
+      }
       Object alignmentFile = bamMethod.invoke(
         null,
         new LinkedHashMap<String, Object>(),
         pathBam.toString(),
-        pathFasta == null ? "" : pathFasta
+        fastaPath
       );
       Class<?> alignmentFileClass = Class.forName(ALIGNMENT_FILE_CLASS);
       Method getReadsMD5 = alignmentFileClass.getMethod("getReadsMD5");

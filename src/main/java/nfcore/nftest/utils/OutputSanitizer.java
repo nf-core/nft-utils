@@ -12,11 +12,25 @@ import java.nio.file.Paths;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Utility methods to remove unecessary output from a snapshot.
+ */
 public final class OutputSanitizer {
 
+  /**
+   * Prevents instantiation of this utility class.
+   */
   private OutputSanitizer() {
   }
 
+  /**
+   * Validates that all specified keys are present in the given channel.
+   *
+   * @param keysList The list of keys that must be present in the channel.
+   * @param channel The channel map to validate.
+   * @throws RuntimeException If any of the specified keys is not present in
+   *     the channel.
+   */
   static void validateKeysInChannel(
     final List<String> keysList,
     final Map<String, Object> channel) {
@@ -30,6 +44,16 @@ public final class OutputSanitizer {
       }
     }
   }
+
+  /**
+   * Validates that keys are not used in conflicting sanitization categories.
+   *
+   * @param unstableKeys Keys configured for unstable output handling.
+   * @param ignoreKeys Keys configured to be ignored.
+   * @param readsMD5Keys Keys configured for reads MD5 calculation.
+   * @param variantsMD5Keys Keys configured for variants MD5 calculation.
+   * @throws RuntimeException If a key is configured in more than one category.
+   */
   static void validateKeyUsage(
     final List<String> unstableKeys,
     final List<String> ignoreKeys,
@@ -44,6 +68,15 @@ public final class OutputSanitizer {
     addKeyUsage(keyUsage, variantsMD5Keys, "variantsMD5Keys");
   }
 
+  /**
+   * Records the usage of each key and detects conflicting configuration.
+   *
+   * @param keyUsage Map tracking each key and the option in which it is used.
+   * @param keys Keys associated with the current option.
+   * @param option Name of the option associated with the keys.
+   * @throws RuntimeException If a key has already been registered for another
+   *     option.
+   */
   private static void addKeyUsage(
     final Map<String, String> keyUsage,
     final List<String> keys,
@@ -153,6 +186,12 @@ public final class OutputSanitizer {
   }
 
   /**
+   * Marker object used to indicate that a value should be excluded from the
+   * recursively parsed result.
+   */
+  private static final Object IGNORE = new Object();
+
+  /**
    * Recursively parses a value and applies the provided function
    * to string values.
    *
@@ -165,7 +204,6 @@ public final class OutputSanitizer {
    * @param applyFct The function to apply to string values.
    * @return The recursively parsed value.
   */
-  private static final Object IGNORE = new Object();
   static Object recursiveParse(
       final Object value,
       final Function<String, Object> applyFct) {
