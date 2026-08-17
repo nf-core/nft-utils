@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-mvn package
-mvn checkstyle:check
+mvn -B clean verify
 
 echo "Built $(readlink -f target/nft-utils*.jar)"

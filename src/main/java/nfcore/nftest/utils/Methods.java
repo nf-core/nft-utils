@@ -2,10 +2,10 @@ package nfcore.nftest.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -30,8 +30,14 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Utility methods for interacting with files and process output.
+ */
 public final class Methods {
 
+  /**
+   * Prevents instantiation of this utility class.
+   */
   private Methods() {
   }
 
@@ -45,7 +51,9 @@ public final class Methods {
   public static Map<String, Map<String, Object>> readYamlFile(
       final String filePath) {
     Yaml yaml = new Yaml();
-    try (FileReader reader = new FileReader(filePath)) {
+    try (BufferedReader reader = Files.newBufferedReader(
+        Paths.get(filePath),
+        StandardCharsets.UTF_8)) {
       Map<String, Map<String, Object>> data = yaml.load(reader);
       return data;
     } catch (IOException e) {
@@ -72,7 +80,13 @@ public final class Methods {
 
     Path pattern = Paths.get(pathPattern);
     Path parent = pattern.getParent();
-    String fileName = pattern.getFileName().toString();
+    Path fileNamePath = pattern.getFileName();
+    if (fileNamePath == null) {
+      throw new IOException(
+        "Invalid path pattern: " + pathPattern
+      );
+    }
+    String fileName = fileNamePath.toString();
 
     // If parent is null, use current directory
     if (parent == null) {
@@ -346,12 +360,14 @@ public final class Methods {
           public FileVisitResult preVisitDirectory(
               final Path dir,
               final BasicFileAttributes attrs) {
+            Path fileName = dir.getFileName();
             // Exclude output which is the root output folder from nf-test
             if (
                 includeDir
-                && (isIncluded(dir)
+                && isIncluded(dir)
                 && !isExcluded(dir)
-                && !dir.getFileName().toString().equals("output"))) {
+                && fileName != null
+                && !fileName.toString().equals("output")) {
               output.add(dir.toFile());
             }
             return FileVisitResult.CONTINUE;
@@ -388,7 +404,9 @@ public final class Methods {
       final String filePath)
       throws IOException {
     List<String> globs = new ArrayList<>();
-    try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    try (BufferedReader reader = Files.newBufferedReader(
+        Paths.get(filePath),
+        StandardCharsets.UTF_8)) {
       String line;
       while ((line = reader.readLine()) != null) {
         line = line.trim();
@@ -576,7 +594,7 @@ public final class Methods {
     String filtered = line;
 
     // Replace username value in patterns like "userName : max"
-    String userName = System.getenv("USER");
+    String userName = System.getProperty("user.name");
     if (userName != null && !userName.isEmpty()) {
       filtered = filtered.replaceAll(
         "(userName\\s*:\\s*)" + java.util.regex.Pattern.quote(userName),
@@ -884,9 +902,13 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final LinkedHashMap<String, Object> options,
       final Object output) {
-      final Map<String, Object> optionsFixed = options == null
-        ? new HashMap<>()
-        : options;
+
+    final Map<String, Object> optionsFixed;
+    if (options == null) {
+      optionsFixed = new HashMap<>();
+    } else {
+      optionsFixed = options;
+    }
 
     // Extract options with defaults
     List<String> additionalPatterns = (List<String>) optionsFixed
@@ -920,9 +942,13 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final Map<String, Object> options) {
-    final Map<String, Object> optionsFixed = options == null
-      ? new HashMap<>()
-      : options;
+
+    final Map<String, Object> optionsFixed;
+    if (options == null) {
+      optionsFixed = new HashMap<>();
+    } else {
+      optionsFixed = options;
+    }
 
     // Extract options with defaults
     List<String> additionalPatterns = (List<String>) optionsFixed
@@ -989,7 +1015,7 @@ public final class Methods {
     // $HOME/.nextflow
     String nxfHome = System.getenv("NXF_HOME");
     if (nxfHome == null || nxfHome.isEmpty()) {
-      String home = System.getenv("HOME");
+      String home = System.getProperty("user.home");
       if (home != null && !home.isEmpty() && !home.equals("~")) {
         pathsToReplace.add(home + "/.nextflow");
       }
@@ -999,7 +1025,7 @@ public final class Methods {
     pathsToReplace = pathsToReplace.stream()
         .distinct()
         .sorted((a, b) -> Integer.compare(b.length(), a.length()))
-        .collect(java.util.stream.Collectors.toList());
+        .collect(Collectors.toList());
 
     // Replace all paths with [PATH] in order of longest first
     for (String path : pathsToReplace) {
@@ -1498,6 +1524,10 @@ public final class Methods {
    *
    * @return A sorted list of S3 object keys matching the include and exclude
    * filters.
+   * @throws IOException If an I/O error occurs while executing the AWS CLI or
+   *     reading its output.
+   * @throws InterruptedException If the current thread is interrupted while
+   *     waiting for the AWS CLI process to complete.
    */
   private static List<String> getAllFilesFromS3ViaCli(
       final String s3Path,
@@ -1507,12 +1537,18 @@ public final class Methods {
       final boolean noSignRequest)
       throws IOException, InterruptedException {
 
-    String normalizedPath = s3Path.endsWith("/") ? s3Path : s3Path + "/";
+    String normalizedPath = s3Path;
+    if (!s3Path.endsWith("/")) {
+      normalizedPath += "/";
+    }
     String bucketAndPrefix = normalizedPath.substring("s3://".length());
     int firstSlash = bucketAndPrefix.indexOf('/');
-    String prefix = firstSlash >= 0
-      ? bucketAndPrefix.substring(firstSlash + 1)
-      : "";
+    String prefix;
+    if (firstSlash >= 0) {
+      prefix = bucketAndPrefix.substring(firstSlash + 1);
+    } else {
+      prefix = "";
+    }
 
     List<String> cmd = new ArrayList<>(
       Arrays.asList("aws", "s3", "ls", "--recursive")
@@ -1526,43 +1562,53 @@ public final class Methods {
     pb.redirectErrorStream(false);
     Process process = pb.start();
 
-    BufferedReader reader = new BufferedReader(
-      new InputStreamReader(process.getInputStream())
-    );
     List<String> files = new ArrayList<>();
-    String line;
-    while ((line = reader.readLine()) != null) {
-      // Output format: "2024-01-01 12:00:00      12345 prefix/path/to/file.txt"
-      String[] parts = line.trim().split("\\s+", AWS_S3_LIST_FIELDS);
-      if (parts.length < AWS_S3_LIST_FIELDS) {
-        continue;
-      }
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(
+          process.getInputStream(),
+          StandardCharsets.UTF_8
+        )
+    )) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        // Output format: "2024-01-01 12:00:00 12345 prefix/path/to/file.txt"
+        String[] parts = line.trim().split("\\s+", AWS_S3_LIST_FIELDS);
+        if (parts.length < AWS_S3_LIST_FIELDS) {
+          continue;
+        }
 
-      String fullKey = parts[AWS_S3_KEY_INDEX];
-      String relativePath = (!prefix.isEmpty() && fullKey.startsWith(prefix))
-          ? fullKey.substring(prefix.length())
-          : fullKey;
-      if (relativePath.isEmpty()) {
-        continue;
-      }
+        String fullKey = parts[AWS_S3_KEY_INDEX];
+        String relativePath;
+        if (!prefix.isEmpty() && fullKey.startsWith(prefix)) {
+          relativePath = fullKey.substring(prefix.length());
+        } else {
+          relativePath = fullKey;
+        }
 
-      boolean isDir = relativePath.endsWith("/");
-      if (isDir && !includeDir) {
-        continue;
-      }
+        if (relativePath.isEmpty()) {
+          continue;
+        }
 
-      Path relPath = Paths.get(
-        isDir
-        ? relativePath.substring(0, relativePath.length() - 1)
-        : relativePath
-      );
-      boolean included = includeMatchers.isEmpty()
-          || includeMatchers.stream().anyMatch(m -> m.matches(relPath));
-      boolean excluded = excludeMatchers
-        .stream()
-        .anyMatch(m -> m.matches(relPath));
-      if (included && !excluded) {
-        files.add(relativePath);
+        boolean isDir = relativePath.endsWith("/");
+        if (isDir && !includeDir) {
+          continue;
+        }
+
+        final String pathString;
+        if (isDir) {
+          pathString = relativePath.substring(0, relativePath.length() - 1);
+        } else {
+          pathString = relativePath;
+        }
+        Path relPath = Paths.get(pathString);
+        boolean included = includeMatchers.isEmpty()
+            || includeMatchers.stream().anyMatch(m -> m.matches(relPath));
+        boolean excluded = excludeMatchers
+          .stream()
+          .anyMatch(m -> m.matches(relPath));
+        if (included && !excluded) {
+          files.add(relativePath);
+        }
       }
     }
 
@@ -1633,19 +1679,31 @@ public final class Methods {
     // Derive a stable local destination mirroring the key path:
     // <tmpdir>/nft-utils-cloud/<key>
     int schemeEnd = cloudUri.indexOf("://");
-    String withoutScheme = schemeEnd >= 0
-      ? cloudUri.substring(schemeEnd + SCHEME_SEPARATOR_LENGTH)
-      : cloudUri;
+    String withoutScheme;
+    if (schemeEnd >= 0) {
+      withoutScheme = cloudUri.substring(
+        schemeEnd + SCHEME_SEPARATOR_LENGTH
+      );
+    } else {
+      withoutScheme = cloudUri;
+    }
+
     int firstSlash = withoutScheme.indexOf('/');
-    String relativeKey = firstSlash >= 0
-      ? withoutScheme.substring(firstSlash + 1)
-      : withoutScheme;
+    String relativeKey;
+    if (firstSlash >= 0) {
+      relativeKey = withoutScheme.substring(firstSlash + 1);
+    } else {
+      relativeKey = withoutScheme;
+    }
 
     Path destFile = Paths.get(
       System.getProperty("java.io.tmpdir"),
       "nft-utils-cloud", relativeKey
     );
-    Files.createDirectories(destFile.getParent());
+    Path destParent = destFile.getParent();
+    if (destParent != null) {
+      Files.createDirectories(destParent);
+    }
 
     List<String> cmd = Arrays.asList(
       "nextflow", "fs", "cp",

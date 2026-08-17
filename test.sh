@@ -1,9 +1,28 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-if [ $# -eq 0 ] || [[ ! "$*" == *"tests/"* ]]; then
-    nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
-    nf-test test --plugins target/nft-utils-*.jar \
-      --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/
+PLUGIN_JAR=$(find target -maxdepth 1 -name 'nft-utils-*.jar' -type f -print -quit)
+
+[[ -n "$PLUGIN_JAR" ]] || {
+    echo "ERROR: Plugin JAR not found in target/" >&2
+    exit 1
+}
+
+if [[ $# -eq 0 ]]; then
+    nf-test test \
+        --plugins "$PLUGIN_JAR" \
+        --verbose \
+        --debug \
+        tests/
+
+    nf-test test \
+        --plugins "$PLUGIN_JAR" \
+        --config tests_noplugins/nf-test_noplugins.config \
+        tests_noplugins/sanitizeOutput/
 else
-    nf-test test --plugins target/nft-utils-*.jar --verbose --debug ${@}
+    nf-test test \
+        --plugins "$PLUGIN_JAR" \
+        --verbose \
+        --debug \
+        "$@"
 fi

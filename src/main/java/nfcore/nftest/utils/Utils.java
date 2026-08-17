@@ -3,19 +3,27 @@ package nfcore.nftest.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
+/**
+ * Utility methods for process execution, shell escaping, and file path
+ * manipulation.
+ */
 public final class Utils {
 
+  /**
+   * Prevents instantiation of this utility class.
+   */
   private Utils() {
   }
 
   /**
    * Result of running a process started from a {@link ProcessBuilder}.
    */
-  public static class ProcessResult {
+  public static final class ProcessResult {
     /** The exit code returned by the process. */
     private final int exitCode;
     /** The standard error output captured from the process. */
@@ -71,23 +79,29 @@ public final class Utils {
       throws IOException, InterruptedException {
     pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
     Process process = pb.start();
-    BufferedReader stderrReader = new BufferedReader(
-      new InputStreamReader(process.getErrorStream())
-    );
-    StringBuilder stderr = new StringBuilder();
-    String line;
-    while ((line = stderrReader.readLine()) != null) {
-      stderr.append(line).append("\n");
+
+    try (BufferedReader stderrReader = new BufferedReader(
+        new InputStreamReader(
+          process.getErrorStream(),
+          StandardCharsets.UTF_8
+        )
+    )) {
+      StringBuilder stderr = new StringBuilder();
+      String line;
+      while ((line = stderrReader.readLine()) != null) {
+        stderr.append(line).append("\n");
+      }
+
+      int exitCode = process.waitFor();
+      return new ProcessResult(exitCode, stderr.toString());
     }
-    int exitCode = process.waitFor();
-    return new ProcessResult(exitCode, stderr.toString());
   }
 
   /**
    * Shell escape a string by wrapping in single quotes and escaping existing
    * single quotes.
    *
-   * @param s
+   * @param s The string to escape for safe use in a shell command.
    * @return The shell-escaped string
    */
   public static String shellEscape(final String s) {
@@ -135,7 +149,11 @@ public final class Utils {
    * @return The extension of the path
    */
   public static String getExtension(final Path path, final boolean keepGz) {
-    String fileName = path.getFileName().toString();
+    Path fileNamePath = path.getFileName();
+    if (fileNamePath == null) {
+      return "";
+    }
+    String fileName = fileNamePath.toString();
     int lastDot = fileName.lastIndexOf('.');
     if (lastDot <= 0 || lastDot == fileName.length() - 1) {
       return "";
