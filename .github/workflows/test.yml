@@ -11,19 +11,19 @@ permissions:
   contents: read
 
 env:
-  NXF_ANSI_LOG: false
-  NXF_SYNTAX_PARSER: "v2"
   NFT_WORKDIR: "~"
+  NXF_ANSI_LOG: false
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
+  NXF_SYNTAX_PARSER: "v2"
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        java-version: ["17", "21"]
-        nextflow-version:
+        JAVA_VERSION: ["17", "21"]
+        NXF_VER:
           - "26.01.1-edge"
           - "latest-everything"
 
@@ -31,11 +31,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java ${{ matrix.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ matrix.java-version }}
+          java-version: ${{ matrix.JAVA_VERSION }}
           cache: maven
 
       - name: Setup Micromamba
@@ -44,19 +44,10 @@ jobs:
           environment-file: environment.yml
           cache-environment: true
 
-      - name: Setup Nextflow
+      - name: Setup Nextflow ${{ matrix.NXF_VER }}
         uses: nf-core/setup-nextflow@v2
         with:
-          version: ${{ matrix.nextflow-version }}
-
-      - name: Check tools
-        shell: bash -el {0}
-        run: |
-          java --version
-          mvn --version
-          nextflow -version
-          nf-test version
-          nf-core --version
+          version: ${{ matrix.NXF_VER }}
 
       - name: Build plugin
         shell: bash -el {0}
