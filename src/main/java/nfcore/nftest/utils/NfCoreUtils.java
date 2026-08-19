@@ -37,7 +37,7 @@ public final class NfCoreUtils {
       Path modulesDir = Paths.get(libDir, "modules");
       Files.createDirectories(modulesDir);
 
-      // Create modules directory
+      // Create conf directory
       Path confDir = Paths.get(libDir, "conf");
       Files.createDirectories(confDir);
 
