@@ -10,7 +10,7 @@ To start using the plugin please add it to your `nf-test.config` file:
 ```groovy title="nf-test.config"
 config {
     plugins {
-        load "nft-utils@1.0.0"
+        load "nft-utils@1.1.0"
     }
 }
 ```
