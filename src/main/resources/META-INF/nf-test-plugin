@@ -1,4 +1,4 @@
 moduleName=nft-utils
-moduleVersion=1.1.0
+moduleVersion=1.1.1
 moduleAuthors=nf-core
 extensionMethods=nfcore.nftest.utils.Methods

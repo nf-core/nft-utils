@@ -121,11 +121,11 @@ public final class OutputSanitizer {
     List<String> ignoreKeys =
       (List<String>) options.getOrDefault("ignoreKeys", List.of());
 
-    List<String> unstablePattern =
-      (List<String>) options.getOrDefault("unstablePattern", List.of());
+    List<String> unstablePatterns =
+      (List<String>) options.getOrDefault("unstablePatterns", List.of());
 
-    List<String> ignorePattern =
-      (List<String>) options.getOrDefault("ignorePattern", List.of());
+    List<String> ignorePatterns =
+      (List<String>) options.getOrDefault("ignorePatterns", List.of());
 
     List<String> readsMD5Keys =
       (List<String>) options.getOrDefault("readsMD5Keys", List.of());
@@ -179,7 +179,7 @@ public final class OutputSanitizer {
       } else if (variantsMD5Keys.contains(key)) {
         output.put(key, VcfUtils.vcfMD5(value));
       } else {
-        output.put(key, checkPattern(value, unstablePattern, ignorePattern));
+        output.put(key, checkPattern(value, unstablePatterns, ignorePatterns));
       }
     }
     return output;
@@ -273,26 +273,26 @@ public final class OutputSanitizer {
   /**
    * Recursively applies the configured unstable and ignore patterns to a value.
    *
-   * Values matching {@code ignorePattern} are excluded, while values matching
-   * {@code unstablePattern} have their paths reduced to file names. A value
+   * Values matching {@code ignorePatterns} are excluded, while values matching
+   * {@code unstablePatterns} have their paths reduced to file names. A value
    * matching both patterns causes a {@link RuntimeException}.
    *
    * @param value The value to sanitize.
-   * @param unstablePattern The glob patterns identifying unstable values.
-   * @param ignorePattern The glob patterns identifying values to ignore.
+   * @param unstablePatterns The glob patterns identifying unstable values.
+   * @param ignorePatterns The glob patterns identifying values to ignore.
    * @return The sanitized value.
    */
   static Object checkPattern(
       final Object value,
-      final List<String> unstablePattern,
-      final List<String> ignorePattern) {
+      final List<String> unstablePatterns,
+      final List<String> ignorePatterns) {
 
-    List<PathMatcher> ignoreMatchers = ignorePattern.stream()
+    List<PathMatcher> ignoreMatchers = ignorePatterns.stream()
       .map(pattern -> FileSystems.getDefault()
         .getPathMatcher("glob:" + pattern))
       .collect(Collectors.toList());
 
-    List<PathMatcher> unstableMatchers = unstablePattern.stream()
+    List<PathMatcher> unstableMatchers = unstablePatterns.stream()
       .map(pattern -> FileSystems.getDefault()
         .getPathMatcher("glob:" + pattern))
       .collect(Collectors.toList());
@@ -305,7 +305,7 @@ public final class OutputSanitizer {
       if (matchIgnore && matchUnstable) {
         throw new RuntimeException(
           "Value '" + strValue
-          + "' matches both ignorePattern and unstablePattern"
+          + "' matches both ignorePatterns and unstablePatterns"
         );
       }
       if (matchIgnore) {
