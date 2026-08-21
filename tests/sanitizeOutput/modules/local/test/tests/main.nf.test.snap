@@ -1,5 +1,5 @@
 {
-    "Default sanitize output - with ignorePattern test1": {
+    "Default sanitize output - with ignorePatterns test1": {
         "content": [
             {
                 "folder": [
@@ -45,7 +45,7 @@
             "nextflow": "26.04.6"
         }
     },
-    "Default sanitize output - with unstablePattern test1": {
+    "Default sanitize output - with unstablePatterns test1": {
         "content": [
             {
                 "folder": [
@@ -186,7 +186,7 @@
             "nextflow": "26.04.6"
         }
     },
-    "Default sanitize output - with unstablePattern fastq_1 inside meta": {
+    "Default sanitize output - with unstablePatterns fastq_1 inside meta": {
         "content": [
             {
                 "folder": [

@@ -132,7 +132,7 @@ class OutputSanitizerTest {
         );
 
         assertEquals(
-            "Value 'MyFile.vcf' matches both ignorePattern and unstablePattern",
+            "Value 'MyFile.vcf' matches both ignorePatterns and unstablePatterns",
             exception.getMessage()
         );
     }
