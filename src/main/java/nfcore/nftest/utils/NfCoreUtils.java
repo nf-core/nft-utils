@@ -81,27 +81,36 @@ public final class NfCoreUtils {
     }
 
     for (Object moduleObj : modules) {
-      if (moduleObj instanceof String) {
-        installModule(libDir, (String) moduleObj, null, null);
-      } else if (
-          moduleObj instanceof LinkedHashMap
-          || moduleObj instanceof Map) {
-        Map<String, String> moduleMap = (Map<String, String>) moduleObj;
-        String name = moduleMap.get("name");
-        String sha = moduleMap.get("sha");
-        String remote = moduleMap.get("remote");
+      try {
+        if (moduleObj instanceof String) {
+          installModule(
+            libDir, (String) moduleObj, null, null);
+        } else if (
+            moduleObj instanceof LinkedHashMap
+            || moduleObj instanceof Map) {
+          @SuppressWarnings("unchecked")
+          Map<String, String> moduleMap =
+            (Map<String, String>) moduleObj;
+          String name = moduleMap.get("name");
+          String sha = moduleMap.get("sha");
+          String remote = moduleMap.get("remote");
 
-        if (name == null || name.isEmpty()) {
-          throw new IllegalArgumentException("Module name is required");
+          if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException(
+              "Module name is required"
+            );
+          }
+
+          installModule(libDir, name, sha, remote);
+        } else {
+          throw new RuntimeException(
+            "Unsupported module type: "
+            + moduleObj.getClass().getSimpleName()
+            + ". Expected String or Map."
+          );
         }
-
-        installModule(libDir, name, sha, remote);
-      } else {
-        throw new RuntimeException(
-          "Unsupported module type: "
-          + moduleObj.getClass().getSimpleName()
-          + ". Expected String or Map."
-        );
+      } catch (IOException e) {
+        System.err.println(e.getMessage());
       }
     }
   }
@@ -113,72 +122,61 @@ public final class NfCoreUtils {
    * @param name The module name (required)
    * @param sha The SHA hash (optional)
    * @param remote The remote repository (optional)
+   * @throws IOException if the install command fails or is interrupted
    */
   private static void installModule(
       final String libDir,
       final String name,
       final String sha,
       final String remote
-    ) {
-    try {
-      // Create a cache key based on module parameters
-      String cacheKey = createModuleCacheKey(name, sha, remote);
-      File stateFile = new File(libDir + "/state/" + cacheKey + ".installed");
+    ) throws IOException {
+    String cacheKey = createModuleCacheKey(name, sha, remote);
+    File stateFile = new File(
+      libDir + "/state/" + cacheKey + ".installed");
 
-      // Check if module is already installed
-      if (stateFile.exists()) {
-        System.out.println("Module already installed (cached): " + name);
-        return;
-      }
-
-      StringBuilder command = new StringBuilder(
-        "cd " + libDir + " && nf-core --verbose modules"
-      );
-
-      if (remote != null && !remote.isEmpty()) {
-        command.append(" --git-remote ").append(remote);
-      }
-
-      command.append(" install ").append(name);
-
-      if (sha != null && !sha.isEmpty()) {
-        command.append(" --sha ").append(sha);
-      }
-
-      ProcessBuilder processBuilder = new ProcessBuilder(
-        "bash", "-c", command.toString()
-      );
-      Utils.ProcessResult result = Utils.runProcess(processBuilder);
-
-      // Spit out nf-core tools stderr if install fails
-      if (result.getExitCode() != 0) {
-        System.err.println(
-          "Error installing module " + name
-          + ": exit code " + result.getExitCode() + "\n"
-        );
-        System.out.println("Installation command: \n" + command.toString());
-        System.err.println("nf-core tools output: \n");
-        System.err.println(result.getStderr());
-      } else {
-        System.out.println("Successfully installed module: " + name);
-        // Write state file to mark module as installed
-        writeModuleStateFile(stateFile);
-      }
-    } catch (IOException | InterruptedException e) {
-      System.err.println(
-        "Error installing module "
-        + name + ": " + e.getMessage()
-      );
-      if (e instanceof InterruptedException) {
-        Thread.currentThread().interrupt();
-      }
+    if (stateFile.exists()) {
+      System.out.println(
+        "Module already installed (cached): " + name);
+      return;
     }
-  }
 
-  /**
-  * Bit mask used to convert a signed byte to its unsigned representation.
-  */
-  private static final int BYTE_MASK = 0xff;
+    StringBuilder command = new StringBuilder(
+      "cd " + libDir + " && nf-core --verbose modules"
+    );
+
+    if (remote != null && !remote.isEmpty()) {
+      command.append(" --git-remote ").append(remote);
+    }
+
+    command.append(" install ").append(name);
+
+    if (sha != null && !sha.isEmpty()) {
+      command.append(" --sha ").append(sha);
+    }
+
+    ProcessBuilder processBuilder = new ProcessBuilder(
+      "bash", "-c", command.toString()
+    );
+    Utils.ProcessResult result;
+    try {
+      result = Utils.runProcess(processBuilder);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException(
+        "Interrupted installing module " + name, e
+      );
+    }
+
+    if (result.getExitCode() != 0) {
+      throw new IOException(
+        "Failed to install module " + name
+        + ": exit code " + result.getExitCode() + "\n"
+        + result.getStderr()
+      );
+    }
+    System.out.println("Successfully installed module: " + name);
+    writeModuleStateFile(stateFile);
+  }
 
   /**
    * Create a cache key for a module based on its parameters.
@@ -201,20 +199,7 @@ public final class NfCoreUtils {
     }
 
     try {
-      java.security.MessageDigest md = java.security.MessageDigest
-        .getInstance("MD5");
-      byte[] messageDigest = md.digest(
-        key.toString().getBytes(StandardCharsets.UTF_8)
-      );
-      StringBuilder hexString = new StringBuilder();
-      for (byte b : messageDigest) {
-        String hex = Integer.toHexString(BYTE_MASK & b);
-        if (hex.length() == 1) {
-          hexString.append('0');
-        }
-        hexString.append(hex);
-      }
-      return hexString.toString();
+      return HashUtils.md5Hex(key.toString());
     } catch (java.security.NoSuchAlgorithmException e) {
       throw new RuntimeException(
         "MD5 algorithm not available on this system", e

@@ -5,11 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Comparator;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -24,6 +22,9 @@ import org.apache.commons.csv.CSVRecord;
  * Utility methods for interacting with CSV files.
  */
 public final class CsvUtils {
+
+  /** Default number of decimal places for CSV double values. */
+  public static final int DEFAULT_DOUBLE_DIGITS = 6;
 
   /**
    * Prevents instantiation of this utility class.
@@ -422,23 +423,7 @@ public final class CsvUtils {
    */
   private static String md5(final String value)
     throws NoSuchAlgorithmException {
-
-    final MessageDigest digest =
-      MessageDigest.getInstance("MD5");
-
-    final byte[] hash = digest.digest(
-      value.getBytes(StandardCharsets.UTF_8)
-    );
-
-    final StringBuilder result = new StringBuilder();
-
-    for (final byte b : hash) {
-      result.append(
-        String.format(Locale.ROOT, "%02x", b)
-      );
-    }
-
-    return result.toString();
+    return HashUtils.md5Hex(value);
   }
 
   /**

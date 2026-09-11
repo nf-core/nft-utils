@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 public final class OutputSanitizer {
 
   /** Default number of decimal places for CSV double values. */
-  private static final int DEFAULT_CSV_DOUBLE_DIGITS = 6;
+  private static final int DEFAULT_CSV_DOUBLE_DIGITS =
+    CsvUtils.DEFAULT_DOUBLE_DIGITS;
 
   /**
    * Prevents instantiation of this utility class.
@@ -111,8 +112,6 @@ public final class OutputSanitizer {
       final HashMap<String, Object> options,
       final TreeMap<String, Object> channel) {
     String className = channel.getClass().getName();
-    // Can't do valid type checking here because
-    // the channels type is not exposed from nf-test
     if (!className.equals("com.askimed.nf.test.lang.channels.Channels")) {
       throw new RuntimeException(
         "sanitizeOutput only supports channels as input, "
@@ -120,50 +119,21 @@ public final class OutputSanitizer {
       );
     }
 
-    // Fetch options
-    List<String> unstableKeys =
-      (List<String>) options.getOrDefault("unstableKeys", List.of());
-
-    List<String> ignoreKeys =
-      (List<String>) options.getOrDefault("ignoreKeys", List.of());
-
-    List<String> unstablePatterns =
-      (List<String>) options.getOrDefault("unstablePatterns", List.of());
-
-    List<String> ignorePatterns =
-      (List<String>) options.getOrDefault("ignorePatterns", List.of());
-
-    List<String> readsMD5Keys =
-      (List<String>) options.getOrDefault("readsMD5Keys", List.of());
-
-    List<String> variantsMD5Keys =
-      (List<String>) options.getOrDefault("variantsMD5Keys", List.of());
-
-    List<String> csvMD5Keys =
-      (List<String>) options.getOrDefault("csvMD5Keys", List.of());
-
-    String referenceFasta = (String) options.getOrDefault("referenceFasta", "");
-    int csvDoubleDigits = (int) options.getOrDefault(
-      "csvDoubleDigits", DEFAULT_CSV_DOUBLE_DIGITS
-    );
-
-    if (csvDoubleDigits < 0) {
-      throw new IllegalArgumentException(
-        "csvDoubleDigits must be greater than or equal to zero"
-      );
-    }
+    SanitizeOptions opts = new SanitizeOptions(options);
 
     validateKeyUsage(
-      unstableKeys, ignoreKeys, readsMD5Keys,
-      variantsMD5Keys, csvMD5Keys
+      opts.getUnstableKeys(), opts.getIgnoreKeys(),
+      opts.getReadsMD5Keys(), opts.getVariantsMD5Keys(),
+      opts.getCsvMD5Keys()
     );
 
-    validateKeysInChannel(unstableKeys, channel);
-    validateKeysInChannel(ignoreKeys, channel);
-    validateKeysInChannel(readsMD5Keys, channel);
-    validateKeysInChannel(variantsMD5Keys, channel);
-    validateKeysInChannel(csvMD5Keys, channel);
+    validateKeysInChannel(opts.getUnstableKeys(), channel);
+    validateKeysInChannel(opts.getIgnoreKeys(), channel);
+    validateKeysInChannel(opts.getReadsMD5Keys(), channel);
+    validateKeysInChannel(opts.getVariantsMD5Keys(), channel);
+    validateKeysInChannel(opts.getCsvMD5Keys(), channel);
 
+    List<String> readsMD5Keys = opts.getReadsMD5Keys();
     if (!readsMD5Keys.isEmpty() && !BamUtils.isNftBamAvailable()) {
       System.err.println(
         "WARNING: A compatible version of nft-bam is not available. "
@@ -172,6 +142,7 @@ public final class OutputSanitizer {
       );
       readsMD5Keys = List.of();
     }
+    List<String> variantsMD5Keys = opts.getVariantsMD5Keys();
     if (!variantsMD5Keys.isEmpty() && !VcfUtils.isNftVcfAvailable()) {
       System.err.println(
         "WARNING: A compatible version of nft-vcf is not available. "
@@ -187,26 +158,168 @@ public final class OutputSanitizer {
       String key = entry.getKey();
       Object value = entry.getValue();
       if (key.matches("^\\d+$") && channelSize > 1) {
-        // Skip numeric keys if there is more than one entry in the channel
         continue;
       }
-      if (ignoreKeys.contains(key)) {
+      if (opts.getIgnoreKeys().contains(key)) {
         continue;
       }
 
-      if (unstableKeys.contains(key)) {
+      if (opts.getUnstableKeys().contains(key)) {
         output.put(key, fixUnstable(value));
       } else if (readsMD5Keys.contains(key)) {
-        output.put(key, BamUtils.bamMD5(value, referenceFasta));
+        output.put(key, BamUtils.bamMD5(
+          value, opts.getReferenceFasta()));
       } else if (variantsMD5Keys.contains(key)) {
         output.put(key, VcfUtils.vcfMD5(value));
-      } else if (csvMD5Keys.contains(key)) {
-        output.put(key, CsvUtils.csvMD5(value, csvDoubleDigits));
+      } else if (opts.getCsvMD5Keys().contains(key)) {
+        output.put(key, CsvUtils.csvMD5(
+          value, opts.getCsvDoubleDigits()));
       } else {
-        output.put(key, checkPattern(value, unstablePatterns, ignorePatterns));
+        output.put(key, checkPattern(
+          value, opts.getUnstablePatterns(),
+          opts.getIgnorePatterns()));
       }
     }
     return output;
+  }
+
+  /**
+   * Holds the parsed and validated sanitization options.
+   */
+  private static final class SanitizeOptions {
+    /** Keys whose values should be replaced with file names. */
+    private final List<String> unstableKeys;
+    /** Keys to exclude from output entirely. */
+    private final List<String> ignoreKeys;
+    /** Glob patterns matching unstable file paths. */
+    private final List<String> unstablePatterns;
+    /** Glob patterns matching values to ignore. */
+    private final List<String> ignorePatterns;
+    /** Keys whose BAM/SAM/CRAM values should be hashed. */
+    private final List<String> readsMD5Keys;
+    /** Keys whose VCF/BCF values should be hashed. */
+    private final List<String> variantsMD5Keys;
+    /** Keys whose CSV/TSV values should be hashed. */
+    private final List<String> csvMD5Keys;
+    /** Reference FASTA path for BAM MD5 calculation. */
+    private final String referenceFasta;
+    /** Decimal places for CSV floating-point normalization. */
+    private final int csvDoubleDigits;
+
+    /**
+     * Creates sanitization options from a map.
+     *
+     * @param options The options map from Groovy named params.
+     */
+    @SuppressWarnings("unchecked")
+    SanitizeOptions(final HashMap<String, Object> options) {
+      this.unstableKeys = (List<String>) options
+        .getOrDefault("unstableKeys", List.of());
+      this.ignoreKeys = (List<String>) options
+        .getOrDefault("ignoreKeys", List.of());
+      this.unstablePatterns = (List<String>) options
+        .getOrDefault("unstablePatterns", List.of());
+      this.ignorePatterns = (List<String>) options
+        .getOrDefault("ignorePatterns", List.of());
+      this.readsMD5Keys = (List<String>) options
+        .getOrDefault("readsMD5Keys", List.of());
+      this.variantsMD5Keys = (List<String>) options
+        .getOrDefault("variantsMD5Keys", List.of());
+      this.csvMD5Keys = (List<String>) options
+        .getOrDefault("csvMD5Keys", List.of());
+      this.referenceFasta = (String) options
+        .getOrDefault("referenceFasta", "");
+      this.csvDoubleDigits = (int) options
+        .getOrDefault(
+          "csvDoubleDigits", DEFAULT_CSV_DOUBLE_DIGITS);
+
+      if (this.csvDoubleDigits < 0) {
+        throw new IllegalArgumentException(
+          "csvDoubleDigits must be >= 0"
+        );
+      }
+    }
+
+    /**
+     * Returns keys whose values should be replaced with file names.
+     *
+     * @return the unstable keys
+     */
+    List<String> getUnstableKeys() {
+      return unstableKeys;
+    }
+
+    /**
+     * Returns keys to exclude from output entirely.
+     *
+     * @return the ignore keys
+     */
+    List<String> getIgnoreKeys() {
+      return ignoreKeys;
+    }
+
+    /**
+     * Returns glob patterns matching unstable file paths.
+     *
+     * @return the unstable patterns
+     */
+    List<String> getUnstablePatterns() {
+      return unstablePatterns;
+    }
+
+    /**
+     * Returns glob patterns matching values to ignore.
+     *
+     * @return the ignore patterns
+     */
+    List<String> getIgnorePatterns() {
+      return ignorePatterns;
+    }
+
+    /**
+     * Returns keys whose BAM/SAM/CRAM values should be hashed.
+     *
+     * @return the reads MD5 keys
+     */
+    List<String> getReadsMD5Keys() {
+      return readsMD5Keys;
+    }
+
+    /**
+     * Returns keys whose VCF/BCF values should be hashed.
+     *
+     * @return the variants MD5 keys
+     */
+    List<String> getVariantsMD5Keys() {
+      return variantsMD5Keys;
+    }
+
+    /**
+     * Returns keys whose CSV/TSV values should be hashed.
+     *
+     * @return the CSV MD5 keys
+     */
+    List<String> getCsvMD5Keys() {
+      return csvMD5Keys;
+    }
+
+    /**
+     * Returns the reference FASTA path for BAM MD5.
+     *
+     * @return the reference FASTA path
+     */
+    String getReferenceFasta() {
+      return referenceFasta;
+    }
+
+    /**
+     * Returns decimal places for CSV float normalization.
+     *
+     * @return the number of decimal digits
+     */
+    int getCsvDoubleDigits() {
+      return csvDoubleDigits;
+    }
   }
 
   /**
