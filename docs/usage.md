@@ -2,13 +2,13 @@
 
 ## Snapshot functions
 
-The plugin adds the following functions to assist with managing pipeline-level nf-test snapshots:
+Functions for managing pipeline-level nf-test snapshots:
 
 ### `removeNextflowVersion()`
 
-nf-core pipelines create a yml file listing all the versions of the software used in the pipeline.
+nf-core pipelines create a YAML file listing software versions. This function removes the Nextflow version from that file, since it changes between runs and makes snapshots unstable.
 
-Here is an example of this file coming from the rnaseq pipeline.
+Example input (`nf_core_rnaseq_software_mqc_versions.yml`):
 
 ```yaml
 UNTAR:
@@ -18,7 +18,7 @@ Workflow:
   Nextflow: 24.04.4
 ```
 
-This function remove the Nextflow version from this yml file, as it is not relevant for the snapshot. Therefore for the purpose of the snapshot, it would consider this to be the contents of the YAML file:
+After applying `removeNextflowVersion()`:
 
 ```yaml
 UNTAR:
@@ -33,29 +33,27 @@ Usage:
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_rnaseq_software_mqc_versions.yml")).match()
 ```
 
-The function also supports wildcard patterns in file paths, which is useful when the exact filename may vary:
+Supports wildcard patterns when the filename varies:
 
 ```groovy
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
 ```
 
-The only argument is the path to the file (or wildcard pattern) which must match a versions file in YAML format as per the nf-core standard. When using wildcards, all matching files will be processed and their results merged together.
+The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files.
 
-**Note:** The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
+**Note:** Returned YAML has keys sorted alphabetically at all levels for consistent output.
 
 ### `removeFromYamlMap()`
 
-Remove any key or entire section from a YAML file. This function supports two usage patterns and also supports wildcard patterns in file paths.
+Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths.
 
 #### Remove a specific subkey (3 arguments)
-
-Remove a specific subkey from within a section:
 
 ```groovy
 removeFromYamlMap("file.yml", "Workflow", "Nextflow")
 ```
 
-**Example input:**
+Input:
 
 ```yaml
 UNTAR:
@@ -65,7 +63,7 @@ Workflow:
   Nextflow: 24.04.4
 ```
 
-**Result:** Only the "Nextflow" subkey is removed from "Workflow"
+Result: the "Nextflow" subkey is removed from "Workflow":
 
 ```yaml
 UNTAR:
@@ -76,13 +74,11 @@ Workflow:
 
 #### Remove an entire section (2 arguments)
 
-Remove an entire top-level section:
-
 ```groovy
 removeFromYamlMap("file.yml", "Workflow")
 ```
 
-**Example input:**
+Input:
 
 ```yaml
 UNTAR:
@@ -94,7 +90,7 @@ Workflow2:
   some: value
 ```
 
-**Result:** The entire "Workflow" section is removed
+Result: the entire "Workflow" section is removed:
 
 ```yaml
 UNTAR:
@@ -105,7 +101,7 @@ Workflow2:
 
 #### Wildcard support
 
-Both usage patterns support wildcard patterns in the file path:
+Both patterns support wildcards in the file path:
 
 ```groovy
 // Remove specific subkey with wildcard
@@ -130,14 +126,14 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 
 **Arguments:**
 
-- First argument: Path to the YAML file (supports wildcard patterns like `*` and `?`)
-- Second argument: The top-level key (section name)
-- Third argument (optional): The subkey to remove. If omitted, the entire section is removed.
+- First: Path to the YAML file (supports `*` and `?` wildcards)
+- Second: Top-level key (section name)
+- Third (optional): Subkey to remove. Omit to remove the entire section.
 
 **Notes:**
 
-- When using wildcard patterns, all matching files will be processed and their results merged together.
-- The returned YAML structure will have all keys sorted alphabetically at both the top level and within nested sections for consistent, predictable output.
+- Wildcards merge all matching files.
+- Returned YAML has keys sorted alphabetically at all levels.
 
 ### `getAllFilesFromPath()`
 
@@ -207,7 +203,7 @@ Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future
 
 Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.
 
-This function requires the AWS CLI to be available on the path.
+Requires the AWS CLI on the path.
 
 ```groovy
 def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")
@@ -236,7 +232,7 @@ assert snapshot(
 ### `getAllFilesFromDir()`
 
 :::caution
-**This function will be deprecated in a future version.** Prefer [`getAllFilesFromPath()`](#getallfilesfrompath), which provides the same functionality with added S3 support.
+**Deprecated.** Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead. It provides the same functionality with S3 support.
 :::
 
 :::warning
@@ -254,16 +250,18 @@ cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outpu
 
 :::
 
-This function generates a list of all the contents within a directory (and subdirectories), additionally allowing for the inclusion or exclusion of specific files using glob patterns.
+Lists all contents within a directory (and subdirectories), with glob-based inclusion/exclusion.
 
-- The first argument is the directory path to screen for file paths (e.g. a pipeline's `outdir` ).
-- The second argument is a boolean indicating whether to include subdirectory names in the list.
-- The third argument is a _list_ of glob patterns to exclude.
-- The fourth argument is a _file_ containing additional glob patterns to exclude.
-- The fifth argument is a _list_ of glob patterns to include.
-- The sixth argument is a boolean indicating whether to output relative paths.
+Arguments:
 
-In this example, below are the files produced by a pipeline:
+1. Directory path (e.g. a pipeline's `outdir`)
+2. Boolean: include subdirectory names in the list
+3. List of glob patterns to exclude
+4. File containing additional glob patterns to exclude
+5. List of glob patterns to include
+6. Boolean: output relative paths
+
+Example pipeline output:
 
 ```bash
 results/
@@ -276,25 +274,16 @@ results/
 2 directories, 3 files
 ```
 
-One file has stable content and a stable name (`stable_content.txt`), and one file has unstable contents but a stable name (`stable_name.txt`).
-The last file (`execution_trace_2024-09-30_13-10-16.txt`) has no stable content nor a stable name, as its name is based on the date and time of the pipeline execution.
+`stable_content.txt` has stable content and a stable name. `stable_name.txt` has unstable content but a stable name. `execution_trace_2024-09-30_13-10-16.txt` is completely unstable (name changes with each run).
 
-We aim to snapshot files with stable content, and stable names (for both files and directories), but excluding the completely unstable file.
-
-First, we will specify the following two variables that we will pass to the nf-test snapshot function:
-
-- The `stable_name` variable contains a list of all files and directories, excluding those matching the glob pattern `pipeline_info/execution_*.{html,txt}` (i.e., the unstable file).
-- The `stable_content` variable contains a list of all files, excluding those that match the two glob patterns: `pipeline_info/execution_*.{html,txt}` and `**/stable_name.txt`.
-  - The latter is specified in the `tests/getAllFilesFromDir/.nftignore` file.
+To snapshot files with stable content and stable names while excluding the unstable file:
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
 def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 ```
 
-Secondly, we need to supply these two variables to the nf-test snapshot assrtion.
-The list of files in `stable_content` can be supplied to the snapshot directly, and nf-test will include the md5sum hash of the file contents.
-For the list of stable file names with unstable contents, we can use `stable_name*.name`, to just extract just _name_ of every file in the list for comparison (i.e., without generating the md5sum hash).
+Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums:
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
@@ -305,7 +294,7 @@ assert snapshot(
 ).match()
 ```
 
-`getAllFilesFromDir()` also supports named parameters:
+Named parameters:
 
 ```groovy
 def stable_name       = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
@@ -332,7 +321,7 @@ cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outpu
 
 :::
 
-This function is used to get the relative path from a list of files compared to a given directory.
+Converts a list of absolute file paths to paths relative to a given directory.
 
 ```bash
 results/
@@ -345,13 +334,9 @@ results/
 2 directories, 3 files
 ```
 
-Following the previous example, we want to get the relative path of the stable paths in the `results` directory.
-
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
 ```
-
-The `stable_name` variable contains the list of stable files and folders in the `results` directory.
 
 ```groovy
 assert snapshot(
@@ -359,7 +344,7 @@ assert snapshot(
 ).match()
 ```
 
-By using `getRelativePath()` we generate in the snapshot:
+Output:
 
 ```text
 "content": [
@@ -372,7 +357,7 @@ By using `getRelativePath()` we generate in the snapshot:
 ]
 ```
 
-A reduced list can be generated by using `getAllFilesFromDir()` without including the folders in the output.
+Without folders:
 
 ```text
 "content": [
@@ -383,7 +368,7 @@ A reduced list can be generated by using `getAllFilesFromDir()` without includin
 ]
 ```
 
-Without using `getRelativePath()` and by using `*.name` to capture the file names, only a flat structure would be generated, as shown below:
+Without `getRelativePath()` (using `*.name`), you get a flat structure:
 
 ```text
 "content": [
@@ -396,7 +381,7 @@ Without using `getRelativePath()` and by using `*.name` to capture the file name
 ]
 ```
 
-`getAllFilesFromDir()` named parameters `relative` can also be used to combine the two functions:
+The `relative` named parameter on `getAllFilesFromDir()` combines both operations:
 
 ```groovy
 def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
@@ -405,34 +390,26 @@ def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, includ
 
 ### `getAllFilesFromChannel()`
 
-This function simplifies the extraction of absolute file paths from Nextflow channel outputs by automating the collection, flattening, and filtering process.
+Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/").
 
-When working with nf-test snapshots of process aka modules or subworkflows outputs, you often need to extract file paths from channels.
-Previously, this required repetitive code like:
+Before:
 
 ```groovy
 file(process.out.zip[0][3][0]).name,
 file(process.out.zip[0][3][1]).name,
 ```
 
-Which could be simplified to:
-
-```groovy
-process.out.html[0][3].collect { f -> file(f).name }
-```
-
-But if you wanted to be less specific about the structure of the channel output, you might have used a more verbose pattern like:
+Or the more generic pattern:
 
 ```groovy
 process.out.html.collect().flatten().findAll { !(it instanceof Map) && it.startsWith("/") }
 ```
 
-The `getAllFilesFromChannel()` function replaces this verbose pattern with a simple, reusable call that:
+After:
 
-- Collects and flattens nested channel structures
-- Filters out metadata maps
-- Returns only absolute file paths (strings starting with "/")
-- Handles various collection types (lists, arrays, iterables)
+```groovy
+getAllFilesFromChannel(process.out.html)
+```
 
 #### Basic usage
 
@@ -449,7 +426,7 @@ test("Process output test") {
 
 #### Usage with file names
 
-You can combine the function with Groovy's `.collect()` to extract just the file names:
+Combine with Groovy's `.collect()` to extract file names:
 
 ```groovy
 test("Process output test") {
@@ -466,51 +443,43 @@ test("Process output test") {
 
 ### `listToMD5()`
 
-This function takes a list of values as input and converts the sequence to a MD5 hash. All values in the list should be of a type that can be converted to a string, otherwise the function will fail.
+Converts a list of values to an MD5 hash. All values must be convertible to strings.
 
-A common use case for this function could be to read a file, remove all unstable lines from it and regerenate an MD5 hash.
+A common use case: read a file, remove unstable lines, then regenerate the MD5 hash.
 
 ### `filterNextflowOutput()`
 
-This function filters Nextflow stdout/stderr output to remove variable content that makes snapshots unstable.
-It censor common patterns like timestamps, run names, runtime-specific information to make test snapshots reproducible.
-It also removes other common patterns like Nextflow message to update for a new version or empty lines to make test snapshots reproducible.
-
-The function can be called with multiple parameters:
+Filters Nextflow stdout/stderr to remove variable content that makes snapshots unstable. Censors timestamps, process hashes, file paths, version messages, and empty lines.
 
 ```groovy
-// Basic usage - works directly with workflow.stdout and workflow.stderr, or even both
+// Basic usage
 def filtered_stdout = filterNextflowOutput(workflow.stdout)
 def filtered_stderr = filterNextflowOutput(workflow.stderr)
 def filtered_both = filterNextflowOutput(workflow.stdout + workflow.stderr)
 
-// Control ANSI escape code stripping (enabled by default)
-def filtered_with_ansi_stripped = filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+// Preserve ANSI escape codes (stripped by default)
+def filtered_with_ansi = filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
 
 // Ignore lines containing specific strings
 def filtered_with_ignore = filterNextflowOutput(workflow.stdout, ignore: ["Submitted process"])
 
-// Include lines containing specific strings
+// Include only lines containing specific strings
 def filtered_with_include = filterNextflowOutput(workflow.stdout, include: ["Submitted process"])
 ```
 
-These lines are sorted alphabetically, once censored:
+These line types are sorted alphabetically after censoring:
 
-- `Staging foreign file` messages (file staging operations)
-- `Submitted process` messages (process submissions)
-- `Check * file for details` messages (error/log references)
-- `WARN:` messages (warning logs)
-- `ERROR:` messages (error logs)
+- `Staging foreign file` messages
+- `Submitted process` messages
+- `Check * file for details` messages
+- `WARN:` messages
+- `ERROR:` messages
 
-This behaviour can be disabled by setting `sorted: false`, which is not recommended as it will cause the snapshot to fail.
+Set `sorted: false` to disable sorting (not recommended; causes snapshot failures).
 
-Other lines are kept in their original order.
+All other lines keep their original order.
 
-- Other log messages (INFO, etc.)
-- Execution output and results
-- All other content
-
-For example, process submissions like
+Example: process submissions like
 
 ```bash
 [57/0d391c] Submitted process > FASTQC (sample_2)
@@ -518,7 +487,7 @@ For example, process submissions like
 [6d/0082ab] Submitted process > FASTQC (sample_3)
 ```
 
-will be consistently ordered as
+become:
 
 ```bash
 [PROCESS_HASH] Submitted process > FASTQC (sample_1)
@@ -526,28 +495,17 @@ will be consistently ordered as
 [PROCESS_HASH] Submitted process > FASTQC (sample_3)
 ```
 
-ANSI escape codes (colors, formatting) are stripped by default to ensure clean, consistent snapshots.
-This prevents color codes from appearing as garbled text like `\u001B[32mtext\u001B[0m` or being misinterpreted by other filtering patterns.
-You can disable this by setting `keepAnsi: true` if you need to preserve formatting codes.
+ANSI escape codes are stripped by default to prevent garbled text in snapshots. Set `keepAnsi: true` to preserve them.
 
-Common patterns that are automatically filtered include:
+Filtered patterns:
 
-- Empty lines
-  - Blank lines and whitespace-only lines are removed entirely
-- Timestamps
-  - Various formats (ISO 8601, log timestamps, etc.) are replaced with `[TIMESTAMP]`
-- Process hashes
-  - Nextflow process hashes are replaced with `[PROCESS_HASH]`
-- File paths
-  - Absolute paths to scripts and logs are replaced with `[PATH]`
-  - The common ENV variables are checked if available and replaced with `[PATH]`
-    - `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
-- Version information
-  - "Nextflow X.Y.Z is available" messages are removed
-  - "N E X T F L O W ~ version 24.04.5" is replaced with "N E X T F L O W ~ version [VERSION]"
-  - "nf-core/pipeline 1.2.3" is replaced with "nf-core/pipeline [VERSION]"
+- Empty lines (removed entirely)
+- Timestamps (replaced with `[TIMESTAMP]`)
+- Process hashes (replaced with `[PROCESS_HASH]`)
+- File paths (replaced with `[PATH]`), including common ENV variables: `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
+- Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with `[VERSION]`
 
-Example usage in a test:
+Example test:
 
 ```groovy
 test("my_pipeline_test") {
@@ -568,11 +526,11 @@ test("my_pipeline_test") {
 
 ## Dependency management
 
-The plugin also adds the following functions to manage dependences of tests on nf-core components, in situations where they may not otherwise be available (for example, writing tests for cross-organisational subworkflows in non-nf-core repositories).
+Functions for managing test dependencies on nf-core components. Useful when writing tests for cross-organisational subworkflows in non-nf-core repositories.
 
 ### `nfcoreInitialise()` - set up a temporary nf-core library
 
-In a setup block, use the `nfcoreInitialise()` function to initialise a temporary nf-core library to install modules into. This function takes the path to the location to set up the library as an argument. It is suggested to use a location inside the `.nf-test/` directory to keep this library contained with other nf-test files. You could also include the library inside `${launchDir}` and this will instatiate a test-specific library that is separate from other tests.
+Creates a temporary nf-core library for module installation. Pass the path to the library location. Use a location inside `.nf-test/` to keep it contained, or `${launchDir}` for a test-specific library.
 
 ```groovy
 setup {
@@ -582,7 +540,7 @@ setup {
 
 ### `nfcoreInstall()` - Install modules to a temporary library
 
-Use the `nfcoreInstall()` function to install nf-core modules in a temporary library. This function takes the path to the library and either a list of strings, each with an nf-core module name in `tool/subtool` format, or a list of maps, with the keys `name`, `sha`, and `remote` (both `sha` and `remote` are optional).
+Installs nf-core modules into a temporary library. Pass the library path and either a list of module names (`tool/subtool` format) or a list of maps with `name`, `sha`, and `remote` keys (`sha` and `remote` are optional).
 
 ```groovy
 setup {
@@ -609,11 +567,11 @@ setup {
 }
 ```
 
-Inside an initialised library, a `state/` directory is created which tracks which contains files to track which modules have been installed. If, when trying to install a module, a state file for the module exists (matching the name, and `sha` and `remote` if provided), installation will be skipped to save time.
+A `state/` directory inside the library tracks which modules have been installed. If a state file exists for a module (matching name, sha, and remote), installation is skipped.
 
 ### `nfcoreLink()` - Link a temporary library to your modules directory
 
-Use the `nfcoreLink()` function to link a library to your module library. This function takes two arguments, the path to a temporary library, and the location where the modules in the library should be temporarily linked (e.g. `${baseDir}/modules/nf-core`):
+Symlinks modules from the temporary library into your project's modules directory.
 
 ```groovy
 setup {
@@ -623,11 +581,11 @@ setup {
 }
 ```
 
-This creates a symlink to the modules directory of your temporary library at `${baseDir}/modules/nf-core`. Using this location, you can refer to the nf-core modules as if they were installed as normal in your tests.
+This creates a symlink at `${baseDir}/modules/nf-core`. Reference nf-core modules from there as if they were installed normally.
 
 ### `nfcoreUnlink()` - Unlink a temporary library from your modules directory
 
-To unlink a temporary library after the test has completed, use the `nfcoreUnlink()` function. It takes the same arguments as `nfcoreLink()`, and recursively removes all symlinks pointing to the temporary library.
+Removes all symlinks pointing to the temporary library. Takes the same arguments as `nfcoreLink()`.
 
 ```groovy
 setup {
@@ -656,7 +614,7 @@ cleanup {
 
 ### `nfcoreDeleteLibrary()` - Completely delete a temporary library
 
-You can use the `nfcoreDeleteLibrary()` function to completely remove the temporary library, if desired.
+Deletes the temporary library and all its contents.
 
 ```groovy
 
@@ -686,7 +644,7 @@ cleanup {
 
 ### `sanitizeOutput()` - Sanitize process output to create clean snapshots
 
-The `sanitizeOutput()` function is used to clean process and workflow outputs by removing the numbered keys. This will create snapshots that are more easy to read by humans.
+Cleans process and workflow outputs by removing numbered keys, creating human-readable snapshots.
 
 ```groovy
 then {
@@ -694,9 +652,9 @@ then {
 }
 ```
 
-The function also supports options to control its behaviour:
+Options:
 
-- `unstableKeys`: A list of keys to treat as unstable and only snapshot the file name (and not the md5sum). This is useful for output entries that contain files with unstable content.
+- `unstableKeys`: Snapshot only file names (no md5sum) for these keys. Use for files with unstable content.
 
 ```groovy
 then {
@@ -704,7 +662,7 @@ then {
 }
 ```
 
-- `ignoreKeys`: A list of keys to exclude from the snapshot. This is useful for output entries where the file name may vary between runs.
+- `ignoreKeys`: Exclude these keys from the snapshot entirely. Use when file names vary between runs.
 
 ```groovy
 then {
@@ -712,9 +670,7 @@ then {
 }
 ```
 
-- `readsMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.bam,.sam,.cram>` extension will be replaced by an md5 computed only on the reads (i.e. equivalent of `bam(...).getReadsMD5()`) using the [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/) plugin.
-  The latter should be added in the `plugins {}` section of the `nf-test.config` before nft-utils.
-  For `.cram` files, you also need to pass the reference genome `.fasta` (the `.fai` is automatically detected by `nft-bam`).
+- `readsMD5Keys`: Keys containing alignment files (`.bam`, `.sam`, `.cram`). MD5 is computed from reads only, using [`nft-bam`](https://nvnieuwk.github.io/nft-bam/dev/). Add `nft-bam` to `plugins {}` before `nft-utils`. For `.cram` files, pass the reference genome `.fasta` (`.fai` is auto-detected).
 
 ```groovy
 then {
@@ -723,8 +679,7 @@ then {
 }
 ```
 
-- `variantsMD5Keys`: A list of keys containing genomic alignment files. MD5 sum of files with `<.vcf,.vcf.gz>` extension will be replaces by the variants MD5 sum (i.e. equivalent of `path(...).vcf.variantsMD5`) using the [`nft-vcf`](https://github.com/seppinho/nft-vcf) plugin. BCF extensions are not yet supported by `nft-vcf`.
-  The latter should be added in the `plugins {}` section of the `nf-test.config` before nft-utils.
+- `variantsMD5Keys`: Keys containing variant files (`.vcf`, `.vcf.gz`). MD5 is computed from variants only, using [`nft-vcf`](https://github.com/seppinho/nft-vcf). BCF not yet supported. Add `nft-vcf` to `plugins {}` before `nft-utils`.
 
 ```groovy
 then {
@@ -732,9 +687,7 @@ then {
 }
 ```
 
-- `csvMD5Keys`: A list of keys containing flat text table. MD5 sum of files with `<.txt,.tsv,.csv>` extension will be replaces by the normalized CSV MD5 sum.
-  The CSV normalisation includes: rows and columns sorted, floating value rounded to 6 decimals, absolute path changed to file or folder only name, end line character standardized to `\n`. The internal normalisation is also exposed for debugging use with `normalizeCsv(path(process.out.csv[0][1]))`.
-  This will give back the normalized concatenated string of the whole csv. You can specify the number of digits you want to round to with `csvDoubleDigits` (default is 6 decimals).
+- `csvMD5Keys`: Keys containing flat text tables (`.txt`, `.tsv`, `.csv`). MD5 is computed from normalized CSV: rows and columns sorted, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to `\n`. Use `normalizeCsv(path(process.out.csv[0][1]))` for debugging. Set precision with `csvDoubleDigits` (default: 6).
 
 ```groovy
 then {
@@ -742,10 +695,7 @@ then {
 }
 ```
 
-- `unstablePatterns` and `ignorePatterns`: Lists of **glob** pattern that will be matched against each value of the channel.
-  If a match is found for a given file, `unstablePatterns` will remove the md5sum, and `ignorePatterns` will completely ignore the file from the snapshot.
-  Beware that patterns across `unstablePatterns` and `ignorePatterns` should be mutually exclusive.
-  Channel key provided by `unstableKeys`, `ignoreKeys`, `readsMD5Keys` and `variantsMD5Keys` will not be matched agains these pattern.
+- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, and `variantsMD5Keys` are not matched against these patterns.
 
 ```groovy
 then {
@@ -755,15 +705,7 @@ then {
 
 ### `curlAndExtract()` - Download and extract an archive
 
-The `curlAndExtract()` function is used to download an archive
-from the Internet with `curl` and extract it in the required destination
-directory.
-Zip and Tar archives are currently supported. Tar archives can be compressed
-with any of these algorithms: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd.
-By default, the choice of archive format and compression algorithm is based on
-the name of the archive, but it can also be passed as an argument.
-For compressed Tar archives, the format to provide is "tar.bz2" or "tbz2"
-(adapting to your compression algorithm of choice).
+Downloads an archive with `curl` and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd. The format is auto-detected from the filename, or pass it explicitly. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
 
 You are responsible for deleting the data in the `cleanup` phase.
 

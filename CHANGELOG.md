@@ -3,99 +3,108 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.2.0dev
+## [Unreleased]
 
-- Fix empty value usage in `sanitizeOutput()`. See [this issue](https://github.com/nf-core/nft-utils/issues/84)
-- Add `csvMD5Keys` for `sanitizeOutput` so that md5 is the one from the normalized CSV.
+### Fixed
 
-## 1.1.1
+- Fix empty value usage in `sanitizeOutput()`. See [#84](https://github.com/nf-core/nft-utils/issues/84)
+
+### Added
+
+- Add `csvMD5Keys` for `sanitizeOutput` to hash normalized CSV content
+
+### Changed
+
+- Improve documentation: clean up prose, add feature list to README, standardize CHANGELOG categories
+
+## [1.1.1]
 
 ### Fixed
 
 - Use `unstablePatterns` and `ignorePatterns` instead of `unstablePattern` and `ignorePattern`
 
-## 1.1.0
-
-### New features
-
-- Add `ignoreKeys` for `sanitizeOutput` and key presence check. Add jupiter test.
-- Add `readsMD5Keys` and `variantsMD5Keys` for `sanitizeOutput` so that md5 is the one from the reads and from the variants.
-- Add `unstablePattern` and `ignorePattern` to `sanitizeOutput` for more fine grained parsing.
-
-### Fixed
-
-- Fix `unstableKeys` usage for `sanitizeOutput` when a folder is passed.
-- Fix linting with `mvn checkstyle:check` and change folder structure.
-- Use glob pattern instead of regex pattern for `ignorePattern` and `unstablePattern`.
-- Update github action to use environment and cache. Add linting and bug check to maven plugin lifecycle.
-- Fix `nfcoreInitialise()` to be compatible with nf-core tools 4.1.0, which now also expects a `conf/` directory in the library.
-
-## 1.0.0
-
-### New features
-
-- Added `getAllFilesFromPath()` to retrieve files from a local or S3 path, with support for `include`/`ignore` glob patterns, `includeDir`, and `noSignRequest` for S3.
-
-## 0.0.9
-
-### New features
-
-- `nfcoreInstall()` now tracks installed modules using state files in the library, skipping installation for already installed modules.
-- Added `filterNextflowOutput()` to clean Nextflow stdout/stderr, with support for `include`/`ignore` filters and `keepAnsi` option.
-
-## 0.0.8
-
-### New features
-
-- Added the `curlAndExtract` function to download and extract `tar` and `zip` files during the nf-test setup stage.
-
-## 0.0.7
+## [1.1.0]
 
 ### Added
 
-- Added the OutputSanitizer class with the sanitizeOutput() method to process and clean output channels, supporting options like unstableKeys to handle unstable file outputs by @nvnieuwk
+- Add `ignoreKeys` for `sanitizeOutput` and key presence check
+- Add `readsMD5Keys` and `variantsMD5Keys` for `sanitizeOutput` to hash reads and variants separately
+- Add `unstablePattern` and `ignorePattern` to `sanitizeOutput` for glob-based filtering
 
 ### Fixed
 
-- nfcoreLibraryLinker: exit gracefully when directories don't exist by @prototaxites
+- Fix `unstableKeys` usage for `sanitizeOutput` when a folder is passed
+- Fix linting with `mvn checkstyle:check` and restructure folders
+- Use glob patterns instead of regex for `ignorePattern` and `unstablePattern`
+- Update GitHub Actions to use environment and cache; add linting and bug checks to Maven lifecycle
+- Fix `nfcoreInitialise()` for nf-core tools 4.1.0 compatibility (requires `conf/` directory)
 
-## 0.0.6
+## [1.0.0]
 
 ### Added
 
-- Add stdout and stderr helper function for better snapshot by @maxulysse
+- Add `getAllFilesFromPath()` to retrieve files from local or S3 paths with `include`/`ignore` glob patterns, `includeDir`, and `noSignRequest` for S3
 
-### Fixed
-
-- improve docs by @maxulysse
-
-## 0.0.5
+## [0.0.9]
 
 ### Added
 
-- Add functions for managing dependencies on nf-core modules by @prototaxites
+- `nfcoreInstall()` now tracks installed modules via state files, skipping already installed modules
+- Add `filterNextflowOutput()` to clean Nextflow stdout/stderr with `include`/`ignore` filters and `keepAnsi` option
+
+## [0.0.8]
+
+### Added
+
+- Add `curlAndExtract()` to download and extract `tar` and `zip` files during nf-test setup
+
+## [0.0.7]
+
+### Added
+
+- Add `OutputSanitizer` class with `sanitizeOutput()` to process and clean output channels, supporting `unstableKeys` for unstable file outputs (@nvnieuwk)
 
 ### Fixed
 
-- Fix rendering of cloning code blocks by @TCLamnidis
+- `nfcoreLibraryLinker`: exit gracefully when directories don't exist (@prototaxites)
+
+## [0.0.6]
+
+### Added
+
+- Add stdout and stderr helper functions for better snapshots (@maxulysse)
+
+### Fixed
+
+- Improve documentation (@maxulysse)
+
+## [0.0.5]
+
+### Added
+
+- Add functions for managing dependencies on nf-core modules (@prototaxites)
+
+### Fixed
+
+- Fix rendering of cloning code blocks (@TCLamnidis)
 
 ### New Contributors
 
 - @prototaxites
 - @TCLamnidis
 
-## 0.0.4
+## [0.0.4]
 
 ### Added
 
-- Add listToMD5 by @nvnieuwk in #26
+- Add `listToMD5` (@nvnieuwk in #26)
 
 ### Fixed
 
-- Improve user eligibility for getAllFilesInDir() docs by @jfy133
-- fix missing ',' in docs code by @Joon-Klaps
-- fix listToMD5 by @maxulysse
-- Improve remove from yaml map by @maxulysse
+- Improve `getAllFilesInDir()` documentation (@jfy133)
+- Fix missing comma in documentation code (@Joon-Klaps)
+- Fix `listToMD5` (@maxulysse)
+- Improve `removeFromYamlMap` (@maxulysse)
 
 ### New Contributors
 
@@ -103,42 +112,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - @Joon-Klaps
 - @itrujnara
 
-## 0.0.3
+## [0.0.3]
 
 ### Added
 
-- Add wrapper functions for getAllFilesFromDir with named parameters by @lukfor
-- add include in getAllFilesFromDir by @maxulysse
-- add removeFromYamlMap by @maxulysse
+- Add wrapper functions for `getAllFilesFromDir` with named parameters (@lukfor)
+- Add `include` in `getAllFilesFromDir` (@maxulysse)
+- Add `removeFromYamlMap` (@maxulysse)
 
 ### Fixed
 
-- Move all docs in its own folder by @maxulysse
+- Move documentation to its own folder (@maxulysse)
 
 ### New Contributors
 
 - @lukfor
 
-## 0.0.2
+## [0.0.2]
 
 ### Added
 
-- Add maven to gitpod install by @nvnieuwk
-- Add getRelativePath() function by @maxulysse
+- Add Maven to Gitpod install (@nvnieuwk)
+- Add `getRelativePath()` function (@maxulysse)
 
 ### New Contributors
 
 - @nvnieuwk
 
-## 0.0.1
+## [0.0.1]
 
-First release of nft-utils 🍏🚀
+First release of nft-utils.
 
 ### Added
 
-- add removeNextflowVersion function by @maxulysse
-- Add getAllFilesFromDir function by @maxulysse
-- Add docs by @maxulysse
+- Add `removeNextflowVersion` function (@maxulysse)
+- Add `getAllFilesFromDir` function (@maxulysse)
+- Add documentation (@maxulysse)
 
 ### New Contributors
 
