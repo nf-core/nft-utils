@@ -1,11 +1,10 @@
 # nft-utils
 
-nft-utils is an nf-test plugin to provide additional functions and assertions that fall outside of the typical nf-test features.
-They were primarily developed by the nf-core community but should be applicable to any nf-tests.
+nf-test plugin with utility functions for pipeline-level snapshot testing. Works with any nf-test project, not just nf-core pipelines.
 
-## Start using the plugin
+## Installation
 
-To start using the plugin please add it to your `nf-test.config` file:
+Add the plugin to your `nf-test.config`:
 
 ```groovy title="nf-test.config"
 config {
@@ -15,33 +14,23 @@ config {
 }
 ```
 
-Have a look at the [usage documentation](./usage.md) for more information on how to start working with the plugin.
+See the [usage documentation](./usage.md) for available functions.
 
-## Use a development version
+## Development version
 
-To use the development version, please do the following steps:
-
-- Clone the [nft-utils repository](https://github.com/nf-core/nft-utils)
-
-### SSH
+Clone the repository:
 
 ```bash
 git clone git@github.com:nf-core/nft-utils.git
 ```
 
-### HTTPS
-
-```bash
-git clone https://github.com/nf-core/nft-utils.git
-```
-
-- Run the build script
+Build the plugin:
 
 ```bash
 ./build.sh
 ```
 
-- Add the jar location (visible at the end of the build script output) to the `nf-test.config` file
+Add the jar to your `nf-test.config`:
 
 ```groovy title="nf-test.config"
 config {

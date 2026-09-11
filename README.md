@@ -1,15 +1,21 @@
 # nft-utils
 
-This repository contains utility functions for nf-test.
-These functions are used to help capture level tests using nf-test.
+nf-test plugin with utility functions for pipeline-level snapshot testing.
 
-Please read the [documentation](./docs) for more information.
+## Features
+
+- `sanitizeOutput()` - clean process outputs for stable snapshots
+- `filterNextflowOutput()` - remove variable content from stdout/stderr
+- `getAllFilesFromPath()` - list files from local or S3 paths
+- `removeNextflowVersion()` - strip Nextflow version from YAML files
+- `nfcoreInstall()` - install nf-core modules for testing
+- `curlAndExtract()` - download and extract archives in test setup
+
+Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 
 ## Development
 
-The `nft-utils` plugin needs Nextflow and nf-test.
-It use maven for compilation and nf-core for testing.
-A conda environment is available and can be used for development
+Requires Nextflow, nf-test, and Maven.
 
 ```bash
 # Install conda environment
@@ -19,11 +25,13 @@ mamba activate env_nft_utils
 # Compile the package
 mvn -B clean verify
 
-# Run all the unittest
+# Run all tests
 nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
-# or a single one and update the snapshot
+
+# Run a single test and update snapshots
 nf-test test --plugins target/nft-utils-*.jar --update-snapshot tests/sanitizeOutput/
-# and the test with no plugins installed
+
+# Test with no plugins installed
 nf-test test --plugins target/nft-utils-*.jar --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/
 ```
 
@@ -31,15 +39,18 @@ nf-test test --plugins target/nft-utils-*.jar --config tests_noplugins/nf-test_n
 
 nft-utils was created by the nf-core community.
 
-We'd like to thank the following people:
-
 - [Adam Talbot](https://github.com/adamrtalbot)
 - [Edmund Miller](https://github.com/edmundmiller)
+- [Igor Trujnara](https://github.com/itrujnara)
+- [James A. Fellows Yates](https://github.com/jfy133)
 - [Jim Downie](https://github.com/prototaxites)
 - [Jonathan Manning](https://github.com/pinin4fjords)
+- [Joon Klaps](https://github.com/Joon-Klaps)
+- [Louis Le Nezet](https://github.com/LouisLeNezet)
 - [Lukas Forer](https://github.com/lukfor)
 - [Matthias Zepper](https://github.com/MatthiasZepper)
 - [Matthieu Muffato](https://github.com/muffato)
 - [Maxime U. Garcia](https://github.com/maxulysse)
 - [Nicolas Vannieuwkerke](https://github.com/nvnieuwk)
 - [Sateesh Peri](https://github.com/sateeshperi)
+- [Thiseas C. Lamnidis](https://github.com/TCLamnidis)
