@@ -3,10 +3,15 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.2.0dev
+## 1.2.0
 
-- Fix empty value usage in `sanitizeOutput()`. See [this issue](https://github.com/nf-core/nft-utils/issues/84)
-- Add `csvMD5Keys` for `sanitizeOutput` so that md5 is the one from the normalized CSV.
+### Fixed
+
+- Fix empty value usage in `sanitizeOutput()`. See [#84](https://github.com/nf-core/nft-utils/issues/84)
+
+### Added
+
+- Add `csvMD5Keys` for `sanitizeOutput` to hash normalized CSV content
 
 ## 1.1.1
 
