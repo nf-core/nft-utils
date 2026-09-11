@@ -1616,7 +1616,7 @@ You can disable this by setting <code>keepAnsi: true</code> if you need to prese
 </span></code></pre></div>
 <ul>
 <li><code>readsMD5Keys</code>: A list of keys containing genomic alignment files. MD5 sum of files with <code>&lt;.bam,.sam,.cram&gt;</code> extension will be replaced by an md5 computed only on the reads (i.e. equivalent of <code>bam(...).getReadsMD5()</code>) using the <a href="https://nvnieuwk.github.io/nft-bam/dev/"><code>nft-bam</code></a> plugin.
-  The latter should be added in the <code>plugins {}</code> section of the <code>nf-test.config</code>.
+  The latter should be added in the <code>plugins {}</code> section of the <code>nf-test.config</code> before nft-utils.
   For <code>.cram</code> files, you also need to pass the reference genome <code>.fasta</code> (the <code>.fai</code> is automatically detected by <code>nft-bam</code>).</li>
 </ul>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
@@ -1625,12 +1625,21 @@ You can disable this by setting <code>keepAnsi: true</code> if you need to prese
 </span><span id="__span-47-4"><a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
-<li><code>variantsMD5Keys</code>: A list of keys containing genomic alignment files. MD5 sum of files with <code>&lt;.vcf,.vcf.gz&gt;</code> extension will be replaces by the reads MD5 sum using the <a href="https://github.com/seppinho/nft-vcf"><code>nft-vcf</code></a> plugin. BCF extensions are not yet supported by <code>nft-vcf</code>.
-  The latter should be added in the <code>plugins {}</code> section of the <code>nf-test.config</code>.</li>
+<li><code>variantsMD5Keys</code>: A list of keys containing genomic alignment files. MD5 sum of files with <code>&lt;.vcf,.vcf.gz&gt;</code> extension will be replaces by the variants MD5 sum (i.e. equivalent of <code>path(...).vcf.variantsMD5</code>) using the <a href="https://github.com/seppinho/nft-vcf"><code>nft-vcf</code></a> plugin. BCF extensions are not yet supported by <code>nft-vcf</code>.
+  The latter should be added in the <code>plugins {}</code> section of the <code>nf-test.config</code> before nft-utils.</li>
 </ul>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">variantsMD5Keys:</span><span class="o">[</span><span class="s2">"vcf"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
 </span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="o">}</span>
+</span></code></pre></div>
+<ul>
+<li><code>csvMD5Keys</code>: A list of keys containing flat text table. MD5 sum of files with <code>&lt;.txt,.tsv,.csv&gt;</code> extension will be replaces by the normalized CSV MD5 sum.
+  The CSV normalisation includes: rows and columns sorted, floating value rounded to 6 decimals, absolute path changed to file or folder only name, end line character standardized to <code>\n</code>. The internal normalisation is also exposed for debugging use with <code>normalizeCsv(path(process.out.csv[0][1]))</code>.
+  This will give back the normalized concatenated string of the whole csv. You can specify the number of digits you want to round to with <code>csvDoubleDigits</code> (default is 6 decimals).</li>
+</ul>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">csvMD5Keys:</span><span class="o">[</span><span class="s2">"csv"</span><span class="o">],</span><span class="w"> </span><span class="nl">csvDoubleDigits:</span><span class="w"> </span><span class="mi">4</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
 <li><code>unstablePatterns</code> and <code>ignorePatterns</code>: Lists of <strong>glob</strong> pattern that will be matched against each value of the channel.
@@ -1638,9 +1647,9 @@ You can disable this by setting <code>keepAnsi: true</code> if you need to prese
   Beware that patterns across <code>unstablePatterns</code> and <code>ignorePatterns</code> should be mutually exclusive.
   Channel key provided by <code>unstableKeys</code>, <code>ignoreKeys</code>, <code>readsMD5Keys</code> and <code>variantsMD5Keys</code> will not be matched agains these pattern.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstablePatterns:</span><span class="o">[</span><span class="s2">"**/*.log"</span><span class="o">],</span><span class="w"> </span><span class="nl">ignorePatterns:</span><span class="o">[</span><span class="s2">"**/VERSION_*"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstablePatterns:</span><span class="o">[</span><span class="s2">"**/*.log"</span><span class="o">],</span><span class="w"> </span><span class="nl">ignorePatterns:</span><span class="o">[</span><span class="s2">"**/VERSION_*"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="curlandextract-download-and-extract-an-archive"><code>curlAndExtract()</code> - Download and extract an archive</h3>
 <p>The <code>curlAndExtract()</code> function is used to download an archive
@@ -1653,23 +1662,23 @@ the name of the archive, but it can also be passed as an argument.
 For compressed Tar archives, the format to provide is "tar.bz2" or "tbz2"
 (adapting to your compression algorithm of choice).</p>
 <p>You are responsible for deleting the data in the <code>cleanup</code> phase.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
-</span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/beautiful_database.tar.gz"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
-</span><span id="__span-50-4"><a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/secret/data"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">,</span><span class="w"> </span><span class="s2">"tar.bz2"</span><span class="o">)</span>
-</span><span id="__span-50-5"><a id="__codelineno-50-5" name="__codelineno-50-5" href="#__codelineno-50-5"></a><span class="o">}</span>
-</span><span id="__span-50-6"><a id="__codelineno-50-6" name="__codelineno-50-6" href="#__codelineno-50-6"></a>
-</span><span id="__span-50-7"><a id="__codelineno-50-7" name="__codelineno-50-7" href="#__codelineno-50-7"></a><span class="n">when</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-50-8"><a id="__codelineno-50-8" name="__codelineno-50-8" href="#__codelineno-50-8"></a><span class="w">  </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-50-9"><a id="__codelineno-50-9" name="__codelineno-50-9" href="#__codelineno-50-9"></a><span class="w">    </span><span class="n">pretty_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/pretty_db"</span>
-</span><span id="__span-50-10"><a id="__codelineno-50-10" name="__codelineno-50-10" href="#__codelineno-50-10"></a><span class="w">    </span><span class="n">beautiful_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/beauty_db"</span>
-</span><span id="__span-50-11"><a id="__codelineno-50-11" name="__codelineno-50-11" href="#__codelineno-50-11"></a><span class="w">    </span><span class="n">secret_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/secret"</span>
-</span><span id="__span-50-12"><a id="__codelineno-50-12" name="__codelineno-50-12" href="#__codelineno-50-12"></a><span class="w">  </span><span class="o">}</span>
-</span><span id="__span-50-13"><a id="__codelineno-50-13" name="__codelineno-50-13" href="#__codelineno-50-13"></a><span class="o">}</span>
-</span><span id="__span-50-14"><a id="__codelineno-50-14" name="__codelineno-50-14" href="#__codelineno-50-14"></a>
-</span><span id="__span-50-15"><a id="__codelineno-50-15" name="__codelineno-50-15" href="#__codelineno-50-15"></a><span class="n">cleanup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-50-16"><a id="__codelineno-50-16" name="__codelineno-50-16" href="#__codelineno-50-16"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">File</span><span class="o">(</span><span class="s2">"${launchDir}/data_dir"</span><span class="o">).</span><span class="na">deleteDir</span><span class="o">()</span>
-</span><span id="__span-50-17"><a id="__codelineno-50-17" name="__codelineno-50-17" href="#__codelineno-50-17"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
+</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/beautiful_database.tar.gz"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
+</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/secret/data"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">,</span><span class="w"> </span><span class="s2">"tar.bz2"</span><span class="o">)</span>
+</span><span id="__span-51-5"><a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a><span class="o">}</span>
+</span><span id="__span-51-6"><a id="__codelineno-51-6" name="__codelineno-51-6" href="#__codelineno-51-6"></a>
+</span><span id="__span-51-7"><a id="__codelineno-51-7" name="__codelineno-51-7" href="#__codelineno-51-7"></a><span class="n">when</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-51-8"><a id="__codelineno-51-8" name="__codelineno-51-8" href="#__codelineno-51-8"></a><span class="w">  </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-51-9"><a id="__codelineno-51-9" name="__codelineno-51-9" href="#__codelineno-51-9"></a><span class="w">    </span><span class="n">pretty_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/pretty_db"</span>
+</span><span id="__span-51-10"><a id="__codelineno-51-10" name="__codelineno-51-10" href="#__codelineno-51-10"></a><span class="w">    </span><span class="n">beautiful_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/beauty_db"</span>
+</span><span id="__span-51-11"><a id="__codelineno-51-11" name="__codelineno-51-11" href="#__codelineno-51-11"></a><span class="w">    </span><span class="n">secret_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/secret"</span>
+</span><span id="__span-51-12"><a id="__codelineno-51-12" name="__codelineno-51-12" href="#__codelineno-51-12"></a><span class="w">  </span><span class="o">}</span>
+</span><span id="__span-51-13"><a id="__codelineno-51-13" name="__codelineno-51-13" href="#__codelineno-51-13"></a><span class="o">}</span>
+</span><span id="__span-51-14"><a id="__codelineno-51-14" name="__codelineno-51-14" href="#__codelineno-51-14"></a>
+</span><span id="__span-51-15"><a id="__codelineno-51-15" name="__codelineno-51-15" href="#__codelineno-51-15"></a><span class="n">cleanup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-51-16"><a id="__codelineno-51-16" name="__codelineno-51-16" href="#__codelineno-51-16"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">File</span><span class="o">(</span><span class="s2">"${launchDir}/data_dir"</span><span class="o">).</span><span class="na">deleteDir</span><span class="o">()</span>
+</span><span id="__span-51-17"><a id="__codelineno-51-17" name="__codelineno-51-17" href="#__codelineno-51-17"></a><span class="o">}</span>
 </span></code></pre></div>
 
 
