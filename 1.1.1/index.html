@@ -325,10 +325,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#start-using-the-plugin" class="md-nav__link">
+  <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Start using the plugin
+        Installation
       
     </span>
   </a>
@@ -336,41 +336,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#use-a-development-version" class="md-nav__link">
+  <a href="#development-version" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Use a development version
+        Development version
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Use a development version">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ssh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SSH
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTPS
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -436,10 +408,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#start-using-the-plugin" class="md-nav__link">
+  <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Start using the plugin
+        Installation
       
     </span>
   </a>
@@ -447,41 +419,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#use-a-development-version" class="md-nav__link">
+  <a href="#development-version" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Use a development version
+        Development version
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Use a development version">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ssh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SSH
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTPS
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -506,41 +450,29 @@
 
 
 <h1 id="nft-utils">nft-utils</h1>
-<p>nft-utils is an nf-test plugin to provide additional functions and assertions that fall outside of the typical nf-test features.
-They were primarily developed by the nf-core community but should be applicable to any nf-tests.</p>
-<h2 id="start-using-the-plugin">Start using the plugin</h2>
-<p>To start using the plugin please add it to your <code>nf-test.config</code> file:</p>
+<p>nf-test plugin with utility functions for pipeline-level snapshot testing. Works with any nf-test project, not just nf-core pipelines.</p>
+<h2 id="installation">Installation</h2>
+<p>Add the plugin to your <code>nf-test.config</code>:</p>
 <div class="language-groovy highlight"><span class="filename">nf-test.config</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">config</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">plugins</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="n">load</span><span class="w"> </span><span class="s2">"nft-utils@1.1.1"</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="o">}</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="o">}</span>
 </span></code></pre></div>
-<p>Have a look at the <a href="usage/">usage documentation</a> for more information on how to start working with the plugin.</p>
-<h2 id="use-a-development-version">Use a development version</h2>
-<p>To use the development version, please do the following steps:</p>
-<ul>
-<li>Clone the <a href="https://github.com/nf-core/nft-utils">nft-utils repository</a></li>
-</ul>
-<h3 id="ssh">SSH</h3>
+<p>See the <a href="usage/">usage documentation</a> for available functions.</p>
+<h2 id="development-version">Development version</h2>
+<p>Clone the repository:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:nf-core/nft-utils.git
 </span></code></pre></div>
-<h3 id="https">HTTPS</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/nf-core/nft-utils.git
+<p>Build the plugin:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>./build.sh
 </span></code></pre></div>
-<ul>
-<li>Run the build script</li>
-</ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>./build.sh
-</span></code></pre></div>
-<ul>
-<li>Add the jar location (visible at the end of the build script output) to the <code>nf-test.config</code> file</li>
-</ul>
-<div class="language-groovy highlight"><span class="filename">nf-test.config</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">config</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">plugins</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">        </span><span class="n">loadFromFile</span><span class="w"> </span><span class="s2">"full/path/to/the/plugin/jar"</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="o">}</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="o">}</span>
+<p>Add the jar to your <code>nf-test.config</code>:</p>
+<div class="language-groovy highlight"><span class="filename">nf-test.config</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">config</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">plugins</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">        </span><span class="n">loadFromFile</span><span class="w"> </span><span class="s2">"full/path/to/the/plugin/jar"</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="o">}</span>
 </span></code></pre></div>
 
 
