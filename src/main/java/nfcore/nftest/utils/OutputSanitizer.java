@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public final class OutputSanitizer {
 
-  /** Default number of decimal places for Table double values. */
+  /** Default number of decimal places for table double values. */
   private static final int DEFAULT_TABLE_DOUBLE_DIGITS = 6;
 
   /**

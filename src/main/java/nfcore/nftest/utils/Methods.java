@@ -1063,19 +1063,19 @@ public final class Methods {
   }
 
   /**
-   * Normalizes a Table file and returns its canonical representation.
+   * Normalizes a table file and returns its canonical representation.
    *
-   * @param path The Table file to normalize.
+   * @param path The table file to normalize.
    * @param digits the number of decimal places to retain for floating-point
    * values
-   * @return The normalized Table content.
+   * @return The normalized table content.
    */
   public static String normalizeTable(final Path path, final int digits) {
     return TableUtils.normalizeTable(path, digits);
   }
 
   /**
-   * Normalizes a Table file and returns its canonical representation.
+   * Normalizes a table file and returns its canonical representation.
    *
    * @param path The Table file to normalize.
    * @return The normalized Table content.
