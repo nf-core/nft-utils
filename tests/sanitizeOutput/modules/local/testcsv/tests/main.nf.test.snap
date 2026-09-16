@@ -1,5 +1,5 @@
 {
-    "Default sanitize output - with csvMD5Keys": {
+    "Default sanitize output - with tableMD5Keys": {
         "content": [
             "path,sample,value\nfiles.py,B,2.000021\nfolder,A,1.034013\ntest.txt,C,3.046136\n",
             "path,sample,value\nfiles.py,B,2.0\nfolder,A,1.034\ntest.txt,C,3.0461\n",
@@ -10,9 +10,9 @@
                         {
                             "id": "test"
                         },
-                        "test.txt:md5NormedCsv,3cc6189a86694164ef0823f0d79cce1e",
-                        "test.tsv:md5NormedCsv,3cc6189a86694164ef0823f0d79cce1e",
-                        "test.csv:md5NormedCsv,3cc6189a86694164ef0823f0d79cce1e"
+                        "test.txt:md5NormedTable,3cc6189a86694164ef0823f0d79cce1e",
+                        "test.tsv:md5NormedTable,3cc6189a86694164ef0823f0d79cce1e",
+                        "test.csv:md5NormedTable,3cc6189a86694164ef0823f0d79cce1e"
                     ]
                 ],
                 "not_normalize": [
@@ -27,7 +27,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-04T13:24:12.383033034",
+        "timestamp": "2026-09-16T10:05:44.96018299",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

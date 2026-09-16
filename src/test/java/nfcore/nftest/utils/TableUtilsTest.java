@@ -6,19 +6,19 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-class CsvUtilsTest {
+class TableUtilsTest {
 
   @Test
   void shouldNormalizeColumns() {
-    final CsvUtils.CsvTable input = new CsvUtils.CsvTable(
+    final TableUtils.TableUtilsClass input = new TableUtils.TableUtilsClass(
       List.of("z_column", "a_column", "m_column"),
       List.of(
         List.of("z", "a", "m")
       )
     );
 
-    final CsvUtils.CsvTable normalized =
-      CsvUtils.normalizeTable(input, 6);
+    final TableUtils.TableUtilsClass normalized =
+      TableUtils.normalizeTable(input, 6);
 
     assertEquals(
       List.of("a_column", "m_column", "z_column"),
@@ -33,7 +33,7 @@ class CsvUtilsTest {
 
   @Test
   void shouldRoundFloatingPointValues() {
-    final CsvUtils.CsvTable input = new CsvUtils.CsvTable(
+    final TableUtils.TableUtilsClass input = new TableUtils.TableUtilsClass(
       List.of("value"),
       List.of(
         List.of("1.123456789"),
@@ -42,8 +42,8 @@ class CsvUtilsTest {
       )
     );
 
-    final CsvUtils.CsvTable normalized =
-      CsvUtils.normalizeTable(input, 6);
+    final TableUtils.TableUtilsClass normalized =
+      TableUtils.normalizeTable(input, 6);
 
     assertEquals("1.123457", normalized.rows().get(0).get(0));
     assertEquals("10.0", normalized.rows().get(1).get(0));
@@ -52,7 +52,7 @@ class CsvUtilsTest {
 
   @Test
   void shouldSimplifyAbsolutePaths() {
-    final CsvUtils.CsvTable input = new CsvUtils.CsvTable(
+    final TableUtils.TableUtilsClass input = new TableUtils.TableUtilsClass(
       List.of("path"),
       List.of(
         List.of("/home/user/work/results/a.csv"),
@@ -60,8 +60,8 @@ class CsvUtilsTest {
       )
     );
 
-    final CsvUtils.CsvTable normalized =
-      CsvUtils.normalizeTable(input, 6);
+    final TableUtils.TableUtilsClass normalized =
+      TableUtils.normalizeTable(input, 6);
 
     assertEquals("a.csv", normalized.rows().get(0).get(0));
     assertEquals("b.csv", normalized.rows().get(1).get(0));
@@ -69,7 +69,7 @@ class CsvUtilsTest {
 
   @Test
   void shouldNormalizeRows() {
-    final CsvUtils.CsvTable input = new CsvUtils.CsvTable(
+    final TableUtils.TableUtilsClass input = new TableUtils.TableUtilsClass(
       List.of("sample", "value"),
       List.of(
         List.of("B", "2.00002123"),
@@ -78,8 +78,8 @@ class CsvUtilsTest {
       )
     );
 
-    final CsvUtils.CsvTable normalized =
-      CsvUtils.normalizeTable(input, 6);
+    final TableUtils.TableUtilsClass normalized =
+      TableUtils.normalizeTable(input, 6);
 
     assertEquals(
       List.of("A", "1.016855"),
@@ -97,7 +97,7 @@ class CsvUtilsTest {
 
   @Test
   void shouldNormalizeRowsAndColumnsTogether() {
-    final CsvUtils.CsvTable input = new CsvUtils.CsvTable(
+    final TableUtils.TableUtilsClass input = new TableUtils.TableUtilsClass(
       List.of("value", "sample", "path"),
       List.of(
         List.of("2.123", "B", "/usr/local/bin/folder/"),
@@ -106,8 +106,8 @@ class CsvUtilsTest {
       )
     );
 
-    final CsvUtils.CsvTable normalized =
-      CsvUtils.normalizeTable(input, 2);
+    final TableUtils.TableUtilsClass normalized =
+      TableUtils.normalizeTable(input, 2);
 
     assertEquals(
       List.of("path", "sample", "value"),
