@@ -1077,8 +1077,8 @@ public final class Methods {
   /**
    * Normalizes a table file and returns its canonical representation.
    *
-   * @param path The Table file to normalize.
-   * @return The normalized Table content.
+   * @param path The table file to normalize.
+   * @return The normalized table content.
    */
   public static String normalizeTable(final Path path) {
     return normalizeTable(path, DEFAULT_TABLE_DOUBLE_DIGITS);
