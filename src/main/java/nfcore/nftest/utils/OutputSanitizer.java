@@ -20,6 +20,9 @@ public final class OutputSanitizer {
   /** Default number of decimal places for table double values. */
   private static final int DEFAULT_TABLE_DOUBLE_DIGITS = 6;
 
+  /** Default decision to keep comments in table. */
+  private static final boolean DEFAULT_TABLE_REMOVE_COMMENTS = false;
+
   /**
    * Prevents instantiation of this utility class.
    */
@@ -146,6 +149,9 @@ public final class OutputSanitizer {
     int tableDoubleDigits = (int) options.getOrDefault(
       "tableDoubleDigits", DEFAULT_TABLE_DOUBLE_DIGITS
     );
+    boolean tableRemoveComments = (boolean) options.getOrDefault(
+      "tableRemoveComments", DEFAULT_TABLE_REMOVE_COMMENTS
+    );
 
     if (tableDoubleDigits < 0) {
       throw new IllegalArgumentException(
@@ -201,7 +207,11 @@ public final class OutputSanitizer {
       } else if (variantsMD5Keys.contains(key)) {
         output.put(key, VcfUtils.vcfMD5(value));
       } else if (tableMD5Keys.contains(key)) {
-        output.put(key, TableUtils.tableMD5(value, tableDoubleDigits));
+        output.put(key, TableUtils.tableMD5(
+          value,
+          tableDoubleDigits,
+          tableRemoveComments
+        ));
       } else {
         output.put(key, checkPattern(value, unstablePatterns, ignorePatterns));
       }

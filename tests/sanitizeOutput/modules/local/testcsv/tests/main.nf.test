@@ -18,7 +18,10 @@ nextflow_process {
               normalizeTable(path(process.out.normalized[0][1])),
               normalizeTable(path(process.out.normalized[0][2]), 4),
               normalizeTable(path(process.out.normalized[0][3]), 2),
-              sanitizeOutput(process.out, tableMD5Keys:["normalized"], tableDoubleDigits: 5)
+              normalizeTable(path(process.out.normalized[0][4]), 2),
+              normalizeTable(path(process.out.normalized[0][4]), 2, true),
+              normalizeTable(path(process.out.normalized[0][4]), true),
+              sanitizeOutput(process.out, tableMD5Keys:["normalized"], tableDoubleDigits: 5, tableRemoveComments: true)
             ).match()
         }
     }

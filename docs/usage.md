@@ -687,11 +687,13 @@ then {
 }
 ```
 
-- `tableMD5Keys`: Keys containing flat text tables (`.txt`, `.tsv`, `.csv`). MD5 is computed from normalized table: rows and columns sorted, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to `\n`. Use `normalizeTable(path(process.out.csv[0][1]))` for debugging. Set precision with `tableDoubleDigits` (default: 6).
+- `tableMD5Keys`: Keys containing flat text tables (`.txt`, `.tsv`, `.csv`, ...). MD5 is computed from normalized table: rows and columns sorted, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to `\n`.
+Set precision with `tableDoubleDigits` (default: 6) and remove lines starting with `#` with `tableRemoveComments: true` (default: false).
+Use `normalizeTable(path(process.out.csv[0][1]), 6, true)` for debugging.
 
 ```groovy
 then {
-  assert snapshot(sanitizeOutput(process.out, tableMD5Keys:["csv"], tableDoubleDigits: 4)).match()
+  assert snapshot(sanitizeOutput(process.out, tableMD5Keys:["csv"], tableDoubleDigits: 4, tableRemoveComments: true)).match()
 }
 ```
 
