@@ -3,11 +3,15 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.1]
+## [1.3.0]
 
 ### Fixed
 
 - Use `tableMD5Keys` and `normalizeTable` instead of `csvMD5Keys` and `normalizeCsv`.
+
+### Added
+
+- Add `tableRemoveComments` opt-in option to remove all lines starting with `#` (can have space before).
 
 ## [1.2.0]
 
