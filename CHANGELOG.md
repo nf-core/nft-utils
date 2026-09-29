@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `tableRemoveComments` opt-in option to remove all lines starting with `#` (can have space before).
+- Add `tableRemoveComments` opt-in option to remove leading lines starting with `#` (can have space before).
 
 ## [1.2.0]
 
