@@ -1,18 +1,22 @@
 {
     "Default sanitize output - with tableMD5Keys": {
         "content": [
-            "path,sample,value\nfiles.py,B,2.000021\nfolder,A,1.034013\ntest.txt,C,3.046136\n",
-            "path,sample,value\nfiles.py,B,2.0\nfolder,A,1.034\ntest.txt,C,3.0461\n",
-            "path,sample,value\nfiles.py,B,2.0\nfolder,A,1.03\ntest.txt,C,3.05\n",
+            "path,sample,value\nfiles.py,B,2.000021\nfolder,\"#A\",1.034013\ntest.txt,C,3.046136\n",
+            "path,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.034\ntest.txt,C,3.0461\n",
+            "path,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.03\ntest.txt,C,3.05\n",
+            "\"  \"\n\"  #Mon Sep 28 05:35:45 PM CEST 2026\"\n\"#Other label\"\nfiles.py\tB\t2.000021\nfolder\t#A\t1.034012\npath\tsample\tvalue\ntest.txt\tC\t3.046136\n",
+            "path,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.03\ntest.txt,C,3.05\n",
+            "path,sample,value\nfiles.py,B,2.000021\nfolder,\"#A\",1.034012\ntest.txt,C,3.046136\n",
             {
                 "normalized": [
                     [
                         {
                             "id": "test"
                         },
-                        "test.txt:md5NormedTable,3cc6189a86694164ef0823f0d79cce1e",
-                        "test.tsv:md5NormedTable,3cc6189a86694164ef0823f0d79cce1e",
-                        "test.csv:md5NormedTable,3cc6189a86694164ef0823f0d79cce1e"
+                        "test.txt:md5NormedTable,f0f40d7b3e406bc459256cc8f3fb2cb6",
+                        "test.tsv:md5NormedTable,f0f40d7b3e406bc459256cc8f3fb2cb6",
+                        "test.csv:md5NormedTable,f0f40d7b3e406bc459256cc8f3fb2cb6",
+                        "test.tbl:md5NormedTable,f0f40d7b3e406bc459256cc8f3fb2cb6"
                     ]
                 ],
                 "not_normalize": [
@@ -20,14 +24,15 @@
                         {
                             "id": "test"
                         },
-                        "test.txt:md5,1e7668ff39b42270cace425dee8e90ba",
-                        "test.tsv:md5,dde78abef7864bc1887d3fb43b1d9f1d",
-                        "test.csv:md5,c18fb55c304d2c4fbb02d643ee15998c"
+                        "test.txt:md5,1508cd9aebc9f0423578acc52ac6cee0",
+                        "test.tsv:md5,07fc440e02f5785c6714d9edff9a4a83",
+                        "test.csv:md5,ce7f8eaa2126b385527c488d07689a29",
+                        "test.tbl:md5,2b9687b94b901b196990536e2b46e073"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-09-16T10:05:44.96018299",
+        "timestamp": "2026-09-29T09:34:08.289823577",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

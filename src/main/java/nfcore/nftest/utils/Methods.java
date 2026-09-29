@@ -38,6 +38,9 @@ public final class Methods {
   /** Default number of decimal places for table double values. */
   private static final int DEFAULT_TABLE_DOUBLE_DIGITS = 6;
 
+  /** Default decision to keep comments in table. */
+  private static final boolean DEFAULT_TABLE_REMOVE_COMMENTS = false;
+
   /**
    * Prevents instantiation of this utility class.
    */
@@ -1068,10 +1071,54 @@ public final class Methods {
    * @param path The table file to normalize.
    * @param digits the number of decimal places to retain for floating-point
    * values
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return The normalized table content.
    */
-  public static String normalizeTable(final Path path, final int digits) {
-    return TableUtils.normalizeTable(path, digits);
+  public static String normalizeTable(
+    final Path path,
+    final int digits,
+    final boolean removeComments
+  ) {
+    return TableUtils.normalizeTable(path, digits, removeComments);
+  }
+
+  /**
+   * Normalizes a table file and returns its canonical representation.
+   *
+   * @param path The table file to normalize.
+   * @param digits the number of decimal places to retain for floating-point
+   * values
+   * @return The normalized table content.
+   */
+  public static String normalizeTable(
+    final Path path,
+    final int digits
+  ) {
+    return normalizeTable(
+      path,
+      digits,
+      DEFAULT_TABLE_REMOVE_COMMENTS
+    );
+  }
+
+  /**
+   * Normalizes a table file and returns its canonical representation.
+   *
+   * @param path The table file to normalize.
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
+   * @return The normalized table content.
+   */
+  public static String normalizeTable(
+    final Path path,
+    final boolean removeComments
+  ) {
+    return normalizeTable(
+      path,
+      DEFAULT_TABLE_DOUBLE_DIGITS,
+      removeComments
+    );
   }
 
   /**
@@ -1081,7 +1128,11 @@ public final class Methods {
    * @return The normalized table content.
    */
   public static String normalizeTable(final Path path) {
-    return normalizeTable(path, DEFAULT_TABLE_DOUBLE_DIGITS);
+    return normalizeTable(
+      path,
+      DEFAULT_TABLE_DOUBLE_DIGITS,
+      DEFAULT_TABLE_REMOVE_COMMENTS
+    );
   }
 
   /**

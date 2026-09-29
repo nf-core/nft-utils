@@ -37,9 +37,15 @@ public final class TableUtils {
    * @param value value containing CSV/TSV/TXT files
    * @param digits the number of decimal places to retain for floating-point
    * values
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return value with normalized MD5 replacements
    */
-  public static Object tableMD5(final Object value, final int digits) {
+  public static Object tableMD5(
+    final Object value,
+    final int digits,
+    final boolean removeComments
+  ) {
     return OutputSanitizer.recursiveParse(value, strValue -> {
       final Path path = Paths.get(strValue);
 
@@ -53,13 +59,16 @@ public final class TableUtils {
         !"csv".equals(extension)
         && !"tsv".equals(extension)
         && !"txt".equals(extension)
+        && !"tbl".equals(extension)
+        && !"dat".equals(extension)
+        && !"out".equals(extension)
       ) {
         return strValue;
       }
 
       return path.getFileName().toString()
         + ":md5NormedTable,"
-        + getTableMD5(path, digits);
+        + getTableMD5(path, digits, removeComments);
     });
   }
 
@@ -94,13 +103,19 @@ public final class TableUtils {
    * @param path path to the CSV, TSV, or semicolon-separated text file
    * @param digits the number of decimal places to retain for floating-point
    * values
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return the normalized Table representation of the file
    * @throws RuntimeException if the file cannot be read, normalized, or
    * rendered
    */
-  public static String normalizeTable(final Path path, final int digits) {
+  public static String normalizeTable(
+    final Path path,
+    final int digits,
+    final boolean removeComments
+  ) {
     try {
-      TableUtilsClass table = readTable(path);
+      TableUtilsClass table = readTable(path, removeComments);
       table = normalizeTable(table, digits);
       return toCanonicalTable(table);
     } catch (Exception e) {
@@ -117,11 +132,17 @@ public final class TableUtils {
    * @param path CSV/TSV/TXT file
    * @param digits the number of decimal places to retain for floating-point
    * values
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return normalized MD5
    */
-  private static String getTableMD5(final Path path, final int digits) {
+  private static String getTableMD5(
+    final Path path,
+    final int digits,
+    final boolean removeComments
+  ) {
     try {
-      return md5(normalizeTable(path, digits));
+      return md5(normalizeTable(path, digits, removeComments));
     } catch (Exception e) {
       throw new RuntimeException(
         "Failed to calculate normalized Table MD5 for file: " + path,
@@ -138,17 +159,35 @@ public final class TableUtils {
    * of their file extension.
    *
    * @param path path to the delimited text file
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return the parsed table
    * @throws IOException if the file cannot be read or parsed
    */
-  private static TableUtilsClass readTable(final Path path)
+  private static TableUtilsClass readTable(
+    final Path path,
+    final boolean removeComments
+  )
     throws IOException {
 
-    final char separator = detectSeparator(path);
     final String content = Files.readString(
       path,
       StandardCharsets.UTF_8
     );
+
+    final String tableContent;
+    if (removeComments) {
+      tableContent = content.lines()
+        .dropWhile(line ->
+          line.isBlank() || line.trim().startsWith("#")
+        )
+        .collect(Collectors.joining("\n"));
+    } else {
+      tableContent = content;
+    }
+
+    final char separator = detectSeparator(tableContent);
+
     final CSVFormat format = CSVFormat.DEFAULT.builder()
       .setDelimiter(separator)
       .setIgnoreEmptyLines(false)
@@ -156,7 +195,7 @@ public final class TableUtils {
 
     try (
       CSVParser parser = CSVParser.builder()
-        .setReader(new StringReader(content))
+        .setReader(new StringReader(tableContent))
         .setFormat(format)
         .get()
     ) {
@@ -194,28 +233,24 @@ public final class TableUtils {
    * If the file does not contain any of the supported separators, a
    * comma is returned as the default separator.
    *
-   * @param path path to the delimited text file
+   * @param content the content of the delimited text file
    * @return the detected separator character, or a comma if no supported
    *         separator is found
    * @throws IOException if the file cannot be read
    */
-  private static char detectSeparator(final Path path)
-    throws IOException {
-
+  private static char detectSeparator(final String content) {
     final List<Character> separators = List.of(',', '\t', ';');
 
-    try (var lines = Files.lines(path, StandardCharsets.UTF_8)) {
-      final String line = lines
-        .filter(value -> !value.isBlank())
-        .findFirst()
-        .orElse("");
+    final String line = content.lines()
+      .filter(value -> !value.isBlank())
+      .findFirst()
+      .orElse("");
 
-      return separators.stream()
-        .max(Comparator.comparingInt(separator ->
-          countOccurrences(line, separator)
-        ))
-        .orElse(',');
-    }
+    return separators.stream()
+      .max(Comparator.comparingInt(separator ->
+        countOccurrences(line, separator)
+      ))
+      .orElse(',');
   }
 
   /**
