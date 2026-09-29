@@ -30,7 +30,8 @@ process TESTCSV {
     echo "test.txt\tC\t3.046136" >> test.tsv
 
     # TBL with comments
-    echo "  #Mon Sep 28 05:35:45 PM CEST 2026" > test.tbl
+    echo "  " > test.tbl
+    echo "  #Mon Sep 28 05:35:45 PM CEST 2026" >> test.tbl
     echo "#Other label" >> test.tbl
     echo "path\tsample\tvalue" >> test.tbl
     echo "folder\t#A\t1.034012" >> test.tbl

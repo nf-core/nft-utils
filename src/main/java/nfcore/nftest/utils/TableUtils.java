@@ -53,6 +53,19 @@ public final class TableUtils {
         return strValue;
       }
 
+      final String extension = Utils.getExtension(path, false);
+
+      if (
+        !"csv".equals(extension)
+        && !"tsv".equals(extension)
+        && !"txt".equals(extension)
+        && !"tbl".equals(extension)
+        && !"dat".equals(extension)
+        && !"out".equals(extension)
+      ) {
+        return strValue;
+      }
+
       return path.getFileName().toString()
         + ":md5NormedTable,"
         + getTableMD5(path, digits, removeComments);
@@ -165,7 +178,9 @@ public final class TableUtils {
     final String tableContent;
     if (removeComments) {
       tableContent = content.lines()
-        .dropWhile(line -> line.trim().startsWith("#"))
+        .dropWhile(line ->
+          line.isBlank() || line.trim().startsWith("#")
+        )
         .collect(Collectors.joining("\n"));
     } else {
       tableContent = content;
