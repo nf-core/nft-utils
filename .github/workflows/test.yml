@@ -73,10 +73,26 @@ jobs:
         run: ./build.sh
 
       - name: Test plugin
+        id: test_plugin
+        # Only failures on the minimal Nextflow version fail the job
+        continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
         env:
           NFT_DIFF: "pdiff"
           NFT_DIFF_ARGS: "--line-numbers --width 120 --expand-tabs=2"
         run: ./test.sh
+
+      - name: Report test status
+        if: ${{ always() }}
+        run: |
+          if [[ "${{ steps.test_plugin.outcome }}" == "failure" ]]; then
+            echo "::error::Test with Nextflow ${{ matrix.NXF_VER }} / Java ${{ matrix.JAVA_VERSION }} failed"
+            echo "## ❌ Test failed: Nextflow ${{ matrix.NXF_VER }} / Java ${{ matrix.JAVA_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
+            if [[ "${{ matrix.NXF_VER }}" == "latest-everything" ]]; then
+              echo "::warning::Test with latest-everything failed but will not cause workflow failure. Please check if the error is expected or if it needs fixing."
+            else
+              exit 1
+            fi
+          fi
 
       - name: Clean up
         if: always()
