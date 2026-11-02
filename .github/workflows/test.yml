@@ -16,43 +16,59 @@ env:
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
   NXF_SYNTAX_PARSER: "v2"
+  # renovate: datasource=github-releases depName=askimed/nf-test versioning=semver
+  NFT_VER: "0.9.5"
+  # renovate: datasource=pypi depName=nf-core
+  NF_CORE_VER: "4.1.0"
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # Nextflow comes from conda: nf-core depends on it, so a separately
-        # installed Nextflow is shadowed once the micromamba env is active.
         NXF_VER:
-          - "26.04.7"
-          - "latest"
+          - "26.04.9"
+          - "latest-everything"
 
     steps:
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
-      - name: Setup Micromamba (Nextflow ${{ matrix.NXF_VER }})
-        uses: mamba-org/setup-micromamba@f457c30a868e4760d3a6fcea5f25dc655b8edf39 # v3
+      - name: Setup Java 17
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
         with:
-          environment-file: environment.yml
-          create-args: >-
-            conda-forge::openjdk=17
-            bioconda::nextflow${{ matrix.NXF_VER != 'latest' && format('={0}', matrix.NXF_VER) || '' }}
-          # a cached env would freeze "latest"
-          cache-environment: ${{ matrix.NXF_VER != 'latest' }}
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Setup Nextflow ${{ matrix.NXF_VER }}
+        uses: nf-core/setup-nextflow@893c28b667aedeba26e37f296d260ccc5bc4d914 # v3
+        with:
+          version: ${{ matrix.NXF_VER }}
+
+      - name: Setup nf-test
+        uses: nf-core/setup-nf-test@4069fbbaabe94c08faba4ad261bfa88225ba133f # v2.1.0
+        with:
+          version: ${{ env.NFT_VER }}
+
+      # pip, not conda: the bioconda nf-core package pulls in its own nextflow
+      - name: Setup Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.14"
+
+      - name: Install nf-core tools
+        run: pip install "nf-core==${NF_CORE_VER}"
 
       - name: Check tools
-        shell: bash -el {0}
         run: |
           java -version
           nextflow -version
           nf-test version
+          nf-core --version
 
       - name: Build plugin
-        shell: bash -el {0}
         run: ./build.sh
 
       - name: Test plugin
-        shell: bash -el {0}
         run: ./test.sh

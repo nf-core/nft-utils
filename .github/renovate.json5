@@ -5,4 +5,14 @@
     // conda pins in environment.yml (`# renovate: datasource=conda ...` comments)
     "local>nf-core/.github:process_updaters",
   ],
+  customManagers: [
+    {
+      // `# renovate: datasource=... depName=...` above a `*_VER:` env var in workflows
+      customType: "regex",
+      managerFilePatterns: ["/(^|/)\\.github/workflows/.+\\.ya?ml$/"],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: versioning=(?<versioning>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VER\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s",
+      ],
+    },
+  ],
 }
