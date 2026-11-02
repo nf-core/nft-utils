@@ -24,8 +24,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
+        JAVA_VERSION: ["17", "21"]
         NXF_VER:
           - "26.04.9"
           - "latest-everything"
@@ -34,15 +35,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
-      - name: Setup Java 17
+      - name: Setup Java ${{ matrix.JAVA_VERSION }}
         uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: ${{ matrix.JAVA_VERSION }}
           cache: maven
 
       - name: Setup Nextflow ${{ matrix.NXF_VER }}
-        uses: nf-core/setup-nextflow@893c28b667aedeba26e37f296d260ccc5bc4d914 # v3
+        uses: nf-core/setup-nextflow@v3
         with:
           version: ${{ matrix.NXF_VER }}
 
@@ -76,3 +77,7 @@ jobs:
           NFT_DIFF: "pdiff"
           NFT_DIFF_ARGS: "--line-numbers --width 120 --expand-tabs=2"
         run: ./test.sh
+
+      - name: Clean up
+        if: always()
+        run: rm -rf .nf-test/
