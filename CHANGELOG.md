@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.2.1
+## [1.2.1]
 
 ### Added
 
@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#91](https://github.com/nf-core/nft-utils/pull/91) Use `tableMD5Keys` and `normalizeTable` instead of `csvMD5Keys` and `normalizeCsv` (@LouisLeNezet)
 
-## 1.2.0
+## [1.2.0]
 
 ### Added
 
@@ -27,13 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#88](https://github.com/nf-core/nft-utils/pull/88) Clean up documentation prose, add feature list to README, standardize CHANGELOG (@maxulysse)
 
-## 1.1.1
+## [1.1.1]
 
 ### Fixed
 
 - [#83](https://github.com/nf-core/nft-utils/pull/83) Use `unstablePatterns` and `ignorePatterns` instead of `unstablePattern` and `ignorePattern` (@LouisLeNezet)
 
-## 1.1.0
+## [1.1.0]
 
 ### Added
 
@@ -53,13 +53,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - @LouisLeNezet
 
-## 1.0.0
+## [1.0.0]
 
 ### Added
 
 - [#69](https://github.com/nf-core/nft-utils/pull/69) Add `getAllFilesFromPath()` to retrieve files from local or S3 paths with `include`/`ignore` glob patterns, `includeDir`, and `noSignRequest` for S3 (@maxulysse)
 
-## 0.0.9
+## [0.0.9]
 
 ### Added
 
@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#62](https://github.com/nf-core/nft-utils/pull/62) Add `getAllFilesFromChannel()` to extract absolute file paths from Nextflow channel output (@maxulysse)
 - [#63](https://github.com/nf-core/nft-utils/pull/63) Add `filterNextflowOutput()` to clean Nextflow stdout/stderr with `include`/`ignore` filters and `keepAnsi` option (@maxulysse)
 
-## 0.0.8
+## [0.0.8]
 
 ### Added
 
@@ -77,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - @muffato
 
-## 0.0.7
+## [0.0.7]
 
 ### Added
 
@@ -87,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#50](https://github.com/nf-core/nft-utils/pull/50) `nfcoreLibraryLinker`: exit gracefully when directories don't exist (@prototaxites)
 
-## 0.0.6
+## [0.0.6]
 
 ### Added
 
@@ -97,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#44](https://github.com/nf-core/nft-utils/pull/44) Improve documentation (@maxulysse)
 
-## 0.0.5
+## [0.0.5]
 
 ### Added
 
@@ -112,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - @prototaxites
 - @TCLamnidis
 
-## 0.0.4
+## [0.0.4]
 
 ### Added
 
@@ -132,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - @Joon-Klaps
 - @itrujnara
 
-## 0.0.3
+## [0.0.3]
 
 ### Added
 
@@ -148,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - @lukfor
 
-## 0.0.2
+## [0.0.2]
 
 ### Added
 
@@ -161,7 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - @JonathanManning
 - @nvnieuwk
 
-## 0.0.1
+## [0.0.1]
 
 First release of nft-utils 🍏🚀
 
@@ -176,3 +176,18 @@ First release of nft-utils 🍏🚀
 
 - @adamrtalbot
 - @maxulysse
+
+[1.2.1]: https://github.com/nf-core/nft-utils/releases/tag/1.2.1
+[1.2.0]: https://github.com/nf-core/nft-utils/releases/tag/1.2.0
+[1.1.1]: https://github.com/nf-core/nft-utils/releases/tag/1.1.1
+[1.1.0]: https://github.com/nf-core/nft-utils/releases/tag/1.1.0
+[1.0.0]: https://github.com/nf-core/nft-utils/releases/tag/1.0.0
+[0.0.9]: https://github.com/nf-core/nft-utils/releases/tag/0.0.9
+[0.0.8]: https://github.com/nf-core/nft-utils/releases/tag/0.0.8
+[0.0.7]: https://github.com/nf-core/nft-utils/releases/tag/0.0.7
+[0.0.6]: https://github.com/nf-core/nft-utils/releases/tag/0.0.6
+[0.0.5]: https://github.com/nf-core/nft-utils/releases/tag/0.0.5
+[0.0.4]: https://github.com/nf-core/nft-utils/releases/tag/0.0.4
+[0.0.3]: https://github.com/nf-core/nft-utils/releases/tag/0.0.3
+[0.0.2]: https://github.com/nf-core/nft-utils/releases/tag/0.0.2
+[0.0.1]: https://github.com/nf-core/nft-utils/releases/tag/0.0.1
