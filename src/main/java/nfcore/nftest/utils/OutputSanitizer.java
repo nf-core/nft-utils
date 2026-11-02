@@ -17,9 +17,12 @@ import java.util.stream.Collectors;
  */
 public final class OutputSanitizer {
 
-  /** Default number of decimal places for CSV double values. */
-  private static final int DEFAULT_CSV_DOUBLE_DIGITS =
-    CsvUtils.DEFAULT_DOUBLE_DIGITS;
+  /** Default number of decimal places for table double values. */
+  private static final int DEFAULT_TABLE_DOUBLE_DIGITS =
+    TableUtils.DEFAULT_DOUBLE_DIGITS;
+
+  /** Default decision to keep comments in table. */
+  private static final boolean DEFAULT_TABLE_REMOVE_COMMENTS = false;
 
   /**
    * Prevents instantiation of this utility class.
@@ -56,7 +59,7 @@ public final class OutputSanitizer {
    * @param ignoreKeys Keys configured to be ignored.
    * @param readsMD5Keys Keys configured for reads MD5 calculation.
    * @param variantsMD5Keys Keys configured for variants MD5 calculation.
-   * @param csvMD5Keys Keys configured for CSV MD5 calculation.
+   * @param tableMD5Keys Keys configured for table MD5 calculation.
    * @throws RuntimeException If a key is configured in more than one category.
    */
   static void validateKeyUsage(
@@ -64,7 +67,7 @@ public final class OutputSanitizer {
     final List<String> ignoreKeys,
     final List<String> readsMD5Keys,
     final List<String> variantsMD5Keys,
-    final List<String> csvMD5Keys
+    final List<String> tableMD5Keys
   ) {
     Map<String, String> keyUsage = new HashMap<>();
 
@@ -72,7 +75,7 @@ public final class OutputSanitizer {
     addKeyUsage(keyUsage, ignoreKeys, "ignoreKeys");
     addKeyUsage(keyUsage, readsMD5Keys, "readsMD5Keys");
     addKeyUsage(keyUsage, variantsMD5Keys, "variantsMD5Keys");
-    addKeyUsage(keyUsage, csvMD5Keys, "csvMD5Keys");
+    addKeyUsage(keyUsage, tableMD5Keys, "tableMD5Keys");
   }
 
   /**
@@ -124,14 +127,14 @@ public final class OutputSanitizer {
     validateKeyUsage(
       opts.getUnstableKeys(), opts.getIgnoreKeys(),
       opts.getReadsMD5Keys(), opts.getVariantsMD5Keys(),
-      opts.getCsvMD5Keys()
+      opts.getTableMD5Keys()
     );
 
     validateKeysInChannel(opts.getUnstableKeys(), channel);
     validateKeysInChannel(opts.getIgnoreKeys(), channel);
     validateKeysInChannel(opts.getReadsMD5Keys(), channel);
     validateKeysInChannel(opts.getVariantsMD5Keys(), channel);
-    validateKeysInChannel(opts.getCsvMD5Keys(), channel);
+    validateKeysInChannel(opts.getTableMD5Keys(), channel);
 
     List<String> readsMD5Keys = opts.getReadsMD5Keys();
     if (!readsMD5Keys.isEmpty() && !BamUtils.isNftBamAvailable()) {
@@ -171,9 +174,11 @@ public final class OutputSanitizer {
           value, opts.getReferenceFasta()));
       } else if (variantsMD5Keys.contains(key)) {
         output.put(key, VcfUtils.vcfMD5(value));
-      } else if (opts.getCsvMD5Keys().contains(key)) {
-        output.put(key, CsvUtils.csvMD5(
-          value, opts.getCsvDoubleDigits()));
+      } else if (opts.getTableMD5Keys().contains(key)) {
+        output.put(key, TableUtils.tableMD5(
+          value,
+          opts.getTableDoubleDigits(),
+          opts.getTableRemoveComments()));
       } else {
         output.put(key, checkPattern(
           value, opts.getUnstablePatterns(),
@@ -199,12 +204,14 @@ public final class OutputSanitizer {
     private final List<String> readsMD5Keys;
     /** Keys whose VCF/BCF values should be hashed. */
     private final List<String> variantsMD5Keys;
-    /** Keys whose CSV/TSV values should be hashed. */
-    private final List<String> csvMD5Keys;
+    /** Keys whose table values should be hashed. */
+    private final List<String> tableMD5Keys;
     /** Reference FASTA path for BAM MD5 calculation. */
     private final String referenceFasta;
-    /** Decimal places for CSV floating-point normalization. */
-    private final int csvDoubleDigits;
+    /** Decimal places for table floating-point normalization. */
+    private final int tableDoubleDigits;
+    /** Whether leading comment lines are removed from tables. */
+    private final boolean tableRemoveComments;
 
     /**
      * Creates sanitization options from a map.
@@ -225,17 +232,20 @@ public final class OutputSanitizer {
         .getOrDefault("readsMD5Keys", List.of());
       this.variantsMD5Keys = (List<String>) options
         .getOrDefault("variantsMD5Keys", List.of());
-      this.csvMD5Keys = (List<String>) options
-        .getOrDefault("csvMD5Keys", List.of());
+      this.tableMD5Keys = (List<String>) options
+        .getOrDefault("tableMD5Keys", List.of());
       this.referenceFasta = (String) options
         .getOrDefault("referenceFasta", "");
-      this.csvDoubleDigits = (int) options
+      this.tableDoubleDigits = (int) options
         .getOrDefault(
-          "csvDoubleDigits", DEFAULT_CSV_DOUBLE_DIGITS);
+          "tableDoubleDigits", DEFAULT_TABLE_DOUBLE_DIGITS);
+      this.tableRemoveComments = (boolean) options
+        .getOrDefault(
+          "tableRemoveComments", DEFAULT_TABLE_REMOVE_COMMENTS);
 
-      if (this.csvDoubleDigits < 0) {
+      if (this.tableDoubleDigits < 0) {
         throw new IllegalArgumentException(
-          "csvDoubleDigits must be >= 0"
+          "tableDoubleDigits must be >= 0"
         );
       }
     }
@@ -295,12 +305,12 @@ public final class OutputSanitizer {
     }
 
     /**
-     * Returns keys whose CSV/TSV values should be hashed.
+     * Returns keys whose table values should be hashed.
      *
-     * @return the CSV MD5 keys
+     * @return the table MD5 keys
      */
-    List<String> getCsvMD5Keys() {
-      return csvMD5Keys;
+    List<String> getTableMD5Keys() {
+      return tableMD5Keys;
     }
 
     /**
@@ -313,12 +323,21 @@ public final class OutputSanitizer {
     }
 
     /**
-     * Returns decimal places for CSV float normalization.
+     * Returns decimal places for table float normalization.
      *
      * @return the number of decimal digits
      */
-    int getCsvDoubleDigits() {
-      return csvDoubleDigits;
+    int getTableDoubleDigits() {
+      return tableDoubleDigits;
+    }
+
+    /**
+     * Returns whether leading comment lines are removed from tables.
+     *
+     * @return true to remove comment lines
+     */
+    boolean getTableRemoveComments() {
+      return tableRemoveComments;
     }
   }
 

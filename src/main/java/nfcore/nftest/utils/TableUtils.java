@@ -19,9 +19,9 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 /**
- * Utility methods for interacting with CSV files.
+ * Utility methods for interacting with Table files.
  */
-public final class CsvUtils {
+public final class TableUtils {
 
   /** Default number of decimal places for CSV double values. */
   public static final int DEFAULT_DOUBLE_DIGITS = 6;
@@ -29,7 +29,7 @@ public final class CsvUtils {
   /**
    * Prevents instantiation of this utility class.
    */
-  private CsvUtils() {
+  private TableUtils() {
   }
 
   /**
@@ -38,9 +38,15 @@ public final class CsvUtils {
    * @param value value containing CSV/TSV/TXT files
    * @param digits the number of decimal places to retain for floating-point
    * values
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return value with normalized MD5 replacements
    */
-  public static Object csvMD5(final Object value, final int digits) {
+  public static Object tableMD5(
+    final Object value,
+    final int digits,
+    final boolean removeComments
+  ) {
     return OutputSanitizer.recursiveParse(value, strValue -> {
       final Path path = Paths.get(strValue);
 
@@ -54,13 +60,16 @@ public final class CsvUtils {
         !"csv".equals(extension)
         && !"tsv".equals(extension)
         && !"txt".equals(extension)
+        && !"tbl".equals(extension)
+        && !"dat".equals(extension)
+        && !"out".equals(extension)
       ) {
         return strValue;
       }
 
       return path.getFileName().toString()
-        + ":md5NormedCsv,"
-        + getCsvMD5(path, digits);
+        + ":md5NormedTable,"
+        + getTableMD5(path, digits, removeComments);
     });
   }
 
@@ -74,8 +83,11 @@ public final class CsvUtils {
    * values
    * @return the normalized table
    */
-  static CsvTable normalizeTable(final CsvTable table, final int digits) {
-    CsvTable tableNormed = normalizeColumns(table);
+  static TableUtilsClass normalizeTable(
+    final TableUtilsClass table,
+    final int digits
+  ) {
+    TableUtilsClass tableNormed = normalizeColumns(table);
     tableNormed = normalizeValues(tableNormed, digits);
     tableNormed = normalizeRows(tableNormed);
     return tableNormed;
@@ -83,24 +95,30 @@ public final class CsvUtils {
 
   /**
    * Normalizes a delimited text file and returns its canonical
-   * CSV representation.
+   * Table representation.
    *
    * The file is read with automatic separator detection, normalized by
    * sorting columns and rows, normalizing values, and simplifying absolute
-   * paths, then serialized as deterministic CSV.
+   * paths, then serialized as deterministic Table.
    *
    * @param path path to the CSV, TSV, or semicolon-separated text file
    * @param digits the number of decimal places to retain for floating-point
    * values
-   * @return the normalized CSV representation of the file
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
+   * @return the normalized Table representation of the file
    * @throws RuntimeException if the file cannot be read, normalized, or
    * rendered
    */
-  public static String normalizeCsv(final Path path, final int digits) {
+  public static String normalizeTable(
+    final Path path,
+    final int digits,
+    final boolean removeComments
+  ) {
     try {
-      CsvTable table = readTable(path);
+      TableUtilsClass table = readTable(path, removeComments);
       table = normalizeTable(table, digits);
-      return toCanonicalCsv(table);
+      return toCanonicalTable(table);
     } catch (Exception e) {
       throw new RuntimeException(
         "Failed to normalize delimited file: " + path,
@@ -110,19 +128,25 @@ public final class CsvUtils {
   }
 
   /**
-   * Calculates an MD5 from a canonical representation of the CSV.
+   * Calculates an MD5 from a canonical representation of the Table.
    *
    * @param path CSV/TSV/TXT file
    * @param digits the number of decimal places to retain for floating-point
    * values
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return normalized MD5
    */
-  private static String getCsvMD5(final Path path, final int digits) {
+  private static String getTableMD5(
+    final Path path,
+    final int digits,
+    final boolean removeComments
+  ) {
     try {
-      return md5(normalizeCsv(path, digits));
+      return md5(normalizeTable(path, digits, removeComments));
     } catch (Exception e) {
       throw new RuntimeException(
-        "Failed to calculate normalized CSV MD5 for file: " + path,
+        "Failed to calculate normalized Table MD5 for file: " + path,
         e
       );
     }
@@ -136,17 +160,35 @@ public final class CsvUtils {
    * of their file extension.
    *
    * @param path path to the delimited text file
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
    * @return the parsed table
    * @throws IOException if the file cannot be read or parsed
    */
-  private static CsvTable readTable(final Path path)
+  private static TableUtilsClass readTable(
+    final Path path,
+    final boolean removeComments
+  )
     throws IOException {
 
-    final char separator = detectSeparator(path);
     final String content = Files.readString(
       path,
       StandardCharsets.UTF_8
     );
+
+    final String tableContent;
+    if (removeComments) {
+      tableContent = content.lines()
+        .dropWhile(line ->
+          line.isBlank() || line.trim().startsWith("#")
+        )
+        .collect(Collectors.joining("\n"));
+    } else {
+      tableContent = content;
+    }
+
+    final char separator = detectSeparator(tableContent);
+
     final CSVFormat format = CSVFormat.DEFAULT.builder()
       .setDelimiter(separator)
       .setIgnoreEmptyLines(false)
@@ -154,7 +196,7 @@ public final class CsvUtils {
 
     try (
       CSVParser parser = CSVParser.builder()
-        .setReader(new StringReader(content))
+        .setReader(new StringReader(tableContent))
         .setFormat(format)
         .get()
     ) {
@@ -167,10 +209,10 @@ public final class CsvUtils {
         rows.add(row);
       }
       if (rows.isEmpty()) {
-        return new CsvTable(List.of(), rows);
+        return new TableUtilsClass(List.of(), rows);
       }
       final List<String> columns = rows.remove(0);
-      return new CsvTable(columns, rows);
+      return new TableUtilsClass(columns, rows);
     }
   }
 
@@ -192,28 +234,24 @@ public final class CsvUtils {
    * If the file does not contain any of the supported separators, a
    * comma is returned as the default separator.
    *
-   * @param path path to the delimited text file
+   * @param content the content of the delimited text file
    * @return the detected separator character, or a comma if no supported
    *         separator is found
    * @throws IOException if the file cannot be read
    */
-  private static char detectSeparator(final Path path)
-    throws IOException {
-
+  private static char detectSeparator(final String content) {
     final List<Character> separators = List.of(',', '\t', ';');
 
-    try (var lines = Files.lines(path, StandardCharsets.UTF_8)) {
-      final String line = lines
-        .filter(value -> !value.isBlank())
-        .findFirst()
-        .orElse("");
+    final String line = content.lines()
+      .filter(value -> !value.isBlank())
+      .findFirst()
+      .orElse("");
 
-      return separators.stream()
-        .max(Comparator.comparingInt(separator ->
-          countOccurrences(line, separator)
-        ))
-        .orElse(',');
-    }
+    return separators.stream()
+      .max(Comparator.comparingInt(separator ->
+        countOccurrences(line, separator)
+      ))
+      .orElse(',');
   }
 
   /**
@@ -238,7 +276,7 @@ public final class CsvUtils {
    * @param table the table whose columns should be reordered
    * @return a new table with columns sorted alphabetically by name
    */
-  private static CsvTable normalizeColumns(final CsvTable table) {
+  private static TableUtilsClass normalizeColumns(final TableUtilsClass table) {
     final List<Integer> indexes = new ArrayList<>();
 
     for (int i = 0; i < table.columns().size(); i++) {
@@ -262,7 +300,7 @@ public final class CsvUtils {
       }
       rows.add(normalizedRow);
     }
-    return new CsvTable(columns, rows);
+    return new TableUtilsClass(columns, rows);
   }
 
   /**
@@ -274,8 +312,8 @@ public final class CsvUtils {
    * values
    * @return the normalized table
    */
-  private static CsvTable normalizeValues(
-    final CsvTable table,
+  private static TableUtilsClass normalizeValues(
+    final TableUtilsClass table,
     final int digits
   ) {
     final List<List<String>> rows = new ArrayList<>();
@@ -299,7 +337,7 @@ public final class CsvUtils {
       }
       rows.add(normalizedRow);
     }
-    return new CsvTable(table.columns(), rows);
+    return new TableUtilsClass(table.columns(), rows);
   }
 
   /**
@@ -373,18 +411,18 @@ public final class CsvUtils {
    * @param table the table whose rows should be sorted
    * @return the table with rows sorted by all columns
    */
-  private static CsvTable normalizeRows(final CsvTable table) {
+  private static TableUtilsClass normalizeRows(final TableUtilsClass table) {
     final List<List<String>> rows = new ArrayList<>(table.rows());
     rows.sort(
       Comparator.comparing(
         row -> String.join("\u0000", row)
       )
     );
-    return new CsvTable(table.columns(), rows);
+    return new TableUtilsClass(table.columns(), rows);
   }
 
   /**
-   * Creates a deterministic CSV representation of a table.
+   * Creates a deterministic representation of a table.
    *
    * The original file bytes are not hashed directly because differences
    * in line endings, quoting, or formatting could otherwise produce different
@@ -397,7 +435,7 @@ public final class CsvUtils {
    * @return the table serialized as UTF-8 CSV with normalized line endings
    * @throws IOException if the table cannot be serialized
    */
-  private static String toCanonicalCsv(final CsvTable table)
+  private static String toCanonicalTable(final TableUtilsClass table)
     throws IOException {
     final StringWriter output = new StringWriter();
     final CSVFormat format = CSVFormat.DEFAULT.builder()
@@ -433,7 +471,7 @@ public final class CsvUtils {
    * This class is used internally to represent tabular data without
    * relying on an external table library.
    */
-  static final class CsvTable {
+  static final class TableUtilsClass {
     /**
      * The column names of the table.
      */
@@ -445,12 +483,12 @@ public final class CsvUtils {
     private final List<List<String>> rows;
 
     /**
-     * Creates a CSV table.
+     * Creates a table.
      *
      * @param columnNames column names
      * @param rowsNames table rows
      */
-    CsvTable(
+    TableUtilsClass(
       final List<String> columnNames,
       final List<List<String>> rowsNames
     ) {

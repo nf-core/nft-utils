@@ -19,9 +19,12 @@ import java.util.TreeMap;
  */
 public final class Methods {
 
-  /** Default number of decimal places for CSV double values. */
-  private static final int DEFAULT_CSV_DOUBLE_DIGITS =
-    CsvUtils.DEFAULT_DOUBLE_DIGITS;
+  /** Default number of decimal places for table double values. */
+  private static final int DEFAULT_TABLE_DOUBLE_DIGITS =
+    TableUtils.DEFAULT_DOUBLE_DIGITS;
+
+  /** Default decision to keep comments in table. */
+  private static final boolean DEFAULT_TABLE_REMOVE_COMMENTS = false;
 
   /**
    * Prevents instantiation of this utility class.
@@ -399,25 +402,73 @@ public final class Methods {
   // ── CSV ───────────────────────────────────────────────────────────────
 
   /**
-   * Normalizes a CSV file and returns its canonical representation.
+   * Normalizes a table file and returns its canonical representation.
    *
-   * @param path The CSV file to normalize.
+   * @param path The table file to normalize.
    * @param digits the number of decimal places to retain for floating-point
    * values
-   * @return The normalized CSV content.
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
+   * @return The normalized table content.
    */
-  public static String normalizeCsv(final Path path, final int digits) {
-    return CsvUtils.normalizeCsv(path, digits);
+  public static String normalizeTable(
+    final Path path,
+    final int digits,
+    final boolean removeComments
+  ) {
+    return TableUtils.normalizeTable(path, digits, removeComments);
   }
 
   /**
-   * Normalizes a CSV file and returns its canonical representation.
+   * Normalizes a table file and returns its canonical representation.
    *
-   * @param path The CSV file to normalize.
-   * @return The normalized CSV content.
+   * @param path The table file to normalize.
+   * @param digits the number of decimal places to retain for floating-point
+   * values
+   * @return The normalized table content.
    */
-  public static String normalizeCsv(final Path path) {
-    return normalizeCsv(path, DEFAULT_CSV_DOUBLE_DIGITS);
+  public static String normalizeTable(
+    final Path path,
+    final int digits
+  ) {
+    return normalizeTable(
+      path,
+      digits,
+      DEFAULT_TABLE_REMOVE_COMMENTS
+    );
+  }
+
+  /**
+   * Normalizes a table file and returns its canonical representation.
+   *
+   * @param path The table file to normalize.
+   * @param removeComments whether leading comment lines starting with {@code #}
+   * should be removed
+   * @return The normalized table content.
+   */
+  public static String normalizeTable(
+    final Path path,
+    final boolean removeComments
+  ) {
+    return normalizeTable(
+      path,
+      DEFAULT_TABLE_DOUBLE_DIGITS,
+      removeComments
+    );
+  }
+
+  /**
+   * Normalizes a table file and returns its canonical representation.
+   *
+   * @param path The table file to normalize.
+   * @return The normalized table content.
+   */
+  public static String normalizeTable(final Path path) {
+    return normalizeTable(
+      path,
+      DEFAULT_TABLE_DOUBLE_DIGITS,
+      DEFAULT_TABLE_REMOVE_COMMENTS
+    );
   }
 
   // ── ARCHIVE DOWNLOADING ───────────────────────────────────────────────

@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `ArchiveDownloader` and `NfCoreUtils.installModule` now throw `IOException` on failure (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) Fix raw types in public API signatures (@maxulysse)
 
+## 1.2.1
+
+### Added
+
+- Add `tableRemoveComments` opt-in option to remove leading lines starting with `#` (@LouisLeNezet)
+
+### Fixed
+
+- [#91](https://github.com/nf-core/nft-utils/pull/91) Use `tableMD5Keys` and `normalizeTable` instead of `csvMD5Keys` and `normalizeCsv` (@LouisLeNezet)
+
 ## 1.2.0
 
 ### Added
