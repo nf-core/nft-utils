@@ -373,6 +373,20 @@ public final class Methods {
     return NextflowOutputFilter.filterNextflowOutput(options, output);
   }
 
+  /**
+   * Filters Nextflow output using an explicit options map passed after the
+   * output, e.g. {@code filterNextflowOutput(output, [sorted: false])}.
+   *
+   * @param output  The output to filter
+   * @param options The filtering options, or {@code null} to use defaults
+   * @return The filtered output as a List&lt;String&gt;
+   */
+  public static List<String> filterNextflowOutput(
+      final Object output,
+      final Map<String, Object> options) {
+    return NextflowOutputFilter.filterNextflowOutput(output, options);
+  }
+
   // ── OUTPUT SANITIZATION ───────────────────────────────────────────────
 
   /**

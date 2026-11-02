@@ -171,6 +171,7 @@ public final class NfCoreUtils {
       throw new IOException(
         "Failed to install module " + name
         + ": exit code " + result.getExitCode() + "\n"
+        + "Installation command: " + command + "\n"
         + result.getStderr()
       );
     }

@@ -3,7 +3,6 @@ package nfcore.nftest.utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -45,16 +44,7 @@ public final class HashUtils {
    */
   public static String md5Hex(final String value)
       throws NoSuchAlgorithmException {
-    final MessageDigest digest = MessageDigest.getInstance("MD5");
-    final byte[] hash = digest.digest(
-      value.getBytes(StandardCharsets.UTF_8)
-    );
-
-    final StringBuilder result = new StringBuilder();
-    for (final byte b : hash) {
-      result.append(byteToHex(b));
-    }
-    return result.toString();
+    return listToMD5(List.of(value));
   }
 
   /**
@@ -68,15 +58,11 @@ public final class HashUtils {
   public static String listToMD5(final List<?> input)
       throws NoSuchAlgorithmException {
     final MessageDigest md5 = MessageDigest.getInstance("MD5");
-    final Iterator<?> inputIterator = input.iterator();
-    while (inputIterator.hasNext()) {
-      final String item = inputIterator.next().toString();
-      md5.update(item.getBytes(StandardCharsets.UTF_8));
+    for (final Object item : input) {
+      md5.update(item.toString().getBytes(StandardCharsets.UTF_8));
     }
-    final byte[] digest = md5.digest();
-
     final StringBuilder hexString = new StringBuilder();
-    for (final byte b : digest) {
+    for (final byte b : md5.digest()) {
       hexString.append(byteToHex(b));
     }
     return hexString.toString();

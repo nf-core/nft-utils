@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 /**
@@ -182,8 +183,8 @@ public final class NextflowOutputFilter {
       if (additionalPatterns != null && !additionalPatterns.isEmpty()) {
         for (String pattern : additionalPatterns) {
           try {
-            filtered = filtered.replaceAll(pattern, "[FILTERED]");
-          } catch (Exception e) {
+            filtered = filtered.replaceAll(pattern, "");
+          } catch (PatternSyntaxException e) {
             System.err.println("Warning: Invalid regex pattern '" + pattern
                 + "': " + e.getMessage());
           }
@@ -270,6 +271,24 @@ public final class NextflowOutputFilter {
       output, additionalPatterns,
       sorted, keepAnsi, ignore, include
     );
+  }
+
+  /**
+   * Filters Nextflow output using an explicit options map passed after the
+   * output, e.g. {@code filterNextflowOutput(output, [sorted: false])}.
+   *
+   * @param output  The output to filter
+   * @param options The filtering options, or {@code null} to use defaults
+   * @return The filtered output as a List&lt;String&gt;
+   */
+  public static List<String> filterNextflowOutput(
+      final Object output,
+      final Map<String, Object> options) {
+    LinkedHashMap<String, Object> named = new LinkedHashMap<>();
+    if (options != null) {
+      named.putAll(options);
+    }
+    return filterNextflowOutput(named, output);
   }
 
   /**
