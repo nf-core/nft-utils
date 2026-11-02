@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Drop the `nextflow` pin from `environment.yml`: the micromamba env shadowed the Nextflow installed by `setup-nextflow`, so every CI job ran 26.04.6 regardless of the `NXF_VER` matrix
+- Install Nextflow and Java through the micromamba env in CI: `nf-core` depends on `nextflow`, so the conda copy (pinned to 26.04.6) shadowed the version from `setup-nextflow`. Every job had been running Nextflow 26.04.6 regardless of the matrix
 
 ### Changed
 
-- Bump the minimum Nextflow version tested in CI from `26.01.1-edge` to `26.04.6`
+- Test against Nextflow `26.04.7` (minimum, was `26.01.1-edge`) and the latest bioconda release, on Java 17 only
+- Add Renovate config to keep the conda pins in `environment.yml` up to date
 
 ## [1.2.1]
 

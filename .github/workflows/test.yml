@@ -22,32 +22,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        JAVA_VERSION: ["17", "21"]
+        # Nextflow comes from conda: nf-core depends on it, so a separately
+        # installed Nextflow is shadowed once the micromamba env is active.
         NXF_VER:
-          - "26.04.6"
-          - "latest-everything"
+          - "26.04.7"
+          - "latest"
 
     steps:
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
-      - name: Setup Java ${{ matrix.JAVA_VERSION }}
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
-        with:
-          distribution: temurin
-          java-version: ${{ matrix.JAVA_VERSION }}
-          cache: maven
-
-      - name: Setup Micromamba
+      - name: Setup Micromamba (Nextflow ${{ matrix.NXF_VER }})
         uses: mamba-org/setup-micromamba@f457c30a868e4760d3a6fcea5f25dc655b8edf39 # v3
         with:
           environment-file: environment.yml
-          cache-environment: true
+          create-args: >-
+            conda-forge::openjdk=17
+            bioconda::nextflow${{ matrix.NXF_VER != 'latest' && format('={0}', matrix.NXF_VER) || '' }}
+          # a cached env would freeze "latest"
+          cache-environment: ${{ matrix.NXF_VER != 'latest' }}
 
-      - name: Setup Nextflow ${{ matrix.NXF_VER }}
-        uses: nf-core/setup-nextflow@893c28b667aedeba26e37f296d260ccc5bc4d914 # v3
-        with:
-          version: ${{ matrix.NXF_VER }}
+      - name: Check tools
+        shell: bash -el {0}
+        run: |
+          java -version
+          nextflow -version
+          nf-test version
 
       - name: Build plugin
         shell: bash -el {0}
