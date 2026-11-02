@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Renovate config to keep nf-core tools and nf-test in CI and the pixi lock file up to date
 - Replace `environment.yml` with a pixi workspace (`pixi.toml`, `pixi.lock`) for local development
 - Show snapshot differences with `pdiff` in CI
-- Failures on `latest-everything` no longer fail CI: they are reported as a warning and in the job summary, as in the nf-core pipeline template
+- Failures on `latest-everything` no longer fail CI: they are reported as a warning and in the job summary, plus a PR comment (new `pr-comment.yml` workflow, as in the nf-core pipeline template)
 - Use nf-core tools 4.2.1 (was 4.1.0)
 
 ## [1.2.1]

@@ -94,6 +94,74 @@ jobs:
             fi
           fi
 
+      # continue-on-error keeps latest-everything from failing the job, so surface
+      # its failures through a PR comment instead (posted by pr-comment.yml).
+      - name: Prepare PR comment fragment
+        if: ${{ always() && steps.test_plugin.outcome == 'failure' && matrix.NXF_VER == 'latest-everything' }}
+        run: |
+          mkdir -p pr-comment-fragment
+          echo "* ❌ Nextflow \`${{ matrix.NXF_VER }}\` | Java \`${{ matrix.JAVA_VERSION }}\`" > pr-comment-fragment/fragment.md
+
+      - name: Upload PR comment fragment
+        if: ${{ always() && steps.test_plugin.outcome == 'failure' && matrix.NXF_VER == 'latest-everything' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: pr-comment-fragment-${{ strategy.job-index }}
+          path: pr-comment-fragment/
+
       - name: Clean up
         if: always()
         run: rm -rf .nf-test/
+
+  confirm-pass:
+    needs: [test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: One or more tests failed (excluding latest-everything)
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+
+      - name: One or more tests cancelled
+        if: ${{ contains(needs.*.result, 'cancelled') }}
+        run: exit 1
+
+      - name: Download PR comment fragments
+        if: ${{ always() }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: pr-comment-fragment-*
+          path: pr-comment-fragments
+          merge-multiple: true
+
+      # Based on the fragments (not needs.*.result) so non-blocking failures are still reported
+      - name: Prepare PR comment
+        if: ${{ always() }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          mkdir -p pr-comment
+          echo "$PR_NUMBER" > pr-comment/pr_number.txt
+          echo "nf-test" > pr-comment/header.txt
+          if [ -d pr-comment-fragments ] && [ -n "$(ls -A pr-comment-fragments)" ]; then
+            {
+              echo "## ❌ nf-test failed with latest Nextflow version"
+              echo ""
+              echo "> [!NOTE]"
+              echo "> Tests with Nextflow's latest version failed but it will not cause a CI workflow failure."
+              echo "> Please check if the failure is expected with newer (edge-)releases of Nextflow or if it needs fixing."
+              echo ""
+              cat pr-comment-fragments/*.md
+              echo ""
+              echo "See the [full run](${RUN_URL}) for details."
+            } > pr-comment/comment.md
+          fi
+
+      - name: Upload PR comment artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: pr-comment
+          path: pr-comment/
