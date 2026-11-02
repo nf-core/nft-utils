@@ -1,9 +1,0 @@
-name: env_nft_utils
-channels:
-  - bioconda
-  - conda-forge
-dependencies:
-  # renovate: datasource=conda depName=bioconda/nf-core
-  - bioconda::nf-core=4.1.0
-  # renovate: datasource=conda depName=bioconda/nf-test
-  - bioconda::nf-test=0.9.5

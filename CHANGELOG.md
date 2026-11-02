@@ -12,7 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and `latest-everything`, on Java 17 only
-- Add Renovate config to keep nf-core tools, nf-test and the `environment.yml` pins up to date
+- Add Renovate config to keep nf-core tools and nf-test in CI and the pixi lock file up to date
+- Replace `environment.yml` with a pixi workspace (`pixi.toml`, `pixi.lock`) for local development
+- Show snapshot differences with `pdiff` in CI
+- Use nf-core tools 4.2.1 (was 4.1.0)
 
 ## [1.2.1]
 

@@ -19,7 +19,7 @@ env:
   # renovate: datasource=github-releases depName=askimed/nf-test versioning=semver
   NFT_VER: "0.9.5"
   # renovate: datasource=pypi depName=nf-core
-  NF_CORE_VER: "4.1.0"
+  NF_CORE_VER: "4.2.1"
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -50,6 +50,7 @@ jobs:
         uses: nf-core/setup-nf-test@4069fbbaabe94c08faba4ad261bfa88225ba133f # v2.1.0
         with:
           version: ${{ env.NFT_VER }}
+          install-pdiff: true
 
       # pip, not conda: the bioconda nf-core package pulls in its own nextflow
       - name: Setup Python
@@ -71,4 +72,7 @@ jobs:
         run: ./build.sh
 
       - name: Test plugin
+        env:
+          NFT_DIFF: "pdiff"
+          NFT_DIFF_ARGS: "--line-numbers --width 120 --expand-tabs=2"
         run: ./test.sh

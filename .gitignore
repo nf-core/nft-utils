@@ -35,6 +35,10 @@ null/
 results/
 work/
 
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
 # Text editor
 .vscode
 

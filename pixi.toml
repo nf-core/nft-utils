@@ -1,0 +1,15 @@
+[workspace]
+authors = ["nf-core"]
+channels = ["conda-forge", "bioconda"]
+name = "nft-utils"
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[tasks]
+build = "./build.sh"
+test = "./test.sh"
+
+[dependencies]
+maven = ">=3.9.16,<4"
+nextflow = ">=26.4.9,<27"
+nf-core = ">=4.2.1,<5"
+nf-test = ">=0.9.5,<0.10"

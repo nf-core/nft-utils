@@ -18,9 +18,9 @@ Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 Requires Nextflow, nf-test, and Maven.
 
 ```bash
-# Install conda environment
-mamba env create -f environment.yml
-mamba activate env_nft_utils
+# Install the pixi environment (https://pixi.sh) and open a shell in it
+pixi install
+pixi shell
 
 # Compile the package
 mvn -B clean verify
