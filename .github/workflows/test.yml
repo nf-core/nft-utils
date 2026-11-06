@@ -1,6 +1,5 @@
 name: Run plugin tests
 on:
-  push:
   pull_request:
     branches: [main]
   merge_group:
@@ -22,7 +21,9 @@ env:
   NF_CORE_VER: "4.2.1"
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on:
+      - runs-on=${{ github.run_id }}-nf-test
+      - runner=4cpu-linux-x64
     strategy:
       fail-fast: true
       matrix:
@@ -116,7 +117,9 @@ jobs:
   confirm-pass:
     needs: [test]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on:
+      - runs-on=${{ github.run_id }}-confirm-pass
+      - runner=2cpu-linux-x64
     steps:
       - name: One or more tests failed (excluding latest-everything)
         if: ${{ contains(needs.*.result, 'failure') }}
