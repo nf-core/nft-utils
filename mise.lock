@@ -64,25 +64,25 @@ url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextfl
 url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
 
 [[tools.java]]
-version = "temurin-17.0.21+9"
+version = "temurin-21.0.12+101.0.LTS"
 backend = "core:java"
-specifiers = ["temurin-17"]
+specifiers = ["temurin-21"]
 
 [tools.java."platforms.linux-arm64"]
-checksum = "sha256:3e4eca7ead088f080af1476007decf010a240a1eb4e1e78c54fa32fbcc347084"
-url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.21_9.tar.gz"
+checksum = "sha256:23e37e026f12f3e706f18938ff611db3032d075b09d0879a25d06718c773e223"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.12.1_1.tar.gz"
 
 [tools.java."platforms.linux-x64"]
-checksum = "sha256:8b9b611d917e3dfd8419d3566b5949226f69b052fed7e109c1368add1dfe8711"
-url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_x64_linux_hotspot_17.0.21_9.tar.gz"
+checksum = "sha256:ce79869e1307ed8ee1e2baa86a412b1eb5b75d10a01006d788a6f968bcfaee94"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz"
 
 [tools.java."platforms.macos-arm64"]
-checksum = "sha256:78b08c7f5a0598242d5719c022e19479cb4a3aa45c37c19726a757a469ed1c15"
-url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz"
+checksum = "sha256:3623232f33a9c3baadf304480b2535f9a3cba8a58d42ecbb438ba267315d9998"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.12.1_1.tar.gz"
 
 [tools.java."platforms.macos-x64"]
-checksum = "sha256:868f5c672b3389fdbe48e44f94ae170f01668b1401360944fc7159d7cc9772cc"
-url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_x64_mac_hotspot_17.0.21_9.tar.gz"
+checksum = "sha256:44db0f08196daf19a47f90d13388b0c943b67663cb537f998fe29e836fa842ce"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_mac_hotspot_21.0.12.1_1.tar.gz"
 
 [[tools."pipx:nf-core"]]
 version = "4.1.0"

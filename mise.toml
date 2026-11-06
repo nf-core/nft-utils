@@ -1,5 +1,5 @@
 [tools]
-java = "temurin-17"
+java = "temurin-21"
 uv = "latest"
 "github:nextflow-io/nextflow" = { version = "26.04.6", asset_pattern = "nextflow", bin = "nextflow" }
 "github:askimed/nf-test" = "0.9.5"
