@@ -23,30 +23,3 @@ nf-test test --plugins target/nft-utils-*.jar --verbose --debug "${@:-tests/}"
 description = "Run the nf-tests that need nft-bam and nft-vcf to be absent"
 depends = ["build"]
 run = "nf-test test --plugins target/nft-utils-*.jar --verbose --debug --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/"
-
-[tasks.bump]
-description = "Set the plugin version, then build"
-usage = 'arg "<version>"'
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
-
-version="$usage_version"
-
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-    echo "ERROR: Invalid version: $version" >&2
-    exit 1
-fi
-
-echo "Bumping version to $version"
-
-./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set \
-  -DnewVersion="$version" -DgenerateBackupPoms=false
-
-if [[ "$version" != *dev ]]; then
-  sed -i.bak -e "s/load \"nft-utils@.*\"/load \"nft-utils@$version\"/" docs/index.md
-  rm docs/index.md.bak
-fi
-
-mise run build
-'''

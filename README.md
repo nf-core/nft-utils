@@ -19,7 +19,7 @@ Requires [mise](https://mise.jdx.dev), which installs the other tools.
 
 ```bash
 mise trust
-mise install
+mise install --locked
 
 # Compile the package and run the unit tests
 mise run build
