@@ -30,4 +30,4 @@ if [[ "$version" != *dev ]]; then
     ./docs/index.md
 fi
 
-./build.sh
+mise run build

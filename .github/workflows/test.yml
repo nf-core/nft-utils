@@ -49,9 +49,14 @@ jobs:
         with:
           version: ${{ matrix.NXF_VER }}
 
+      - name: Setup mise
+        uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          install: false
+
       - name: Build plugin
         shell: bash -el {0}
-        run: ./build.sh
+        run: mise run build
 
       - name: Test plugin
         shell: bash -el {0}

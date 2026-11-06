@@ -24,10 +24,11 @@ Clone the repository:
 git clone git@github.com:nf-core/nft-utils.git
 ```
 
-Build the plugin:
+Build the plugin with [mise](https://mise.jdx.dev):
 
 ```bash
-./build.sh
+mise trust
+mise run build
 ```
 
 Add the jar to your `nf-test.config`:

@@ -1,0 +1,3 @@
+[tasks.build]
+description = "Build, lint and package the plugin"
+run = "mvn -B clean verify"

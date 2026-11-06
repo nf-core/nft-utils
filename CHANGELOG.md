@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Replace `build.sh` with a `build` mise task (`mise run build`), in CI, `bump-version.sh` and the docs
+
 ## [1.2.1]
 
 ### Fixed
