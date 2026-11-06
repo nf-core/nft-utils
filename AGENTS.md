@@ -21,4 +21,4 @@ mise run bump <version>      # set the version in pom.xml and docs/index.md
 - After changing `mise.toml`, run `mise lock` and commit `mise.lock` and `.mise/locks/`: CI installs with `--locked`.
 - CI takes Nextflow from `setup-nextflow`, so the matrix decides its version, not `mise.toml`.
 - Add user-facing changes to `CHANGELOG.md` under `[Unreleased]`.
-- Run nf-tests through `env -u CLAUDECODE`: with `CLAUDECODE` set, Nextflow changes its log format and snapshots fail.
+- `[env]` in `mise.toml` holds the settings that change snapshots, and unsets the variables that turn on Nextflow agent mode: run nf-tests through `mise run`, locally and in CI.

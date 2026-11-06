@@ -44,48 +44,48 @@ url = "https://github.com/askimed/nf-test/releases/download/v0.9.5/nf-test-0.9.5
 url_api = "https://api.github.com/repos/askimed/nf-test/releases/assets/377285164"
 
 [[tools."github:nextflow-io/nextflow"]]
-version = "26.04.6"
+version = "26.04.9"
 backend = "github:nextflow-io/nextflow"
-specifiers = ["26.04.6"]
+specifiers = ["26.04.9"]
 
 [tools."github:nextflow-io/nextflow".options]
 asset_pattern = "nextflow"
 
 [tools."github:nextflow-io/nextflow"."platforms.linux-arm64"]
-checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum = "sha256:72b233fa40fe79322bc95ba9ed1620d212216ad02ffa8b607c417176715bf832"
 checksum_source = "mise-versions"
-url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
-url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.9/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/666732015"
 
 [tools."github:nextflow-io/nextflow"."platforms.linux-arm64-musl"]
-checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum = "sha256:72b233fa40fe79322bc95ba9ed1620d212216ad02ffa8b607c417176715bf832"
 checksum_source = "mise-versions"
-url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
-url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.9/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/666732015"
 
 [tools."github:nextflow-io/nextflow"."platforms.linux-x64"]
-checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum = "sha256:72b233fa40fe79322bc95ba9ed1620d212216ad02ffa8b607c417176715bf832"
 checksum_source = "mise-versions"
-url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
-url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.9/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/666732015"
 
 [tools."github:nextflow-io/nextflow"."platforms.linux-x64-musl"]
-checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum = "sha256:72b233fa40fe79322bc95ba9ed1620d212216ad02ffa8b607c417176715bf832"
 checksum_source = "mise-versions"
-url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
-url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.9/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/666732015"
 
 [tools."github:nextflow-io/nextflow"."platforms.macos-arm64"]
-checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum = "sha256:72b233fa40fe79322bc95ba9ed1620d212216ad02ffa8b607c417176715bf832"
 checksum_source = "mise-versions"
-url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
-url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.9/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/666732015"
 
 [tools."github:nextflow-io/nextflow"."platforms.macos-x64"]
-checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum = "sha256:72b233fa40fe79322bc95ba9ed1620d212216ad02ffa8b607c417176715bf832"
 checksum_source = "mise-versions"
-url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
-url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.9/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/666732015"
 
 [[tools.java]]
 version = "temurin-21.0.12+101.0.LTS"

@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stop generating `dependency-reduced-pom.xml`
 - Add the Maven Wrapper (`mvnw`), pinning Maven 3.9.16
 - Add `AGENTS.md`
+- Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`), also pinned for local runs
+- Set `NXF_ANSI_LOG` and `NXF_SYNTAX_PARSER` and unset `AGENT` and `CLAUDECODE` in `mise.toml`, so local runs match CI
+- Run `nextflow lint` through mise in pre-commit, with the pinned version
 - CI runs on Java 21 only, from `setup-nextflow` (was 17 and 21)
 - Lock tool versions and checksums in `mise.lock`, including the nf-core dependencies
 - Failures on `latest-everything` no longer fail CI
