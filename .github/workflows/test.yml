@@ -56,3 +56,19 @@ jobs:
         run: |
           mise run validate
           mise run validate-noplugins
+
+  # The only required check here, so matrix changes need no ruleset change
+  ci-pass:
+    name: CI pass
+    needs: [test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the job results
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "$RESULTS"
+          case "$RESULTS" in
+            *failure*|*cancelled*) exit 1 ;;
+          esac
