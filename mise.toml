@@ -1,3 +1,6 @@
+[settings]
+locked = true
+
 [tools]
 java = "temurin-21"
 uv = "0.13.7"

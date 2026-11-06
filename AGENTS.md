@@ -6,7 +6,7 @@ nft-utils is an nf-test plugin: Java in `src/main/java`, unit tests in `src/test
 
 ```bash
 mise trust
-mise install --locked        # the pinned Java, nf-test, nf-core and Nextflow
+mise install                 # the pinned Java, nf-test, nf-core and Nextflow
 mise run assemble            # lint and package target/nft-utils-<version>.jar
 mise run test                # unit tests
 mise run validate            # nf-tests; takes paths and nf-test options
@@ -18,7 +18,8 @@ mise run bump <version>      # set the version in pom.xml and docs/index.md
 ## Conventions
 
 - The version lives in `pom.xml`. `moduleVersion` is filled in at build time.
-- After changing `mise.toml`, run `mise lock` and commit `mise.lock` and `.mise/locks/`: CI installs with `--locked`.
+- After changing tools in `mise.toml`, run `mise lock` and commit `mise.lock` and `.mise/locks/`: `locked = true` rejects anything not locked.
+- After changing the Maven version, update `distributionSha256Sum` in `.mvn/wrapper/maven-wrapper.properties`.
 - CI takes Nextflow from `setup-nextflow`, so the matrix decides its version, not `mise.toml`.
 - Add user-facing changes to `CHANGELOG.md` under `[Unreleased]`.
 - `[env]` in `mise.toml` holds the settings that change snapshots, and unsets the variables that turn on Nextflow agent mode: run nf-tests through `mise run`, locally and in CI.

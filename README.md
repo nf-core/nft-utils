@@ -19,7 +19,7 @@ Requires [mise](https://mise.jdx.dev), which installs the other tools.
 
 ```bash
 mise trust
-mise install --locked
+mise install
 
 # Lint and package the plugin
 mise run assemble

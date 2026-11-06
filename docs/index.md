@@ -28,7 +28,7 @@ Build the plugin with [mise](https://mise.jdx.dev):
 
 ```bash
 mise trust
-mise install --locked
+mise install
 mise run assemble
 ```
 
