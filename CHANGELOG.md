@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replace `build.sh`, `test.sh` and `bump-version.sh` with `build`, `test` and `bump` mise tasks (`mise run build`, `mise run test`, `mise run bump <version>`), in CI and the docs
 
+### Fixed
+
+- Run the JUnit tests during the Maven build: pin `maven-surefire-plugin` to 3.5.4, the default 2.12.4 cannot run JUnit 5 and reported `Tests run: 0`
+
 ## [1.2.1]
 
 ### Fixed
