@@ -117,9 +117,7 @@ jobs:
   confirm-pass:
     needs: [test]
     if: always()
-    runs-on:
-      - runs-on=${{ github.run_id }}-confirm-pass
-      - runner=2cpu-linux-x64
+    runs-on: ubuntu-latest
     steps:
       - name: One or more tests failed (excluding latest-everything)
         if: ${{ contains(needs.*.result, 'failure') }}

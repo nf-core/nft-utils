@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `environment.yml` with a pixi workspace (`pixi.toml`, `pixi.lock`) for local development
 - Show snapshot differences with `pdiff` in CI
 - Failures on `latest-everything` no longer fail CI: they are reported as a warning and in the job summary, plus a PR comment (new `pr-comment.yml` workflow, as in the nf-core pipeline template)
-- Run `test.yml` on nf-core self-hosted runners (RunsOn), as in the nf-core pipeline template, and drop its `push` trigger: forks have no such runners
+- Run the nf-test job on nf-core self-hosted runners (RunsOn), as in the nf-core pipeline template, and drop the `push` trigger of `test.yml`: forks have no such runners
 - Use nf-core tools 4.2.1 (was 4.1.0)
 
 ## [1.2.1]
