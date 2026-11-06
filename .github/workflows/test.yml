@@ -16,8 +16,8 @@ env:
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
   NXF_SYNTAX_PARSER: "v2"
-  # Nextflow comes from setup-nextflow, so the matrix decides the version, not mise.toml
-  MISE_DISABLE_TOOLS: github:nextflow-io/nextflow
+  # Both come from setup-nextflow, so CI has one JDK and the matrix decides the Nextflow version
+  MISE_DISABLE_TOOLS: java,github:nextflow-io/nextflow
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -38,15 +38,16 @@ jobs:
           path: ~/.m2
           key: maven-${{ hashFiles('pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
 
-      - name: Setup mise
-        uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
-        with:
-          version: 2026.10.19
-
       - name: Setup Nextflow ${{ matrix.NXF_VER }}
         uses: nf-core/setup-nextflow@v3
         with:
           version: ${{ matrix.NXF_VER }}
+          java-version: 21
+
+      - name: Setup mise
+        uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: 2026.10.19
 
       - name: Unit tests
         run: mise run test

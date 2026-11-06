@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stop generating `dependency-reduced-pom.xml`
 - Add the Maven Wrapper (`mvnw`), pinning Maven 3.9.16
 - Add `AGENTS.md`
-- CI runs on Java 21 only (Temurin, from mise), was 17 and 21
+- CI runs on Java 21 only, from `setup-nextflow` (was 17 and 21)
 - Lock tool versions and checksums in `mise.lock`, including the nf-core dependencies
 - Failures on `latest-everything` no longer fail CI
 
