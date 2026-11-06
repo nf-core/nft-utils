@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replace `build.sh` with a `build` mise task (`mise run build`), in CI, `bump-version.sh` and the docs
+- Replace `build.sh` and `test.sh` with `build` and `test` mise tasks (`mise run build`, `mise run test`), in CI, `bump-version.sh` and the docs
 
 ## [1.2.1]
 

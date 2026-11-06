@@ -60,4 +60,4 @@ jobs:
 
       - name: Test plugin
         shell: bash -el {0}
-        run: ./test.sh
+        run: mise run test
