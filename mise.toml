@@ -1,25 +1,36 @@
 [tools]
 java = "temurin-21"
-uv = "latest"
+uv = "0.13.7"
 "github:nextflow-io/nextflow" = { version = "26.04.6", asset_pattern = "nextflow", bin = "nextflow" }
 "github:askimed/nf-test" = "0.9.5"
 "pipx:nf-core" = "4.1.0"
 
-[tasks.build]
-description = "Build, test, lint and package the plugin"
+[tasks.clean]
+description = "Remove build and nf-test artifacts"
+run = """
+./mvnw -B clean
+rm -rf .nf-test .nextflow*
+"""
+
+[tasks.assemble]
+description = "Lint and package the plugin"
 sources = ["pom.xml", "src/**"]
 outputs = ["target/nft-utils-*.jar"]
-run = "./mvnw -B clean verify"
+run = "./mvnw -B clean verify -DskipTests"
 
 [tasks.test]
+description = "Run the unit tests"
+run = "./mvnw -B test"
+
+[tasks.validate]
 description = "Run the nf-tests in tests/, or on the given paths and options"
-depends = ["build"]
+depends = ["assemble"]
 run = '''
 #!/usr/bin/env bash
 nf-test test --plugins target/nft-utils-*.jar --verbose --debug "${@:-tests/}"
 '''
 
-[tasks.test-noplugins]
+[tasks.validate-noplugins]
 description = "Run the nf-tests that need nft-bam and nft-vcf to be absent"
-depends = ["build"]
+depends = ["assemble"]
 run = "nf-test test --plugins target/nft-utils-*.jar --verbose --debug --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/"

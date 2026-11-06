@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Set the plugin version, then build"
+#MISE description="Set the plugin version, then assemble"
 #USAGE arg "<version>"
 set -euo pipefail
 
@@ -20,4 +20,4 @@ if [[ "$version" != *dev ]]; then
   rm docs/index.md.bak
 fi
 
-mise run build
+mise run assemble

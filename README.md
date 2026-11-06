@@ -21,15 +21,18 @@ Requires [mise](https://mise.jdx.dev), which installs the other tools.
 mise trust
 mise install --locked
 
-# Compile the package and run the unit tests
-mise run build
+# Lint and package the plugin
+mise run assemble
 
-# Run all tests
+# Run the unit tests
 mise run test
-mise run test-noplugins
 
-# Run a single test and update snapshots
-mise run test tests/sanitizeOutput/ --update-snapshot
+# Run all nf-tests
+mise run validate
+mise run validate-noplugins
+
+# Run a single nf-test and update snapshots
+mise run validate tests/sanitizeOutput/ --update-snapshot
 ```
 
 ## Credits

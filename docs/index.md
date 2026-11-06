@@ -29,7 +29,7 @@ Build the plugin with [mise](https://mise.jdx.dev):
 ```bash
 mise trust
 mise install --locked
-mise run build
+mise run assemble
 ```
 
 Add the jar, `target/nft-utils-<version>.jar`, to your `nf-test.config`:

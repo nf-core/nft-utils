@@ -17,7 +17,7 @@ env:
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
   NXF_SYNTAX_PARSER: "v2"
   # Nextflow comes from setup-nextflow, so the matrix decides the version, not mise.toml
-  MISE_TASK_RUN_AUTO_INSTALL: false
+  MISE_DISABLE_TOOLS: github:nextflow-io/nextflow
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -32,20 +32,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
+      - name: Cache Maven packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2
+          key: maven-${{ hashFiles('pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+
       - name: Setup mise
         uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
         with:
           version: 2026.10.19
-          install_args: java uv github:askimed/nf-test pipx:nf-core
 
       - name: Setup Nextflow ${{ matrix.NXF_VER }}
-        uses: nf-core/setup-nextflow@893c28b667aedeba26e37f296d260ccc5bc4d914 # v3
+        uses: nf-core/setup-nextflow@v3
         with:
           version: ${{ matrix.NXF_VER }}
+
+      - name: Unit tests
+        run: mise run test
 
       - name: Test plugin
         # filterNextflowOutput snapshots do not match latest-everything yet
         continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
         run: |
-          mise run test
-          mise run test-noplugins
+          mise run validate
+          mise run validate-noplugins

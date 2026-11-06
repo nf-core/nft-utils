@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replace `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` with mise tools and tasks (`mise install`, `mise run build`, `mise run test`, `mise run test-noplugins`, `mise run bump <version>`), in CI and the docs
+- Replace `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` with mise tools and tasks (`mise install --locked`, `mise run assemble`, `mise run test`, `mise run validate`, `mise run validate-noplugins`, `mise run clean`, `mise run bump <version>`), in CI and the docs
 - `moduleVersion` is now filtered from the `pom.xml` version at build time
 - Stop generating `dependency-reduced-pom.xml`
 - Add the Maven Wrapper (`mvnw`), pinning Maven 3.9.16
+- Add `AGENTS.md`
 - CI runs on Java 21 only (Temurin, from mise), was 17 and 21
 - Lock tool versions and checksums in `mise.lock`, including the nf-core dependencies
 - Failures on `latest-everything` no longer fail CI

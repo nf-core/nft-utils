@@ -13,7 +13,19 @@ checksum_source = "mise-versions"
 url = "https://github.com/askimed/nf-test/releases/download/v0.9.5/nf-test-0.9.5.tar.gz"
 url_api = "https://api.github.com/repos/askimed/nf-test/releases/assets/377285164"
 
+[tools."github:askimed/nf-test"."platforms.linux-arm64-musl"]
+checksum = "sha256:b7679eb90cdc9642bfa89e9634db02ce6e699de53ad35ef0e2f4847634fc1641"
+checksum_source = "mise-versions"
+url = "https://github.com/askimed/nf-test/releases/download/v0.9.5/nf-test-0.9.5.tar.gz"
+url_api = "https://api.github.com/repos/askimed/nf-test/releases/assets/377285164"
+
 [tools."github:askimed/nf-test"."platforms.linux-x64"]
+checksum = "sha256:b7679eb90cdc9642bfa89e9634db02ce6e699de53ad35ef0e2f4847634fc1641"
+checksum_source = "mise-versions"
+url = "https://github.com/askimed/nf-test/releases/download/v0.9.5/nf-test-0.9.5.tar.gz"
+url_api = "https://api.github.com/repos/askimed/nf-test/releases/assets/377285164"
+
+[tools."github:askimed/nf-test"."platforms.linux-x64-musl"]
 checksum = "sha256:b7679eb90cdc9642bfa89e9634db02ce6e699de53ad35ef0e2f4847634fc1641"
 checksum_source = "mise-versions"
 url = "https://github.com/askimed/nf-test/releases/download/v0.9.5/nf-test-0.9.5.tar.gz"
@@ -45,7 +57,19 @@ checksum_source = "mise-versions"
 url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
 url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
 
+[tools."github:nextflow-io/nextflow"."platforms.linux-arm64-musl"]
+checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum_source = "mise-versions"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+
 [tools."github:nextflow-io/nextflow"."platforms.linux-x64"]
+checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
+checksum_source = "mise-versions"
+url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
+url_api = "https://api.github.com/repos/nextflow-io/nextflow/releases/assets/471642931"
+
+[tools."github:nextflow-io/nextflow"."platforms.linux-x64-musl"]
 checksum = "sha256:61a755edbed743cfbb568f3a6c67af68481a2f6a4d6dffcc4295e51318968281"
 checksum_source = "mise-versions"
 url = "https://github.com/nextflow-io/nextflow/releases/download/v26.04.6/nextflow"
@@ -72,9 +96,17 @@ specifiers = ["temurin-21"]
 checksum = "sha256:23e37e026f12f3e706f18938ff611db3032d075b09d0879a25d06718c773e223"
 url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.12.1_1.tar.gz"
 
+[tools.java."platforms.linux-arm64-musl"]
+checksum = "sha256:8242627927adc90ac2561d0812dd39890ebc21ef09b550bc2e8b93640b8af4f8"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_alpine-linux_hotspot_21.0.12.1_1.tar.gz"
+
 [tools.java."platforms.linux-x64"]
 checksum = "sha256:ce79869e1307ed8ee1e2baa86a412b1eb5b75d10a01006d788a6f968bcfaee94"
 url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz"
+
+[tools.java."platforms.linux-x64-musl"]
+checksum = "sha256:bd8824214e42b33333c7f55a039ea078ad6ea6be20d7c5b011c801fb2bdb44f0"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.12.1_1.tar.gz"
 
 [tools.java."platforms.macos-arm64"]
 checksum = "sha256:3623232f33a9c3baadf304480b2535f9a3cba8a58d42ecbb438ba267315d9998"
@@ -93,7 +125,7 @@ uv = { path = ".mise/locks/pipx-nf-core/4.1.0", digest = "sha256:13e3e99214b04d3
 [[tools.uv]]
 version = "0.13.7"
 backend = "aqua:astral-sh/uv"
-specifiers = ["latest"]
+specifiers = ["0.13.7"]
 
 [tools.uv."platforms.linux-arm64"]
 checksum = "sha256:71279f8d3c67241e807b9d8db872d1bf541579fb9f08b7d1eb1682196d1e57dc"
@@ -101,10 +133,22 @@ url = "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-aarch64-unkno
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/704009469"
 provenance = "github-attestations"
 
+[tools.uv."platforms.linux-arm64-musl"]
+checksum = "sha256:2d3ec076a0c4c0e8250bb6418c44080828b544f1a3be0b6e46adf9fb6923de45"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/704009487"
+provenance = "github-attestations"
+
 [tools.uv."platforms.linux-x64"]
 checksum = "sha256:c5221ff41b7892bfc223543883600125f6a47fe845093e0f5bdff4f359196d83"
 url = "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-unknown-linux-gnu.tar.gz"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/704009823"
+provenance = "github-attestations"
+
+[tools.uv."platforms.linux-x64-musl"]
+checksum = "sha256:287491da03f2a785c70fa75b13e1f849918c2f2b5415fe84876b8214eeb792f9"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/704009859"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
