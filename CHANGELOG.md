@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replace `build.sh`, `test.sh` and `bump-version.sh` with `build`, `test` and `bump` mise tasks (`mise run build`, `mise run test`, `mise run bump <version>`), in CI and the docs
+- Replace `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` with mise tools and tasks (`mise install`, `mise run build`, `mise run test`, `mise run test-noplugins`, `mise run bump <version>`), in CI and the docs
+- `moduleVersion` is now filtered from the `pom.xml` version at build time
+- Stop generating `dependency-reduced-pom.xml`
 
 ### Fixed
 

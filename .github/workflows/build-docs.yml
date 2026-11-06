@@ -17,7 +17,7 @@ jobs:
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - name: Obtain version from manifest
         run: |
-          version=$(grep "moduleVersion" src/main/resources/META-INF/nf-test-plugin | sed -e s'/[^=]*=//')
+          version=$(grep -m1 "<version>" pom.xml | sed -E 's/.*<version>(.*)<\/version>.*/\1/')
           [[ $version == *"dev"* ]] && pipeline_version="dev" || pipeline_version=$version
           echo "pipeline_version=$pipeline_version" >> $GITHUB_ENV
       - name: Setup git user

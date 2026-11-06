@@ -28,10 +28,11 @@ Build the plugin with [mise](https://mise.jdx.dev):
 
 ```bash
 mise trust
+mise install
 mise run build
 ```
 
-Add the jar to your `nf-test.config`:
+Add the jar, `target/nft-utils-<version>.jar`, to your `nf-test.config`:
 
 ```groovy title="nf-test.config"
 config {

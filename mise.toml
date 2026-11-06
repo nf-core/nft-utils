@@ -1,56 +1,38 @@
+[tools]
+java = "temurin-17"
+maven = "3.9"
+uv = "latest"
+"github:nextflow-io/nextflow" = { version = "26.04.6", asset_pattern = "nextflow", bin = "nextflow" }
+"github:askimed/nf-test" = "0.9.5"
+"pipx:nf-core" = "4.1.0"
+
 [tasks.build]
-description = "Build, lint and package the plugin"
+description = "Build, test, lint and package the plugin"
+sources = ["pom.xml", "src/**"]
+outputs = ["target/nft-utils-*.jar"]
 run = "mvn -B clean verify"
 
 [tasks.test]
-description = "Run the nf-tests on the whole suite, or on the given paths and options"
+description = "Run the nf-tests in tests/, or on the given paths and options"
+depends = ["build"]
 run = '''
 #!/usr/bin/env bash
-set -euo pipefail
-
-PLUGIN_JAR=$(find target -maxdepth 1 -name 'nft-utils-*.jar' -type f -print -quit)
-
-[[ -n "$PLUGIN_JAR" ]] || {
-    echo "ERROR: Plugin JAR not found in target/" >&2
-    exit 1
-}
-
-if [[ $# -eq 0 ]]; then
-    nf-test test \
-        --plugins "$PLUGIN_JAR" \
-        --verbose \
-        --debug \
-        tests/
-
-    nf-test test \
-        --plugins "$PLUGIN_JAR" \
-        --config tests_noplugins/nf-test_noplugins.config \
-        tests_noplugins/sanitizeOutput/
-else
-    nf-test test \
-        --plugins "$PLUGIN_JAR" \
-        --verbose \
-        --debug \
-        "$@"
-fi
+nf-test test --plugins target/nft-utils-*.jar --verbose --debug "${@:-tests/}"
 '''
 
+[tasks.test-noplugins]
+description = "Run the nf-tests that need nft-bam and nft-vcf to be absent"
+depends = ["build"]
+run = "nf-test test --plugins target/nft-utils-*.jar --verbose --debug --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/"
+
 [tasks.bump]
-description = "Set the plugin version everywhere, then build"
+description = "Set the plugin version, then build"
+usage = 'arg "<version>"'
 run = '''
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-    echo "Usage: mise run bump <version>" >&2
-    exit 1
-fi
-
-version="$1"
-if [[ -z "$version" ]]; then
-    echo "ERROR: Version cannot be empty" >&2
-    exit 1
-fi
+version="$usage_version"
 
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
     echo "ERROR: Invalid version: $version" >&2
@@ -59,15 +41,12 @@ fi
 
 echo "Bumping version to $version"
 
-sed -i -e "0,/<version>/{s/<version>.*<\\/version>/<version>$version<\\/version>/}" \
-  ./pom.xml
-
-sed -i -e "s/moduleVersion=.*/moduleVersion=$version/" \
-  ./src/main/resources/META-INF/nf-test-plugin
+mvn -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set \
+  -DnewVersion="$version" -DgenerateBackupPoms=false
 
 if [[ "$version" != *dev ]]; then
-  sed -i -e "s/load \"nft-utils@.*\"/load \"nft-utils@$version\"/" \
-    ./docs/index.md
+  sed -i.bak -e "s/load \"nft-utils@.*\"/load \"nft-utils@$version\"/" docs/index.md
+  rm docs/index.md.bak
 fi
 
 mise run build

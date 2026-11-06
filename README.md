@@ -15,24 +15,21 @@ Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 
 ## Development
 
-Requires Nextflow, nf-test, and Maven.
+Requires [mise](https://mise.jdx.dev), which installs the other tools.
 
 ```bash
-# Install conda environment
-mamba env create -f environment.yml
-mamba activate env_nft_utils
+mise trust
+mise install
 
-# Compile the package
-mvn -B clean verify
+# Compile the package and run the unit tests
+mise run build
 
 # Run all tests
-nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
+mise run test
+mise run test-noplugins
 
 # Run a single test and update snapshots
-nf-test test --plugins target/nft-utils-*.jar --update-snapshot tests/sanitizeOutput/
-
-# Test with no plugins installed
-nf-test test --plugins target/nft-utils-*.jar --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/
+mise run test tests/sanitizeOutput/ --update-snapshot
 ```
 
 ## Credits
