@@ -15,25 +15,7 @@ Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 
 ## Development
 
-Requires [mise](https://mise.jdx.dev), which installs the other tools.
-
-```bash
-mise trust
-mise install
-
-# Lint and package the plugin
-mise run assemble
-
-# Run the unit tests
-mise run test
-
-# Run all nf-tests
-mise run validate
-mise run validate-noplugins
-
-# Run a single nf-test and update snapshots
-mise run validate tests/sanitizeOutput/ --update-snapshot
-```
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## Credits
 

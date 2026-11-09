@@ -47,9 +47,6 @@ jobs:
         with:
           version: 2026.10.19
 
-      - name: Unit tests
-        run: mise run test
-
       - name: Test plugin
         id: test_plugin
         # filterNextflowOutput snapshots do not match latest-everything yet

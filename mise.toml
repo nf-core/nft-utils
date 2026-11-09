@@ -24,10 +24,10 @@ rm -rf .nf-test .nextflow*
 """
 
 [tasks.assemble]
-description = "Lint and package the plugin"
+description = "Lint, test and package the plugin"
 sources = ["pom.xml", "src/**"]
 outputs = ["target/nft-utils-*.jar"]
-run = "./mvnw -B clean verify -DskipTests"
+run = "./mvnw -B clean verify"
 
 [tasks.test]
 description = "Run the unit tests"

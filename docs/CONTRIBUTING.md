@@ -7,7 +7,7 @@ nft-utils is an nf-test plugin: Java in `src/main/java`, unit tests in `src/test
 ```bash
 mise trust
 mise install                 # the pinned Java, nf-test, nf-core and Nextflow
-mise run assemble            # lint and package target/nft-utils-<version>.jar
+mise run assemble            # lint, test and package target/nft-utils-<version>.jar
 mise run test                # unit tests
 mise run validate            # nf-tests; takes paths and nf-test options
 mise run validate-noplugins  # nf-tests without nft-bam and nft-vcf
