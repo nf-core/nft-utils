@@ -6,7 +6,7 @@ java = "temurin-21"
 uv = "0.13.7"
 "github:nextflow-io/nextflow" = { version = "26.04.9", asset_pattern = "nextflow", bin = "nextflow" }
 "github:askimed/nf-test" = "0.9.5"
-"pipx:nf-core" = "4.1.0"
+"pipx:nf-core" = "4.2.1"
 
 # Settings that change nf-test snapshots, so local runs match CI
 [env]

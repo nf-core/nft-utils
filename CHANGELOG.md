@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Run `nextflow lint` through mise in pre-commit, with the pinned version
 - CI runs on Java 21 only, from `setup-nextflow` (was 17 and 21)
 - Lock tool versions and checksums in `mise.lock`, including the nf-core dependencies, and require it with `locked = true`
-- Failures on `latest-everything` no longer fail CI
+- Failures on `latest-everything` no longer fail CI, and show as a warning instead
+- Use nf-core tools 4.2.1 (was 4.1.0)
 
 ### Fixed
 

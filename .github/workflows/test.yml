@@ -51,11 +51,16 @@ jobs:
         run: mise run test
 
       - name: Test plugin
+        id: test_plugin
         # filterNextflowOutput snapshots do not match latest-everything yet
         continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
         run: |
           mise run validate
           mise run validate-noplugins
+
+      - name: Warn on latest-everything failure
+        if: steps.test_plugin.outcome == 'failure'
+        run: echo "::warning::nf-tests failed on Nextflow ${{ matrix.NXF_VER }}"
 
   # The only required check here, so matrix changes need no ruleset change
   ci-pass:
