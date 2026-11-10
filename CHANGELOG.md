@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#78](https://github.com/nf-core/nft-utils/pull/78) Fix linting with `mvn checkstyle:check` and restructure folders (@LouisLeNezet)
 - [#79](https://github.com/nf-core/nft-utils/pull/79) Use glob patterns instead of regex for `ignorePattern` and `unstablePattern` (@LouisLeNezet)
 - [#80](https://github.com/nf-core/nft-utils/pull/80) Update GitHub Actions to use environment and cache; add linting and bug checks to Maven lifecycle (@LouisLeNezet)
-- [#81](https://github.com/nf-core/nft-utils/pull/81) Fix `nfcoreInitialise()` for nf-core tools 4.1.0 compatibility (requires `conf/` directory) (@JimDownie)
+- [#81](https://github.com/nf-core/nft-utils/pull/81) Fix `nfcoreInitialise()` for nf-core tools 4.1.0 compatibility (requires `conf/` directory) (@prototaxites)
 
 ### New Contributors
 
@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- [#61](https://github.com/nf-core/nft-utils/pull/61) `nfcoreInstall()` now tracks installed modules via state files, skipping already installed modules (@JimDownie)
+- [#61](https://github.com/nf-core/nft-utils/pull/61) `nfcoreInstall()` now tracks installed modules via state files, skipping already installed modules (@prototaxites)
 - [#62](https://github.com/nf-core/nft-utils/pull/62) Add `getAllFilesFromChannel()` to extract absolute file paths from Nextflow channel output (@maxulysse)
 - [#63](https://github.com/nf-core/nft-utils/pull/63) Add `filterNextflowOutput()` to clean Nextflow stdout/stderr with `include`/`ignore` filters and `keepAnsi` option (@maxulysse)
 
