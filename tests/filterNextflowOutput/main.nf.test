@@ -38,10 +38,10 @@ nextflow_pipeline {
             println filtered_stderr.join('\n')
 
             assert workflow.failed
+            // Sorted, as Nextflow 26.10 moved log output from stdout to stderr
             assert snapshot(
-                filterNextflowOutput(workflow.stdout),
                 filterNextflowOutput(workflow.stderr, include: ["System error message"])?:"no stderr",
-                filterNextflowOutput(workflow.stdout + workflow.stderr)
+                filterNextflowOutput(workflow.stdout + workflow.stderr).sort()
               ).match()
         }
     }
@@ -80,10 +80,10 @@ nextflow_pipeline {
             println filtered_stderr.join('\n')
 
             assert workflow.success
+            // Sorted, as Nextflow 26.10 moved log output from stdout to stderr
             assert snapshot(
-                filterNextflowOutput(workflow.stdout, keepAnsi: true, ignore: ["Submitted process"]),
-                filterNextflowOutput(workflow.stderr, keepAnsi: true)?:"no stderr",
-                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true, ignore: ["Submitted process"]).sort(),
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true).sort()
             ).match()
         }
     }
@@ -116,10 +116,10 @@ nextflow_pipeline {
             println filtered_stderr.join('\n')
 
             assert workflow.success
+            // Sorted, as Nextflow 26.10 moved log output from stdout to stderr
             assert snapshot(
-                filterNextflowOutput(workflow.stdout, keepAnsi: true, ignore: ["Submitted process"]),
-                filterNextflowOutput(workflow.stderr, keepAnsi: true)?:"no stderr",
-                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true)
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true, ignore: ["Submitted process"]).sort(),
+                filterNextflowOutput(workflow.stdout + workflow.stderr, keepAnsi: true).sort()
             ).match()
         }
     }
