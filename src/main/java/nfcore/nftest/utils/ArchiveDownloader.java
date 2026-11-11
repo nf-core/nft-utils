@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,54 +42,6 @@ public final class ArchiveDownloader {
     "zst", "--zstd",
     "zstd", "--zstd"
   );
-
-  /**
-   * Download a tar archive and extract it in the given destination directory.
-   *
-   * @param urlString the URL to fetch
-   * @param destPath  directory to extract the tarball into
-   * @param tarFlag   the {@code tar} decompression flag, or {@code null} for
-   *                  an uncompressed archive
-   * @throws IOException on failure
-   */
-  static void curlAndUntar(
-      final String urlString,
-      final String destPath,
-      final String tarFlag)
-      throws IOException {
-    List<String> tarCmd = new ArrayList<>(
-      Arrays.asList("tar", "xaf", "-", "-C", destPath)
-    );
-    if (tarFlag != null) {
-      tarCmd.add(tarFlag);
-    }
-
-    downloadAndExtract(
-      urlString,
-      destPath,
-      archive -> new ProcessBuilder(tarCmd).redirectInput(archive.toFile())
-    );
-  }
-
-  /**
-   * Download a zip file and extract it in the given destination directory.
-   *
-   * @param urlString the URL to fetch
-   * @param destPath  directory to extract the zip into
-   * @throws IOException on failure
-   */
-  static void curlAndUnzip(
-      final String urlString,
-      final String destPath)
-      throws IOException {
-    downloadAndExtract(
-      urlString,
-      destPath,
-      archive -> new ProcessBuilder(
-        "unzip", "-o", archive.toString(), "-d", destPath
-      )
-    );
-  }
 
   /**
    * Download a file to a temporary file in the destination directory, run the
@@ -167,9 +118,8 @@ public final class ArchiveDownloader {
   }
 
   /**
-   * Download an archive and extract it in the given destination directory.
-   * Dispatches to {@code curlAndUnzip} for ZIP files and to
-   * {@code curlAndUntar} for tar archives based on the URL's file extension.
+   * Download an archive and extract it in the given destination directory,
+   * with the archive type taken from the URL's file extension.
    *
    * @param urlString the URL to fetch
    * @param destPath  directory to extract the archive into
@@ -179,42 +129,30 @@ public final class ArchiveDownloader {
       final String urlString,
       final String destPath)
       throws IOException {
-    String lower = Utils.getURLFileName(urlString);
-
-    if (lower.endsWith(".zip")) {
-      curlAndUnzip(urlString, destPath);
-      return;
+    String path = Utils.getURLFileName(urlString);
+    String name = path.substring(path.lastIndexOf('/') + 1);
+    int dot = name.lastIndexOf('.');
+    if (dot < 0) {
+      throw new IllegalArgumentException(
+        "Unsupported archive type in URL: " + urlString
+      );
     }
-
-    for (Map.Entry<String, String> entry : TAR_FLAGS.entrySet()) {
-      String suffix = entry.getKey();
-      if (lower.endsWith(".tar." + suffix) || lower.endsWith(".t" + suffix)) {
-        curlAndUntar(urlString, destPath, entry.getValue());
-        return;
-      }
+    String extension = name.substring(dot + 1);
+    String compression = extension;
+    if (name.endsWith(".tar." + extension)) {
+      compression = "tar." + extension;
     }
-
-    if (lower.endsWith(".tar")) {
-      curlAndUntar(urlString, destPath, null);
-      return;
-    }
-
-    throw new IllegalArgumentException(
-      "Unsupported archive type in URL: " + urlString
-    );
+    curlAndExtract(urlString, destPath, compression);
   }
 
   /**
    * Download an archive and extract it in the given destination directory.
-   * Dispatches to {@code curlAndUnzip} for ZIP files and to
-   * {@code curlAndUntar} for tar archives based on the {@code compression}
-   * parameter.
    *
    * @param urlString   the URL to fetch
    * @param destPath    directory to extract the archive into
-   * @param compression compression type: zip, tar, or any of the following
-   *                    prefixed with "tar." or "t":
-   *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd
+   * @param compression compression type, in any case: zip, tar, or any of
+   *                    the following prefixed with "tar." or "t":
+   *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd
    * @throws IOException on failure or if archive type is unsupported
    */
   public static void curlAndExtract(
@@ -229,26 +167,39 @@ public final class ArchiveDownloader {
     }
     String lower = compression.toLowerCase(Locale.ROOT);
     if (lower.equals("zip")) {
-      curlAndUnzip(urlString, destPath);
-      return;
-    }
-    if (lower.equals("tar")) {
-      curlAndUntar(urlString, destPath, null);
-      return;
-    }
-    String suffix = "";
-    if (lower.startsWith("tar.")) {
-      suffix = lower.substring("tar.".length());
-    } else if (lower.startsWith("t")) {
-      suffix = lower.substring("t".length());
-    }
-    String tarFlag = TAR_FLAGS.get(suffix);
-    if (tarFlag == null) {
-      throw new IllegalArgumentException(
-        "Unsupported compression type: " + compression
+      downloadAndExtract(
+        urlString,
+        destPath,
+        archive -> new ProcessBuilder(
+          "unzip", "-o", archive.toString(), "-d", destPath
+        )
       );
+      return;
     }
-    curlAndUntar(urlString, destPath, tarFlag);
+
+    List<String> tarCmd = new ArrayList<>(
+      List.of("tar", "xaf", "-", "-C", destPath)
+    );
+    if (!lower.equals("tar")) {
+      String suffix = "";
+      if (lower.startsWith("tar.")) {
+        suffix = lower.substring("tar.".length());
+      } else if (lower.startsWith("t")) {
+        suffix = lower.substring("t".length());
+      }
+      String tarFlag = TAR_FLAGS.get(suffix);
+      if (tarFlag == null) {
+        throw new IllegalArgumentException(
+          "Unsupported compression type: " + compression
+        );
+      }
+      tarCmd.add(tarFlag);
+    }
+    downloadAndExtract(
+      urlString,
+      destPath,
+      archive -> new ProcessBuilder(tarCmd).redirectInput(archive.toFile())
+    );
   }
 
   /**

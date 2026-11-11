@@ -160,4 +160,15 @@ class ArchiveDownloaderTest {
         () -> ArchiveDownloader.curlAndExtract("http://x", dest, compression));
     }
   }
+
+  @Test
+  void shouldRejectUnsupportedUrlExtension() {
+    String dest = tempDir.resolve("dest").toString();
+    for (String url : List.of(
+        "http://x/data", "http://x/data.gz", "http://x/v1.2/notes.txt")) {
+      assertThrows(
+        IllegalArgumentException.class,
+        () -> ArchiveDownloader.curlAndExtract(url, dest));
+    }
+  }
 }

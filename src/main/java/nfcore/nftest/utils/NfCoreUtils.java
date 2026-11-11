@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -81,34 +80,30 @@ public final class NfCoreUtils {
     }
 
     for (Object moduleObj : modules) {
-      try {
-        if (moduleObj instanceof String) {
-          installModule(
-            libDir, (String) moduleObj, null, null);
-        } else if (
-            moduleObj instanceof LinkedHashMap
-            || moduleObj instanceof Map) {
-          @SuppressWarnings("unchecked")
-          Map<String, String> moduleMap =
-            (Map<String, String>) moduleObj;
-          String name = moduleMap.get("name");
-          String sha = moduleMap.get("sha");
-          String remote = moduleMap.get("remote");
+      String name;
+      String sha = null;
+      String remote = null;
+      if (moduleObj instanceof String) {
+        name = (String) moduleObj;
+      } else if (moduleObj instanceof Map) {
+        Map<?, ?> moduleMap = (Map<?, ?>) moduleObj;
+        name = (String) moduleMap.get("name");
+        sha = (String) moduleMap.get("sha");
+        remote = (String) moduleMap.get("remote");
 
-          if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-              "Module name is required"
-            );
-          }
-
-          installModule(libDir, name, sha, remote);
-        } else {
-          throw new RuntimeException(
-            "Unsupported module type: "
-            + moduleObj.getClass().getSimpleName()
-            + ". Expected String or Map."
-          );
+        if (name == null || name.isEmpty()) {
+          throw new IllegalArgumentException("Module name is required");
         }
+      } else {
+        throw new RuntimeException(
+          "Unsupported module type: "
+          + moduleObj.getClass().getSimpleName()
+          + ". Expected String or Map."
+        );
+      }
+
+      try {
+        installModule(libDir, name, sha, remote);
       } catch (IOException e) {
         System.err.println(e.getMessage());
       }
