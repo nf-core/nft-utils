@@ -464,10 +464,12 @@
 <p>Clone the repository:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:nf-core/nft-utils.git
 </span></code></pre></div>
-<p>Build the plugin:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>./build.sh
+<p>Build the plugin with <a href="https://mise.jdx.dev">mise</a>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mise<span class="w"> </span>trust
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mise<span class="w"> </span>install
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>mise<span class="w"> </span>run<span class="w"> </span>assemble
 </span></code></pre></div>
-<p>Add the jar to your <code>nf-test.config</code>:</p>
+<p>Add the jar, <code>target/nft-utils-&lt;version&gt;.jar</code>, to your <code>nf-test.config</code>:</p>
 <div class="language-groovy highlight"><span class="filename">nf-test.config</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">config</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">plugins</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">        </span><span class="n">loadFromFile</span><span class="w"> </span><span class="s2">"full/path/to/the/plugin/jar"</span>
