@@ -3,7 +3,6 @@ package nfcore.nftest.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,13 +17,6 @@ import java.util.TreeMap;
  * specialized utility class.
  */
 public final class Methods {
-
-  /** Default number of decimal places for table double values. */
-  private static final int DEFAULT_TABLE_DOUBLE_DIGITS =
-    TableUtils.DEFAULT_DOUBLE_DIGITS;
-
-  /** Default decision to keep comments in table. */
-  private static final boolean DEFAULT_TABLE_REMOVE_COMMENTS = false;
 
   /**
    * Prevents instantiation of this utility class.
@@ -55,7 +47,7 @@ public final class Methods {
    */
   public static Map<String, Map<String, Object>> removeNextflowVersion(
       final CharSequence versionFile) {
-    return YamlUtils.removeNextflowVersion(versionFile);
+    return YamlUtils.removeFromYamlMap(versionFile, "Workflow", "Nextflow");
   }
 
   /**
@@ -85,7 +77,7 @@ public final class Methods {
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
       final String key1) {
-    return YamlUtils.removeFromYamlMap(versionFile, key1);
+    return YamlUtils.removeFromYamlMap(versionFile, key1, null);
   }
 
   // ── FILE TRAVERSAL ────────────────────────────────────────────────────
@@ -100,7 +92,8 @@ public final class Methods {
   public static List<?> getAllFilesFromDir(
       final String path)
       throws IOException {
-    return FileTraversalUtils.getAllFilesFromDir(path);
+    return FileTraversalUtils.getAllFilesFromDir(
+      new LinkedHashMap<String, Object>(), path);
   }
 
   /**
@@ -178,7 +171,8 @@ public final class Methods {
   public static List<String> getAllFilesFromPath(
       final String path)
       throws IOException, InterruptedException {
-    return FileTraversalUtils.getAllFilesFromPath(path);
+    return FileTraversalUtils.getAllFilesFromPath(
+      new LinkedHashMap<String, Object>(), path);
   }
 
   /**
@@ -206,10 +200,8 @@ public final class Methods {
    *
    * @param input The list of objects to include in the MD5 calculation.
    * @return The MD5 digest as a hexadecimal string.
-   * @throws NoSuchAlgorithmException If the MD5 algorithm is not available.
    */
-  public static String listToMD5(final List<?> input)
-      throws NoSuchAlgorithmException {
+  public static String listToMD5(final List<?> input) {
     return HashUtils.listToMD5(input);
   }
 
@@ -276,7 +268,7 @@ public final class Methods {
    * @return The filtered output as a List&lt;String&gt;
    */
   public static List<String> filterNextflowOutput(final Object output) {
-    return NextflowOutputFilter.filterNextflowOutput(output);
+    return filterNextflowOutput(output, null, true, false, null, null);
   }
 
   /**
@@ -289,7 +281,7 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final boolean sorted) {
-    return NextflowOutputFilter.filterNextflowOutput(output, sorted);
+    return filterNextflowOutput(output, null, sorted, false, null, null);
   }
 
   /**
@@ -305,7 +297,7 @@ public final class Methods {
       final Object output,
       final boolean sorted,
       final boolean keepAnsi) {
-    return NextflowOutputFilter.filterNextflowOutput(output, sorted, keepAnsi);
+    return filterNextflowOutput(output, null, sorted, keepAnsi, null, null);
   }
 
   /**
@@ -356,8 +348,8 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final List<String> additionalPatterns) {
-    return NextflowOutputFilter.filterNextflowOutput(
-      output, additionalPatterns);
+    return filterNextflowOutput(
+      output, additionalPatterns, true, false, null, null);
   }
 
   /**
@@ -384,7 +376,11 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final Map<String, Object> options) {
-    return NextflowOutputFilter.filterNextflowOutput(output, options);
+    LinkedHashMap<String, Object> named = new LinkedHashMap<>();
+    if (options != null) {
+      named.putAll(options);
+    }
+    return filterNextflowOutput(named, output);
   }
 
   // ── OUTPUT SANITIZATION ───────────────────────────────────────────────
@@ -448,7 +444,7 @@ public final class Methods {
     return normalizeTable(
       path,
       digits,
-      DEFAULT_TABLE_REMOVE_COMMENTS
+      TableUtils.DEFAULT_REMOVE_COMMENTS
     );
   }
 
@@ -466,7 +462,7 @@ public final class Methods {
   ) {
     return normalizeTable(
       path,
-      DEFAULT_TABLE_DOUBLE_DIGITS,
+      TableUtils.DEFAULT_DOUBLE_DIGITS,
       removeComments
     );
   }
@@ -480,8 +476,8 @@ public final class Methods {
   public static String normalizeTable(final Path path) {
     return normalizeTable(
       path,
-      DEFAULT_TABLE_DOUBLE_DIGITS,
-      DEFAULT_TABLE_REMOVE_COMMENTS
+      TableUtils.DEFAULT_DOUBLE_DIGITS,
+      TableUtils.DEFAULT_REMOVE_COMMENTS
     );
   }
 
@@ -531,7 +527,7 @@ public final class Methods {
   public static Path downloadFromS3(
       final String cloudUri)
       throws IOException, InterruptedException {
-    return ArchiveDownloader.downloadFromS3(cloudUri);
+    return downloadFromS3(new LinkedHashMap<String, Object>(), cloudUri);
   }
 
   /**

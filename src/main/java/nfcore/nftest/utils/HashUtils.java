@@ -40,10 +40,8 @@ public final class HashUtils {
    *
    * @param value The string to hash.
    * @return The MD5 digest as a lowercase hexadecimal string.
-   * @throws NoSuchAlgorithmException If the MD5 algorithm is not available.
    */
-  public static String md5Hex(final String value)
-      throws NoSuchAlgorithmException {
+  public static String md5Hex(final String value) {
     return listToMD5(List.of(value));
   }
 
@@ -53,11 +51,15 @@ public final class HashUtils {
    *
    * @param input The list of objects to include in the MD5 calculation.
    * @return The MD5 digest as a hexadecimal string.
-   * @throws NoSuchAlgorithmException If the MD5 algorithm is not available.
    */
-  public static String listToMD5(final List<?> input)
-      throws NoSuchAlgorithmException {
-    final MessageDigest md5 = MessageDigest.getInstance("MD5");
+  public static String listToMD5(final List<?> input) {
+    final MessageDigest md5;
+    try {
+      md5 = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      // Every Java platform must support MD5
+      throw new IllegalStateException(e);
+    }
     for (final Object item : input) {
       md5.update(item.toString().getBytes(StandardCharsets.UTF_8));
     }

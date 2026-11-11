@@ -12,11 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Split `Methods.java` into focused utility classes (`HashUtils`, `YamlUtils`, `ArchiveDownloader`, `FileTraversalUtils`, `NextflowOutputFilter`); the public API is unchanged
-- `curlAndExtract()` now throws `IOException` when the download or extraction fails, failing the test instead of logging and continuing
+- `curlAndExtract()` now throws `IOException` when the download or extraction fails, failing the test instead of logging and continuing; archives are downloaded to a temporary file with `curl --fail` before extraction, so HTTP errors and truncated transfers are caught
+- `curlAndExtract()` accepts the `compression` type in any case, and URLs ending in `.tar.gzip` or `.tbzip2`
+- `listToMD5()` no longer declares `NoSuchAlgorithmException`, as every Java platform supports MD5
 
 ### Fixed
 
 - Replace raw types in public API signatures with generic types
+- `getAllFilesFromPath()` on S3 and `downloadFromS3()` no longer leave the stderr of `aws`/`nextflow` unread, which could hang the call; `downloadFromS3()` errors now include that stderr
 
 ## [1.2.1]
 

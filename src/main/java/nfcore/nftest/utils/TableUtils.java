@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -25,6 +24,9 @@ public final class TableUtils {
 
   /** Default number of decimal places for CSV double values. */
   public static final int DEFAULT_DOUBLE_DIGITS = 6;
+
+  /** Default decision to keep comments in table. */
+  public static final boolean DEFAULT_REMOVE_COMMENTS = false;
 
   /**
    * Prevents instantiation of this utility class.
@@ -143,7 +145,7 @@ public final class TableUtils {
     final boolean removeComments
   ) {
     try {
-      return md5(normalizeTable(path, digits, removeComments));
+      return HashUtils.md5Hex(normalizeTable(path, digits, removeComments));
     } catch (Exception e) {
       throw new RuntimeException(
         "Failed to calculate normalized Table MD5 for file: " + path,
@@ -450,18 +452,6 @@ public final class TableUtils {
     return output.toString()
       .replace("\r\n", "\n")
       .replace("\r", "\n");
-  }
-
-  /**
-   * Calculates the MD5 hash of a string using UTF-8 encoding.
-   *
-   * @param value the string to hash
-   * @return the MD5 hash as a lowercase hexadecimal string
-   * @throws NoSuchAlgorithmException if the MD5 algorithm is not available
-   */
-  private static String md5(final String value)
-    throws NoSuchAlgorithmException {
-    return HashUtils.md5Hex(value);
   }
 
   /**

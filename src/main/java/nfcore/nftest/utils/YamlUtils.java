@@ -112,18 +112,6 @@ public final class YamlUtils {
   }
 
   /**
-   * Removes the Nextflow version entry from the Workflow entry in the
-   * specified Version YAML file.
-   *
-   * @param versionFile The YAML file path or wildcard pattern to process.
-   * @return A map containing the YAML data with the Nextflow version removed.
-   */
-  public static Map<String, Map<String, Object>> removeNextflowVersion(
-      final CharSequence versionFile) {
-    return removeFromYamlMap(versionFile, "Workflow", "Nextflow");
-  }
-
-  /**
    * Removes an entry from a YAML map and merges the processed results from all
    * files matching the specified path or wildcard pattern.
    *
@@ -177,18 +165,5 @@ public final class YamlUtils {
     }
 
     return mergedResult;
-  }
-
-  /**
-   * Removes the specified key from a YAML map using default options.
-   *
-   * @param versionFile The YAML content containing the map to modify.
-   * @param key1 The key to remove from the YAML map.
-   * @return A map containing the updated YAML data.
-   */
-  public static Map<String, Map<String, Object>> removeFromYamlMap(
-      final CharSequence versionFile,
-      final String key1) {
-    return removeFromYamlMap(versionFile, key1, null);
   }
 }

@@ -3,6 +3,7 @@ package nfcore.nftest.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -18,6 +19,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -32,16 +34,130 @@ public final class FileTraversalUtils {
   }
 
   /**
-   * Retrieves all files from the specified directory using default options.
+   * Number of fields expected in an AWS S3 CLI listing line.
+   */
+  private static final int AWS_S3_LIST_FIELDS = 4;
+
+  /**
+   * Index of the object key in an AWS S3 CLI listing line.
+   */
+  private static final int AWS_S3_KEY_INDEX = 3;
+
+  /**
+   * Filters relative paths: a path is accepted when it matches an include
+   * matcher and no exclude matcher.
+   */
+  static final class PathFilter {
+
+    /** Matchers of the paths to accept. */
+    private final List<PathMatcher> include;
+
+    /** Matchers of the paths to reject. */
+    private final List<PathMatcher> exclude;
+
+    /**
+     * Creates a filter.
+     *
+     * @param includeMatchers Matchers of the paths to accept.
+     * @param excludeMatchers Matchers of the paths to reject.
+     */
+    PathFilter(
+        final List<PathMatcher> includeMatchers,
+        final List<PathMatcher> excludeMatchers) {
+      this.include = includeMatchers;
+      this.exclude = excludeMatchers;
+    }
+
+    /**
+     * Tests a path against the filter.
+     *
+     * @param relativePath The path to test.
+     * @return {@code true} if the path is accepted.
+     */
+    boolean accepts(final Path relativePath) {
+      return include.stream().anyMatch(m -> m.matches(relativePath))
+        && exclude.stream().noneMatch(m -> m.matches(relativePath));
+    }
+  }
+
+  /**
+   * Compiles glob patterns into path matchers, skipping null or empty globs.
    *
-   * @param path The path to the directory to traverse.
-   * @return A list of files found in the directory.
+   * @param globs The glob patterns, or {@code null}.
+   * @return The path matchers.
+   */
+  static List<PathMatcher> buildMatchers(final List<String> globs) {
+    List<PathMatcher> matchers = new ArrayList<>();
+    if (globs == null) {
+      return matchers;
+    }
+    for (String glob : globs) {
+      if (glob != null && !glob.isEmpty()) {
+        matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
+      }
+    }
+    return matchers;
+  }
+
+  /**
+   * Builds the exclude matchers from ignore globs and an optional ignore file.
+   *
+   * @param ignoreGlobs Glob patterns to exclude, or {@code null}.
+   * @param ignoreFilePath Path to a file of additional glob patterns, or
+   *     {@code null} or empty.
+   * @return The path matchers.
+   * @throws IOException If an error occurs while reading the ignore file.
+   */
+  private static List<PathMatcher> buildExcludeMatchers(
+      final List<String> ignoreGlobs,
+      final String ignoreFilePath)
+      throws IOException {
+    List<PathMatcher> matchers = buildMatchers(ignoreGlobs);
+    if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
+      matchers.addAll(buildMatchers(readGlobsFromFile(ignoreFilePath)));
+    }
+    return matchers;
+  }
+
+  /**
+   * Walks a directory tree and collects the paths accepted by the filter.
+   *
+   * @param root The directory to walk.
+   * @param filter The filter, applied to paths relative to {@code root}.
+   * @param keepDir Selects the directories that can be collected.
+   * @return The accepted paths, in traversal order.
    * @throws IOException If an error occurs while traversing the directory.
    */
-  public static List<?> getAllFilesFromDir(
-      final String path)
+  private static List<Path> walk(
+      final Path root,
+      final PathFilter filter,
+      final Predicate<Path> keepDir)
       throws IOException {
-    return getAllFilesFromDir(new LinkedHashMap<String, Object>(), path);
+    List<Path> matches = new ArrayList<>();
+    Files.walkFileTree(
+        root,
+        new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(
+              final Path file,
+              final BasicFileAttributes attrs) {
+            if (filter.accepts(root.relativize(file))) {
+              matches.add(file);
+            }
+            return FileVisitResult.CONTINUE;
+          }
+
+          @Override
+          public FileVisitResult preVisitDirectory(
+              final Path dir,
+              final BasicFileAttributes attrs) {
+            if (keepDir.test(dir) && filter.accepts(root.relativize(dir))) {
+              matches.add(dir);
+            }
+            return FileVisitResult.CONTINUE;
+          }
+        });
+    return matches;
   }
 
   /**
@@ -123,80 +239,20 @@ public final class FileTraversalUtils {
       final String ignoreFilePath,
       final List<String> includeGlobs)
       throws IOException {
-    List<File> output = new ArrayList<>();
-    Path directory = Paths.get(outdir);
+    PathFilter filter = new PathFilter(
+      buildMatchers(includeGlobs),
+      buildExcludeMatchers(ignoreGlobs, ignoreFilePath)
+    );
+    Predicate<Path> keepDir = dir -> {
+      Path fileName = dir.getFileName();
+      return includeDir
+        && fileName != null
+        && !fileName.toString().equals("output");
+    };
 
-    List<String> allIgnoreGlobs = new ArrayList<>();
-    if (ignoreGlobs != null) {
-      allIgnoreGlobs.addAll(ignoreGlobs);
-    }
-    if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
-      allIgnoreGlobs.addAll(readGlobsFromFile(ignoreFilePath));
-    }
-
-    List<PathMatcher> excludeMatchers = new ArrayList<>();
-    for (String glob : allIgnoreGlobs) {
-      excludeMatchers.add(
-        FileSystems.getDefault().getPathMatcher("glob:" + glob)
-      );
-    }
-
-    List<String> allIncludeGlobs = new ArrayList<>();
-    if (includeGlobs != null) {
-      allIncludeGlobs.addAll(includeGlobs);
-    }
-
-    List<PathMatcher> includeMatchers = new ArrayList<>();
-    for (String glob : allIncludeGlobs) {
-      includeMatchers.add(
-        FileSystems.getDefault().getPathMatcher("glob:" + glob)
-      );
-    }
-
-    Files.walkFileTree(
-        directory,
-        new SimpleFileVisitor<Path>() {
-          @Override
-          public FileVisitResult visitFile(
-              final Path file,
-              final BasicFileAttributes attrs) {
-            if (isIncluded(file) && !isExcluded(file)) {
-              output.add(file.toFile());
-            }
-            return FileVisitResult.CONTINUE;
-          }
-
-          @Override
-          public FileVisitResult preVisitDirectory(
-              final Path dir,
-              final BasicFileAttributes attrs) {
-            Path fileName = dir.getFileName();
-            if (
-                includeDir
-                && isIncluded(dir)
-                && !isExcluded(dir)
-                && fileName != null
-                && !fileName.toString().equals("output")) {
-              output.add(dir.toFile());
-            }
-            return FileVisitResult.CONTINUE;
-          }
-
-          private boolean isExcluded(final Path path) {
-            return excludeMatchers
-              .stream()
-              .anyMatch(matcher -> matcher.matches(directory.relativize(path)));
-          }
-
-          private boolean isIncluded(final Path path) {
-            return includeMatchers
-              .stream()
-              .anyMatch(matcher -> matcher.matches(directory.relativize(path)));
-          }
-        });
-
-    return output
+    return walk(Paths.get(outdir), filter, keepDir)
       .stream()
+      .map(Path::toFile)
       .sorted(Comparator.comparing(File::getPath))
       .collect(Collectors.toList());
   }
@@ -303,20 +359,6 @@ public final class FileTraversalUtils {
   }
 
   /**
-   * Lists all files at the given path, returning sorted relative paths.
-   *
-   * @param path The path to list - a local directory or an S3 URI
-   * @return A sorted list of relative file paths under {@code path}
-   * @throws IOException if the path cannot be walked or the AWS CLI fails
-   * @throws InterruptedException if the AWS CLI process is interrupted
-   */
-  public static List<String> getAllFilesFromPath(
-      final String path)
-      throws IOException, InterruptedException {
-    return getAllFilesFromPath(new LinkedHashMap<String, Object>(), path);
-  }
-
-  /**
    * Lists all files at the given path (local or cloud), returning sorted
    * relative paths, with filtering options.
    *
@@ -350,94 +392,125 @@ public final class FileTraversalUtils {
     Boolean noSignRequest = (Boolean) options
       .getOrDefault("noSignRequest", false);
 
-    List<String> allIgnoreGlobs = new ArrayList<>(ignoreGlobs);
-    if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
-      allIgnoreGlobs.addAll(readGlobsFromFile(ignoreFilePath));
+    // An empty include list means everything here, unlike getAllFilesFromDir
+    List<PathMatcher> includeMatchers = buildMatchers(includeGlobs);
+    if (includeMatchers.isEmpty()) {
+      includeMatchers = buildMatchers(List.of("**"));
     }
-
-    List<PathMatcher> excludeMatchers = new ArrayList<>();
-    for (String glob : allIgnoreGlobs) {
-      if (glob != null && !glob.isEmpty()) {
-        excludeMatchers.add(FileSystems
-          .getDefault()
-          .getPathMatcher("glob:" + glob)
-        );
-      }
-    }
-
-    List<PathMatcher> includeMatchers = new ArrayList<>();
-    for (String glob : includeGlobs) {
-      if (glob != null && !glob.isEmpty()) {
-        includeMatchers.add(FileSystems
-          .getDefault()
-          .getPathMatcher("glob:" + glob)
-        );
-      }
-    }
+    PathFilter filter = new PathFilter(
+      includeMatchers,
+      buildExcludeMatchers(ignoreGlobs, ignoreFilePath)
+    );
 
     if (path.startsWith("s3://")) {
-      return ArchiveDownloader.getAllFilesFromS3ViaCli(
-        path, includeMatchers, excludeMatchers,
-        includeDir, noSignRequest
+      return getAllFilesFromS3ViaCli(
+        path, filter, includeDir, noSignRequest
       );
     }
 
     Path root = Paths.get(path);
+    return walk(root, filter, dir -> includeDir && !dir.equals(root))
+      .stream()
+      .map(match -> root.relativize(match).toString())
+      .filter(relative -> !relative.isEmpty())
+      .sorted()
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * Lists files under an S3 prefix using the AWS CLI
+   * ({@code aws s3 ls --recursive}).
+   *
+   * @param s3Path The S3 path or prefix to list.
+   * @param filter The include and exclude filter for relative paths.
+   * @param includeDir Whether directory markers should be included.
+   * @param noSignRequest Whether to use {@code --no-sign-request}.
+   * @return A sorted list of S3 object keys matching the filters.
+   * @throws IOException If an I/O error occurs.
+   * @throws InterruptedException If the thread is interrupted.
+   */
+  private static List<String> getAllFilesFromS3ViaCli(
+      final String s3Path,
+      final PathFilter filter,
+      final boolean includeDir,
+      final boolean noSignRequest)
+      throws IOException, InterruptedException {
+
+    String normalizedPath = s3Path;
+    if (!s3Path.endsWith("/")) {
+      normalizedPath += "/";
+    }
+    String bucketAndPrefix = normalizedPath.substring("s3://".length());
+    int firstSlash = bucketAndPrefix.indexOf('/');
+    String prefix;
+    if (firstSlash >= 0) {
+      prefix = bucketAndPrefix.substring(firstSlash + 1);
+    } else {
+      prefix = "";
+    }
+
+    List<String> cmd = new ArrayList<>(
+      Arrays.asList("aws", "s3", "ls", "--recursive")
+    );
+    if (noSignRequest) {
+      cmd.add("--no-sign-request");
+    }
+    cmd.add(normalizedPath);
+
+    // stderr is inherited: an undrained pipe can block the CLI
+    Process process = new ProcessBuilder(cmd)
+      .redirectError(ProcessBuilder.Redirect.INHERIT)
+      .start();
+
     List<String> files = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(
+          process.getInputStream(),
+          StandardCharsets.UTF_8
+        )
+    )) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] parts = line.trim().split("\\s+", AWS_S3_LIST_FIELDS);
+        if (parts.length < AWS_S3_LIST_FIELDS) {
+          continue;
+        }
 
-    Files.walkFileTree(
-        root,
-        new SimpleFileVisitor<Path>() {
-          @Override
-          public FileVisitResult visitFile(
-              final Path file,
-              final BasicFileAttributes attrs) {
-            String relative = root.relativize(file).toString();
-            if (relative.isEmpty()) {
-              return FileVisitResult.CONTINUE;
-            }
-            Path relLocal = Paths.get(relative);
-            boolean included =
-                includeMatchers.isEmpty()
-                    || includeMatchers
-                      .stream()
-                      .anyMatch(m -> m.matches(relLocal));
-            boolean excluded = excludeMatchers
-              .stream()
-              .anyMatch(m -> m.matches(relLocal));
-            if (included && !excluded) {
-              files.add(relative);
-            }
-            return FileVisitResult.CONTINUE;
-          }
+        String fullKey = parts[AWS_S3_KEY_INDEX];
+        String relativePath;
+        if (!prefix.isEmpty() && fullKey.startsWith(prefix)) {
+          relativePath = fullKey.substring(prefix.length());
+        } else {
+          relativePath = fullKey;
+        }
 
-          @Override
-          public FileVisitResult preVisitDirectory(
-              final Path dir,
-              final BasicFileAttributes attrs) {
-            if (dir.equals(root)) {
-              return FileVisitResult.CONTINUE;
-            }
-            if (includeDir) {
-              String relative = root.relativize(dir).toString();
-              if (!relative.isEmpty()) {
-                Path relLocal = Paths.get(relative);
-                boolean included =
-                    includeMatchers.isEmpty()
-                        || includeMatchers
-                          .stream()
-                          .anyMatch(m -> m.matches(relLocal));
-                boolean excluded = excludeMatchers
-                  .stream()
-                  .anyMatch(m -> m.matches(relLocal));
-                if (included && !excluded) {
-                  files.add(relative);
-                }
-              }
-            }
-            return FileVisitResult.CONTINUE;
-          }
-        });
+        if (relativePath.isEmpty()) {
+          continue;
+        }
+
+        boolean isDir = relativePath.endsWith("/");
+        if (isDir && !includeDir) {
+          continue;
+        }
+
+        final String pathString;
+        if (isDir) {
+          pathString = relativePath.substring(0, relativePath.length() - 1);
+        } else {
+          pathString = relativePath;
+        }
+        if (filter.accepts(Paths.get(pathString))) {
+          files.add(relativePath);
+        }
+      }
+    }
+
+    int exitCode = process.waitFor();
+    if (exitCode != 0) {
+      throw new IOException(
+          "AWS CLI returned exit code " + exitCode
+          + " when listing: " + normalizedPath);
+    }
 
     return files.stream().sorted().collect(Collectors.toList());
   }

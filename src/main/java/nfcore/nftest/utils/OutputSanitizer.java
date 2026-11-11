@@ -6,23 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.nio.file.Files;
-import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Utility methods to remove unecessary output from a snapshot.
  */
 public final class OutputSanitizer {
-
-  /** Default number of decimal places for table double values. */
-  private static final int DEFAULT_TABLE_DOUBLE_DIGITS =
-    TableUtils.DEFAULT_DOUBLE_DIGITS;
-
-  /** Default decision to keep comments in table. */
-  private static final boolean DEFAULT_TABLE_REMOVE_COMMENTS = false;
 
   /**
    * Prevents instantiation of this utility class.
@@ -148,10 +139,10 @@ public final class OutputSanitizer {
 
     String referenceFasta = (String) options.getOrDefault("referenceFasta", "");
     int tableDoubleDigits = (int) options.getOrDefault(
-      "tableDoubleDigits", DEFAULT_TABLE_DOUBLE_DIGITS
+      "tableDoubleDigits", TableUtils.DEFAULT_DOUBLE_DIGITS
     );
     boolean tableRemoveComments = (boolean) options.getOrDefault(
-      "tableRemoveComments", DEFAULT_TABLE_REMOVE_COMMENTS
+      "tableRemoveComments", TableUtils.DEFAULT_REMOVE_COMMENTS
     );
 
     if (tableDoubleDigits < 0) {
@@ -327,15 +318,11 @@ public final class OutputSanitizer {
       final List<String> unstablePatterns,
       final List<String> ignorePatterns) {
 
-    List<PathMatcher> ignoreMatchers = ignorePatterns.stream()
-      .map(pattern -> FileSystems.getDefault()
-        .getPathMatcher("glob:" + pattern))
-      .collect(Collectors.toList());
+    List<PathMatcher> ignoreMatchers =
+      FileTraversalUtils.buildMatchers(ignorePatterns);
 
-    List<PathMatcher> unstableMatchers = unstablePatterns.stream()
-      .map(pattern -> FileSystems.getDefault()
-        .getPathMatcher("glob:" + pattern))
-      .collect(Collectors.toList());
+    List<PathMatcher> unstableMatchers =
+      FileTraversalUtils.buildMatchers(unstablePatterns);
 
     return recursiveParse(value, strValue -> {
       boolean matchIgnore = ignoreMatchers.stream()

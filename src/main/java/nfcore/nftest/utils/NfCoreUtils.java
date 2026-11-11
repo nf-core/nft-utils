@@ -199,13 +199,7 @@ public final class NfCoreUtils {
       key.append("_").append(remote);
     }
 
-    try {
-      return HashUtils.md5Hex(key.toString());
-    } catch (java.security.NoSuchAlgorithmException e) {
-      throw new RuntimeException(
-        "MD5 algorithm not available on this system", e
-      );
-    }
+    return HashUtils.md5Hex(key.toString());
   }
 
   /**

@@ -98,20 +98,6 @@ public final class Utils {
   }
 
   /**
-   * Shell escape a string by wrapping in single quotes and escaping existing
-   * single quotes.
-   *
-   * @param s The string to escape for safe use in a shell command.
-   * @return The shell-escaped string
-   */
-  public static String shellEscape(final String s) {
-    if (s == null) {
-      return "''";
-    }
-    return "'" + s.replace("'", "'" + "\"'\"" + "'") + "'";
-  }
-
-  /**
    * Extract a lower-cased file name portion from a URL string for extension
    * checking.
    *

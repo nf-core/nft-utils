@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
@@ -16,6 +19,47 @@ import java.util.stream.Collectors;
  */
 public final class NextflowOutputFilter {
 
+  /** Matches ANSI escape codes. */
+  private static final Pattern ANSI =
+    Pattern.compile("\\x1B\\[[0-9;]*[A-Za-z]");
+
+  /** Matches the bracketed run name of the Nextflow launching line. */
+  private static final Pattern RUN_NAME =
+    Pattern.compile("\\[([^\\]]+)\\]");
+
+  /** Rules applied to a line before paths and the run name are replaced. */
+  private static final List<UnaryOperator<String>> RULES_BEFORE_PATHS = List.of(
+    rule(
+      "\\d{4}-\\d{2}-\\d{2}[T\\s_]\\d{2}[:-]\\d{2}[:-]\\d{2}"
+      + "(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?",
+      "[TIMESTAMP]"),
+    rule("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]"),
+    rule("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]"),
+    rule("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
+    rule("revision: [0-9a-f]{10}", "revision: [REVISION]"),
+    rule(".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*", ""),
+    rule(".*Please consider updating your version.*", "")
+  );
+
+  /** Rules applied to a line after paths and the run name are replaced. */
+  private static final List<UnaryOperator<String>> RULES_AFTER_RUN_NAME =
+    List.of(
+      rule(".*containerEngine.*", ""),
+      rule(
+        "apptainer|charliecloud|conda|docker|mamba|podman|shifter"
+        + "|singularity|wave",
+        "[CONTAINER]"),
+      rule(
+        "(nf-core/[^\\s]+\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*",
+        "$1[VERSION]"),
+      rule(
+        "N E X T F L O W  ~  version \\d+\\.\\d+\\.\\d+(-edge)?",
+        "N E X T F L O W  ~  version [VERSION]")
+    );
+
+  /** Environment-specific paths, longest first. */
+  private static final List<String> PATHS_TO_REPLACE = pathsToReplace();
+
   /**
    * Prevents instantiation of this utility class.
    */
@@ -23,64 +67,17 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Filters Nextflow stdout/stderr output to remove variable content that makes
-   * snapshots unstable.
+   * Compiles a regex replacement.
    *
-   * @param output The stdout or stderr output (String or List) to filter
-   * @return The filtered output as a List&lt;String&gt; with unstable patterns
-   *     removed
+   * @param regex       The regex to replace
+   * @param replacement The replacement
+   * @return The replacement as a function of the line
    */
-  public static List<String> filterNextflowOutput(final Object output) {
-    return filterNextflowOutput(output, null, true, false, null, null);
-  }
-
-  /**
-   * Filters Nextflow stdout/stderr output with optional sorting.
-   *
-   * @param output The stdout or stderr output (String or List) to filter
-   * @param sorted Whether to sort the output lines alphabetically
-   * @return The filtered output as a List&lt;String&gt; with unstable patterns
-   *     removed
-   */
-  public static List<String> filterNextflowOutput(
-      final Object output,
-      final boolean sorted) {
-    return filterNextflowOutput(output, null, sorted, false, null, null);
-  }
-
-  /**
-   * Filters Nextflow stdout/stderr output with optional sorting and ANSI code
-   * handling.
-   *
-   * @param output   The stdout or stderr output (String or List) to filter
-   * @param sorted   Whether to sort the output lines alphabetically
-   * @param keepAnsi Whether to keep ANSI escape codes (colors, formatting)
-   * @return The filtered output as a List&lt;String&gt; with unstable patterns
-   *     removed
-   */
-  public static List<String> filterNextflowOutput(
-      final Object output,
-      final boolean sorted,
-      final boolean keepAnsi) {
-    return filterNextflowOutput(output, null, sorted, keepAnsi, null, null);
-  }
-
-  /**
-   * Filters Nextflow stdout/stderr output with custom patterns.
-   *
-   * @param output             The stdout or stderr output (String or List) to
-   *                           filter
-   * @param additionalPatterns List of additional regex patterns to remove
-   * @return The filtered output as a List&lt;String&gt; with unstable patterns
-   *     removed
-   */
-  public static List<String> filterNextflowOutput(
-      final Object output,
-      final List<String> additionalPatterns) {
-    return filterNextflowOutput(
-      output, additionalPatterns,
-      true, false, null, null
-    );
+  private static UnaryOperator<String> rule(
+      final String regex,
+      final String replacement) {
+    Pattern pattern = Pattern.compile(regex);
+    return line -> pattern.matcher(line).replaceAll(replacement);
   }
 
   /**
@@ -104,91 +101,28 @@ public final class NextflowOutputFilter {
       final boolean keepAnsi,
       final List<String> ignore,
       final List<String> include) {
-    if (output == null) {
-      return new ArrayList<>();
-    }
-
-    List<String> outputLines;
-    if (output instanceof List) {
-      List<?> outputList = (List<?>) output;
-      if (outputList.isEmpty()) {
-        return new ArrayList<>();
-      }
-      outputLines = outputList.stream()
-          .map(Object::toString)
-          .collect(Collectors.toList());
-    } else if (output instanceof String) {
-      String outputString = (String) output;
-      if (outputString.isEmpty()) {
-        return new ArrayList<>();
-      }
-      outputLines = Arrays.asList(outputString.split("\n"));
-    } else {
-      String outputString = output.toString();
-      outputLines = Arrays.asList(outputString.split("\n"));
-    }
-
+    List<Pattern> removals = compilePatterns(additionalPatterns);
     List<String> filteredLines = new ArrayList<>();
     String capturedRunName = null;
 
-    for (String line : outputLines) {
+    for (String line : toLines(output)) {
+      if (!keepLine(line, ignore, include)) {
+        continue;
+      }
+
       String filtered = line;
-
-      if (ignore != null && !ignore.isEmpty()) {
-        boolean shouldIgnore = false;
-        for (String ignoreString : ignore) {
-          if (filtered.contains(ignoreString)) {
-            shouldIgnore = true;
-            break;
-          }
-        }
-        if (shouldIgnore) {
-          continue;
-        }
-      }
-
-      if (include != null && !include.isEmpty()) {
-        boolean shouldInclude = false;
-        for (String includeString : include) {
-          if (filtered.contains(includeString)) {
-            shouldInclude = true;
-            break;
-          }
-        }
-        if (!shouldInclude) {
-          continue;
-        }
-      }
-
       if (!keepAnsi) {
-        filtered = filtered.replaceAll(
-          "\\x1B\\[[0-9;]*[A-Za-z]", "");
+        filtered = ANSI.matcher(filtered).replaceAll("");
       }
 
-      if (
-          capturedRunName == null
-          && filtered.contains("Launching")
-          && filtered.contains("[")
-          && filtered.contains("]")) {
-        java.util.regex.Pattern runNamePattern =
-          java.util.regex.Pattern.compile("\\[([^\\]]+)\\]");
-        java.util.regex.Matcher matcher = runNamePattern.matcher(filtered);
-        if (matcher.find()) {
-          capturedRunName = matcher.group(1);
-        }
+      if (capturedRunName == null) {
+        capturedRunName = captureRunName(filtered);
       }
 
       filtered = filterLinePattern(filtered, capturedRunName);
 
-      if (additionalPatterns != null && !additionalPatterns.isEmpty()) {
-        for (String pattern : additionalPatterns) {
-          try {
-            filtered = filtered.replaceAll(pattern, "");
-          } catch (PatternSyntaxException e) {
-            System.err.println("Warning: Invalid regex pattern '" + pattern
-                + "': " + e.getMessage());
-          }
-        }
+      for (Pattern removal : removals) {
+        filtered = removal.matcher(filtered).replaceAll("");
       }
 
       if (!filtered.trim().isEmpty()) {
@@ -197,43 +131,8 @@ public final class NextflowOutputFilter {
     }
 
     if (sorted) {
-      List<String> sortableLines = new ArrayList<>();
-      List<String> preserveOrderLines = new ArrayList<>();
-
-      for (String line : filteredLines) {
-        if (line.contains("Staging foreign file")
-            || line.contains("Submitted process")
-            || line.startsWith("Creating env using conda:")
-            || line.startsWith("Pulling Singularity image")
-            || line.startsWith("ERROR ~")
-            || line.startsWith("WARN:")
-            || (
-              line.contains("Check ")
-              && line.contains(" file for details")
-            )) {
-          sortableLines.add(line);
-        } else {
-          preserveOrderLines.add(line);
-        }
-      }
-
-      Collections.sort(sortableLines);
-
-      List<String> combinedLines = new ArrayList<>();
-      combinedLines.addAll(preserveOrderLines);
-      combinedLines.addAll(sortableLines);
-
-      List<String> uniqueLines = new ArrayList<>();
-      String lastLine = null;
-      for (String line : combinedLines) {
-        if (!line.equals(lastLine)) {
-          uniqueLines.add(line);
-          lastLine = line;
-        }
-      }
-      filteredLines = uniqueLines;
+      return sortOrderIndependentLines(filteredLines);
     }
-
     return filteredLines;
   }
 
@@ -274,21 +173,126 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Filters Nextflow output using an explicit options map passed after the
-   * output, e.g. {@code filterNextflowOutput(output, [sorted: false])}.
+   * Compiles regex patterns, warning about and skipping invalid ones.
    *
-   * @param output  The output to filter
-   * @param options The filtering options, or {@code null} to use defaults
-   * @return The filtered output as a List&lt;String&gt;
+   * @param patterns The regex patterns, or {@code null}
+   * @return The compiled patterns
    */
-  public static List<String> filterNextflowOutput(
-      final Object output,
-      final Map<String, Object> options) {
-    LinkedHashMap<String, Object> named = new LinkedHashMap<>();
-    if (options != null) {
-      named.putAll(options);
+  private static List<Pattern> compilePatterns(final List<String> patterns) {
+    List<Pattern> compiled = new ArrayList<>();
+    if (patterns == null) {
+      return compiled;
     }
-    return filterNextflowOutput(named, output);
+    for (String pattern : patterns) {
+      try {
+        compiled.add(Pattern.compile(pattern));
+      } catch (PatternSyntaxException e) {
+        System.err.println("Warning: Invalid regex pattern '" + pattern
+            + "': " + e.getMessage());
+      }
+    }
+    return compiled;
+  }
+
+  /**
+   * Splits output into lines.
+   *
+   * @param output The output (String or List), or {@code null}
+   * @return The output lines
+   */
+  private static List<String> toLines(final Object output) {
+    if (output == null) {
+      return List.of();
+    }
+    if (output instanceof List) {
+      return ((List<?>) output).stream()
+          .map(Object::toString)
+          .collect(Collectors.toList());
+    }
+    return Arrays.asList(output.toString().split("\n"));
+  }
+
+  /**
+   * Applies the ignore and include lists to a line.
+   *
+   * @param line    The line to check
+   * @param ignore  Strings rejecting the line, or {@code null}
+   * @param include Strings of which the line must contain one, or {@code null}
+   *                or empty to accept any line
+   * @return {@code true} if the line should be kept
+   */
+  private static boolean keepLine(
+      final String line,
+      final List<String> ignore,
+      final List<String> include) {
+    if (ignore != null && ignore.stream().anyMatch(line::contains)) {
+      return false;
+    }
+    return include == null
+      || include.isEmpty()
+      || include.stream().anyMatch(line::contains);
+  }
+
+  /**
+   * Extracts the run name from the Nextflow launching line.
+   *
+   * @param line The line to inspect
+   * @return The run name, or {@code null} if the line does not contain one
+   */
+  private static String captureRunName(final String line) {
+    if (!line.contains("Launching")) {
+      return null;
+    }
+    Matcher matcher = RUN_NAME.matcher(line);
+    if (matcher.find()) {
+      return matcher.group(1);
+    }
+    return null;
+  }
+
+  /**
+   * Checks whether a line can appear in a different position between runs.
+   *
+   * @param line The line to check
+   * @return {@code true} if the position of the line is not stable
+   */
+  private static boolean isOrderIndependent(final String line) {
+    return line.contains("Staging foreign file")
+      || line.contains("Submitted process")
+      || line.startsWith("Creating env using conda:")
+      || line.startsWith("Pulling Singularity image")
+      || line.startsWith("ERROR ~")
+      || line.startsWith("WARN:")
+      || (line.contains("Check ") && line.contains(" file for details"));
+  }
+
+  /**
+   * Moves order-independent lines to the end in sorted order, keeps other
+   * lines in place, and drops adjacent duplicates.
+   *
+   * @param lines The lines to sort
+   * @return The sorted lines
+   */
+  private static List<String> sortOrderIndependentLines(
+      final List<String> lines) {
+    List<String> combinedLines = lines.stream()
+        .filter(line -> !isOrderIndependent(line))
+        .collect(Collectors.toList());
+    List<String> sortableLines = lines.stream()
+        .filter(NextflowOutputFilter::isOrderIndependent)
+        .collect(Collectors.toList());
+    Collections.sort(sortableLines);
+    combinedLines.addAll(sortableLines);
+
+    List<String> uniqueLines = new ArrayList<>();
+    String lastLine = null;
+    for (String line : combinedLines) {
+      if (!line.equals(lastLine)) {
+        uniqueLines.add(line);
+        lastLine = line;
+      }
+    }
+    return uniqueLines;
   }
 
   /**
@@ -308,37 +312,11 @@ public final class NextflowOutputFilter {
     String userName = System.getProperty("user.name");
     if (userName != null && !userName.isEmpty()) {
       filtered = filtered.replaceAll(
-        "(userName\\s*:\\s*)" + java.util.regex.Pattern.quote(userName),
+        "(userName\\s*:\\s*)" + Pattern.quote(userName),
         "$1[USER]");
     }
 
-    filtered = filtered.replaceAll(
-        "\\d{4}-\\d{2}-\\d{2}[T\\s_]\\d{2}[:-]\\d{2}[:-]\\d{2}"
-        + "(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?",
-        "[TIMESTAMP]");
-    filtered = filtered.replaceAll(
-      "\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}",
-      "[TIMESTAMP]");
-
-    filtered = filtered.replaceAll(
-      "\\[[0-9a-f]{2}/[0-9a-f]{6}\\]",
-      "[NXF_HASH]");
-
-    filtered = filtered.replaceAll(
-      "\\b[0-9a-f]{30,32}\\b",
-      "[NFT_HASH]");
-
-    filtered = filtered.replaceAll(
-      "revision: [0-9a-f]{10}",
-      "revision: [REVISION]");
-
-    filtered = filtered.replaceAll(
-      ".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*",
-      "");
-    filtered = filtered.replaceAll(
-      ".*Please consider updating your version.*",
-      "");
-
+    filtered = applyRules(RULES_BEFORE_PATHS, filtered);
     filtered = filterAbsolutePaths(filtered);
 
     if (capturedRunName != null) {
@@ -350,26 +328,23 @@ public final class NextflowOutputFilter {
         "[RUN_NAME]");
     }
 
-    filtered = filtered.replaceAll(".*containerEngine.*", "");
+    return applyRules(RULES_AFTER_RUN_NAME, filtered);
+  }
 
-    filtered = filtered.replaceAll("apptainer", "[CONTAINER]");
-    filtered = filtered.replaceAll("charliecloud", "[CONTAINER]");
-    filtered = filtered.replaceAll("conda", "[CONTAINER]");
-    filtered = filtered.replaceAll("docker", "[CONTAINER]");
-    filtered = filtered.replaceAll("mamba", "[CONTAINER]");
-    filtered = filtered.replaceAll("podman", "[CONTAINER]");
-    filtered = filtered.replaceAll("shifter", "[CONTAINER]");
-    filtered = filtered.replaceAll("singularity", "[CONTAINER]");
-    filtered = filtered.replaceAll("wave", "[CONTAINER]");
-
-    filtered = filtered.replaceAll(
-      "(nf-core/[^\\s]+\\s+)\\d+\\.\\d+(?:\\.\\d+)?[a-zA-Z]*",
-      "$1[VERSION]");
-
-    filtered = filtered.replaceAll(
-      "N E X T F L O W  ~  version \\d+\\.\\d+\\.\\d+(-edge)?",
-      "N E X T F L O W  ~  version [VERSION]");
-
+  /**
+   * Applies rules to a line, in order.
+   *
+   * @param rules The rules to apply
+   * @param line  The line
+   * @return The rewritten line
+   */
+  private static String applyRules(
+      final List<UnaryOperator<String>> rules,
+      final String line) {
+    String filtered = line;
+    for (UnaryOperator<String> rule : rules) {
+      filtered = rule.apply(filtered);
+    }
     return filtered;
   }
 
@@ -383,12 +358,23 @@ public final class NextflowOutputFilter {
    */
   static String filterAbsolutePaths(final String text) {
     String filtered = text;
+    for (String path : PATHS_TO_REPLACE) {
+      filtered = filtered.replace(path, "[PATH]");
+    }
+    return filtered;
+  }
 
-    List<String> pathsToReplace = new ArrayList<>();
+  /**
+   * Collects the environment-specific directories to hide from the output.
+   *
+   * @return The distinct directories, longest first
+   */
+  private static List<String> pathsToReplace() {
+    List<String> paths = new ArrayList<>();
 
     String workingDir = System.getProperty("user.dir");
     if (workingDir != null) {
-      pathsToReplace.add(workingDir);
+      paths.add(workingDir);
     }
 
     String[] envVars = {
@@ -406,7 +392,7 @@ public final class NextflowOutputFilter {
     for (String envVar : envVars) {
       String envValue = System.getenv(envVar);
       if (envValue != null && !envValue.isEmpty() && !envValue.equals("~")) {
-        pathsToReplace.add(envValue);
+        paths.add(envValue);
       }
     }
 
@@ -414,19 +400,13 @@ public final class NextflowOutputFilter {
     if (nxfHome == null || nxfHome.isEmpty()) {
       String home = System.getProperty("user.home");
       if (home != null && !home.isEmpty() && !home.equals("~")) {
-        pathsToReplace.add(home + "/.nextflow");
+        paths.add(home + "/.nextflow");
       }
     }
 
-    pathsToReplace = pathsToReplace.stream()
+    return paths.stream()
         .distinct()
         .sorted((a, b) -> Integer.compare(b.length(), a.length()))
         .collect(Collectors.toList());
-
-    for (String path : pathsToReplace) {
-      filtered = filtered.replace(path, "[PATH]");
-    }
-
-    return filtered;
   }
 }
