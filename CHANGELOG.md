@@ -14,13 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Build, test and release with mise tools and tasks, replacing `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` (see `docs/CONTRIBUTING.md`) (@maxulysse)
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21) (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) Split `Methods.java` into focused utility classes (`HashUtils`, `YamlUtils`, `ArchiveDownloader`, `FileTraversalUtils`, `NextflowOutputFilter`); the public API is unchanged (@maxulysse)
-- [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` now throws `IOException` when the download or extraction fails, failing the test instead of logging and continuing; archives are downloaded to a temporary file with `curl --fail` before extraction, so HTTP errors and truncated transfers are caught (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` throws `IOException` when the download or extraction fails, instead of logging and continuing; it downloads with `curl --fail` to a temporary file first, so HTTP errors and truncated transfers fail too (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` accepts the `compression` type in any case, and URLs ending in `.tar.gzip` or `.tbzip2` (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `listToMD5()` no longer declares `NoSuchAlgorithmException`, as every Java platform supports MD5 (@maxulysse)
 
 ### Fixed
 
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Run the JUnit tests during the Maven build: pin `maven-surefire-plugin` to 3.5.4, the default 2.12.4 cannot run JUnit 5 and reported `Tests run: 0` (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) Document `additionalPatterns`, fix the `filterNextflowOutput()` placeholders and sorted lines, and drop the `noSignRequest` option from the `downloadFromS3()` docs, which it never supported (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) Replace raw types in public API signatures with generic types (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `getAllFilesFromPath()` on S3 and `downloadFromS3()` no longer leave the stderr of `aws`/`nextflow` unread, which could hang the call; `downloadFromS3()` errors now include that stderr (@maxulysse)
 
