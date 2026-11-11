@@ -22,7 +22,7 @@ import org.apache.commons.csv.CSVRecord;
  */
 public final class TableUtils {
 
-  /** Default number of decimal places for CSV double values. */
+  /** Default number of decimal places for table double values. */
   public static final int DEFAULT_DOUBLE_DIGITS = 6;
 
   /** Default decision to keep comments in table. */

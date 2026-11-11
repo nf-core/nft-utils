@@ -319,10 +319,10 @@ public final class OutputSanitizer {
       final List<String> ignorePatterns) {
 
     List<PathMatcher> ignoreMatchers =
-      FileTraversalUtils.buildMatchers(ignorePatterns);
+      Utils.buildMatchers(ignorePatterns);
 
     List<PathMatcher> unstableMatchers =
-      FileTraversalUtils.buildMatchers(unstablePatterns);
+      Utils.buildMatchers(unstablePatterns);
 
     return recursiveParse(value, strValue -> {
       boolean matchIgnore = ignoreMatchers.stream()

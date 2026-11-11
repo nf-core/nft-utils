@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,25 +79,6 @@ public final class FileTraversalUtils {
   }
 
   /**
-   * Compiles glob patterns into path matchers, skipping null or empty globs.
-   *
-   * @param globs The glob patterns, or {@code null}.
-   * @return The path matchers.
-   */
-  static List<PathMatcher> buildMatchers(final List<String> globs) {
-    List<PathMatcher> matchers = new ArrayList<>();
-    if (globs == null) {
-      return matchers;
-    }
-    for (String glob : globs) {
-      if (glob != null && !glob.isEmpty()) {
-        matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
-      }
-    }
-    return matchers;
-  }
-
-  /**
    * Builds the exclude matchers from ignore globs and an optional ignore file.
    *
    * @param ignoreGlobs Glob patterns to exclude, or {@code null}.
@@ -111,9 +91,9 @@ public final class FileTraversalUtils {
       final List<String> ignoreGlobs,
       final String ignoreFilePath)
       throws IOException {
-    List<PathMatcher> matchers = buildMatchers(ignoreGlobs);
+    List<PathMatcher> matchers = Utils.buildMatchers(ignoreGlobs);
     if (ignoreFilePath != null && !ignoreFilePath.isEmpty()) {
-      matchers.addAll(buildMatchers(readGlobsFromFile(ignoreFilePath)));
+      matchers.addAll(Utils.buildMatchers(readGlobsFromFile(ignoreFilePath)));
     }
     return matchers;
   }
@@ -240,7 +220,7 @@ public final class FileTraversalUtils {
       final List<String> includeGlobs)
       throws IOException {
     PathFilter filter = new PathFilter(
-      buildMatchers(includeGlobs),
+      Utils.buildMatchers(includeGlobs),
       buildExcludeMatchers(ignoreGlobs, ignoreFilePath)
     );
     Predicate<Path> keepDir = dir -> {
@@ -388,9 +368,9 @@ public final class FileTraversalUtils {
     }
 
     // An empty include list means everything here, unlike getAllFilesFromDir
-    List<PathMatcher> includeMatchers = buildMatchers(includeGlobs);
+    List<PathMatcher> includeMatchers = Utils.buildMatchers(includeGlobs);
     if (includeMatchers.isEmpty()) {
-      includeMatchers = buildMatchers(List.of("**"));
+      includeMatchers = Utils.buildMatchers(List.of("**"));
     }
     PathFilter filter = new PathFilter(
       includeMatchers,
