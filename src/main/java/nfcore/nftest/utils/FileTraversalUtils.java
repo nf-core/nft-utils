@@ -16,7 +16,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -161,11 +160,19 @@ public final class FileTraversalUtils {
   }
 
   /**
-   * Retrieves files from an output directory using options provided in a map.
+   * Retrieves files from an output directory, optionally as paths relative to
+   * it.
    *
-   * @param options Options controlling directory traversal and filtering.
    * @param outdir The root output directory to traverse.
-   * @return A list of matching files or relative paths when {@code relative}
+   * @param includeDir Whether directories should be included in the result.
+   * @param ignoreGlobs Glob patterns identifying files or directories to
+   *     exclude.
+   * @param ignoreFilePath Path to a file containing additional ignore glob
+   *     patterns, or {@code null}.
+   * @param includeGlobs Glob patterns identifying files or directories to
+   *     include.
+   * @param relative Whether to return paths relative to {@code outdir}.
+   * @return A list of matching files, or relative paths when {@code relative}
    *     is enabled.
    * @throws IOException If an error occurs while traversing the directory or
    *     reading the ignore patterns file.
@@ -173,8 +180,12 @@ public final class FileTraversalUtils {
    *     not exist, or is not a directory.
    */
   public static List<?> getAllFilesFromDir(
-      final LinkedHashMap<String, Object> options,
-      final String outdir)
+      final String outdir,
+      final boolean includeDir,
+      final List<String> ignoreGlobs,
+      final String ignoreFilePath,
+      final List<String> includeGlobs,
+      final boolean relative)
       throws IOException {
     if (outdir == null || outdir.isEmpty()) {
       throw new IllegalArgumentException(
@@ -193,17 +204,6 @@ public final class FileTraversalUtils {
         "The specified path is not a directory: " + outdir
       );
     }
-
-    Boolean includeDir = (Boolean) options
-      .getOrDefault("includeDir", false);
-    List<String> ignoreGlobs = (List<String>) options
-      .getOrDefault("ignore", new ArrayList<String>());
-    String ignoreFilePath = (String) options
-      .get("ignoreFile");
-    Boolean relative = (Boolean) options
-      .getOrDefault("relative", false);
-    List<String> includeGlobs = (List<String>) options
-      .getOrDefault("include", Arrays.asList("*", "**/*"));
 
     List<File> files = getAllFilesFromDir(
       outdir, includeDir, ignoreGlobs,
@@ -360,37 +360,32 @@ public final class FileTraversalUtils {
 
   /**
    * Lists all files at the given path (local or cloud), returning sorted
-   * relative paths, with filtering options.
+   * relative paths.
    *
-   * @param options Named options map (Groovy named params)
-   * @param path    The path to list - a local directory or a cloud URI
+   * @param path           The path to list - a local directory or a cloud URI
+   * @param ignoreGlobs    Glob patterns to exclude
+   * @param includeGlobs   Glob patterns to include; empty includes everything
+   * @param includeDir     Whether directories should be included
+   * @param ignoreFilePath Path to a file of additional ignore globs, or
+   *                       {@code null}
+   * @param noSignRequest  Whether to list S3 with {@code --no-sign-request}
    * @return A sorted list of relative file paths under {@code path}
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
   public static List<String> getAllFilesFromPath(
-      final LinkedHashMap<String, Object> options,
-      final String path)
+      final String path,
+      final List<String> ignoreGlobs,
+      final List<String> includeGlobs,
+      final boolean includeDir,
+      final String ignoreFilePath,
+      final boolean noSignRequest)
       throws IOException, InterruptedException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException(
         "The 'path' parameter is required."
       );
     }
-
-    List<String> ignoreGlobs =
-        (List<String>) options.getOrDefault(
-          "ignore", new ArrayList<String>()
-        );
-    List<String> includeGlobs =
-        (List<String>) options.getOrDefault(
-          "include", Arrays.asList("**", "*")
-        );
-    Boolean includeDir = (Boolean) options
-      .getOrDefault("includeDir", false);
-    String ignoreFilePath = (String) options.get("ignoreFile");
-    Boolean noSignRequest = (Boolean) options
-      .getOrDefault("noSignRequest", false);
 
     // An empty include list means everything here, unlike getAllFilesFromDir
     List<PathMatcher> includeMatchers = buildMatchers(includeGlobs);

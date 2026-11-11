@@ -3,10 +3,7 @@ package nfcore.nftest.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +53,13 @@ public final class NextflowOutputFilter {
         "N E X T F L O W  ~  version \\d+\\.\\d+\\.\\d+(-edge)?",
         "N E X T F L O W  ~  version [VERSION]")
     );
+
+  /** The current user name, or an empty string. */
+  private static final String USER_NAME = System.getProperty("user.name", "");
+
+  /** Matches the user name in a {@code userName :} line. */
+  private static final Pattern USER_NAME_FIELD =
+    Pattern.compile("(userName\\s*:\\s*)" + Pattern.quote(USER_NAME));
 
   /** Environment-specific paths, longest first. */
   private static final List<String> PATHS_TO_REPLACE = pathsToReplace();
@@ -134,42 +138,6 @@ public final class NextflowOutputFilter {
       return sortOrderIndependentLines(filteredLines);
     }
     return filteredLines;
-  }
-
-  /**
-   * Filters Nextflow output using Groovy's named parameter syntax.
-   *
-   * @param options LinkedHashMap of named options (Groovy named params)
-   * @param output  The stdout or stderr output to filter
-   * @return The filtered output as a List&lt;String&gt;
-   */
-  public static List<String> filterNextflowOutput(
-      final LinkedHashMap<String, Object> options,
-      final Object output) {
-    final Map<String, Object> optionsFixed;
-    if (options == null) {
-      optionsFixed = new HashMap<>();
-    } else {
-      optionsFixed = options;
-    }
-
-    List<String> additionalPatterns = (List<String>) optionsFixed
-      .get("additionalPatterns");
-    Boolean sorted = (Boolean) optionsFixed.get("sorted");
-    Boolean keepAnsi = (Boolean) optionsFixed.get("keepAnsi");
-    List<String> ignore = (List<String>) optionsFixed.get("ignore");
-    List<String> include = (List<String>) optionsFixed.get("include");
-
-    if (sorted == null) {
-      sorted = true;
-    }
-    if (keepAnsi == null) {
-      keepAnsi = false;
-    }
-    return filterNextflowOutput(
-      output, additionalPatterns,
-      sorted, keepAnsi, ignore, include
-    );
   }
 
   /**
@@ -309,11 +277,8 @@ public final class NextflowOutputFilter {
       final String capturedRunName) {
     String filtered = line;
 
-    String userName = System.getProperty("user.name");
-    if (userName != null && !userName.isEmpty()) {
-      filtered = filtered.replaceAll(
-        "(userName\\s*:\\s*)" + Pattern.quote(userName),
-        "$1[USER]");
+    if (!USER_NAME.isEmpty()) {
+      filtered = USER_NAME_FIELD.matcher(filtered).replaceAll("$1[USER]");
     }
 
     filtered = applyRules(RULES_BEFORE_PATHS, filtered);

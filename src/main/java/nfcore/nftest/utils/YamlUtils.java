@@ -3,16 +3,16 @@ package nfcore.nftest.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -83,32 +83,22 @@ public final class YamlUtils {
       );
     }
 
-    PathMatcher matcher = FileSystems
-      .getDefault()
-      .getPathMatcher("glob:" + fileName);
-
-    try {
-      List<String> matchingFiles = Files.list(parent)
-          .filter(Files::isRegularFile)
-          .filter(path -> matcher.matches(path.getFileName()))
-          .sorted()
-          .map(path -> path.toAbsolutePath().toString())
-          .collect(Collectors.toList());
-
-      if (matchingFiles.isEmpty()) {
-        throw new IOException(
-          "No files found matching pattern: "
-          + pathPattern
-        );
+    List<String> matchingFiles = new ArrayList<>();
+    try (DirectoryStream<Path> paths =
+        Files.newDirectoryStream(parent, fileName)) {
+      for (Path path : paths) {
+        if (Files.isRegularFile(path)) {
+          matchingFiles.add(path.toAbsolutePath().toString());
+        }
       }
-
-      return matchingFiles;
-    } catch (IOException e) {
+    }
+    if (matchingFiles.isEmpty()) {
       throw new IOException(
-        "Error resolving wildcard pattern "
-        + pathPattern + ": " + e.getMessage()
+        "No files found matching pattern: " + pathPattern
       );
     }
+    Collections.sort(matchingFiles);
+    return matchingFiles;
   }
 
   /**
@@ -143,18 +133,9 @@ public final class YamlUtils {
             }
           }
 
-          for (
-              Map.Entry<String, Map<String, Object>> entry
-              : yamlData.entrySet()) {
-            String key = entry.getKey();
-            Map<String, Object> value = entry.getValue();
-
-            if (mergedResult.containsKey(key)) {
-              mergedResult.get(key).putAll(value);
-            } else {
-              mergedResult.put(key, new TreeMap<>(value));
-            }
-          }
+          yamlData.forEach((key, value) -> mergedResult
+              .computeIfAbsent(key, k -> new TreeMap<>())
+              .putAll(value));
         }
       }
     } catch (IOException e) {

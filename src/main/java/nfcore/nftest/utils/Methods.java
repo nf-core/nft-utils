@@ -92,8 +92,7 @@ public final class Methods {
   public static List<?> getAllFilesFromDir(
       final String path)
       throws IOException {
-    return FileTraversalUtils.getAllFilesFromDir(
-      new LinkedHashMap<String, Object>(), path);
+    return getAllFilesFromDir(new LinkedHashMap<String, Object>(), path);
   }
 
   /**
@@ -105,11 +104,18 @@ public final class Methods {
    * @throws IOException If an error occurs while traversing the directory.
    * @throws IllegalArgumentException If {@code outdir} is invalid.
    */
+  @SuppressWarnings("unchecked")
   public static List<?> getAllFilesFromDir(
       final LinkedHashMap<String, Object> options,
       final String outdir)
       throws IOException {
-    return FileTraversalUtils.getAllFilesFromDir(options, outdir);
+    return FileTraversalUtils.getAllFilesFromDir(
+      outdir,
+      (Boolean) options.getOrDefault("includeDir", false),
+      (List<String>) options.getOrDefault("ignore", List.of()),
+      (String) options.get("ignoreFile"),
+      (List<String>) options.getOrDefault("include", List.of("*", "**/*")),
+      (Boolean) options.getOrDefault("relative", false));
   }
 
   /**
@@ -171,8 +177,7 @@ public final class Methods {
   public static List<String> getAllFilesFromPath(
       final String path)
       throws IOException, InterruptedException {
-    return FileTraversalUtils.getAllFilesFromPath(
-      new LinkedHashMap<String, Object>(), path);
+    return getAllFilesFromPath(new LinkedHashMap<String, Object>(), path);
   }
 
   /**
@@ -185,11 +190,18 @@ public final class Methods {
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
+  @SuppressWarnings("unchecked")
   public static List<String> getAllFilesFromPath(
       final LinkedHashMap<String, Object> options,
       final String path)
       throws IOException, InterruptedException {
-    return FileTraversalUtils.getAllFilesFromPath(options, path);
+    return FileTraversalUtils.getAllFilesFromPath(
+      path,
+      (List<String>) options.getOrDefault("ignore", List.of()),
+      (List<String>) options.getOrDefault("include", List.of("**", "*")),
+      (Boolean) options.getOrDefault("includeDir", false),
+      (String) options.get("ignoreFile"),
+      (Boolean) options.getOrDefault("noSignRequest", false));
   }
 
   // ── HASHING ───────────────────────────────────────────────────────────
@@ -362,7 +374,7 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final LinkedHashMap<String, Object> options,
       final Object output) {
-    return NextflowOutputFilter.filterNextflowOutput(options, output);
+    return filterNextflowOutputWithOptions(options, output);
   }
 
   /**
@@ -376,11 +388,31 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final Map<String, Object> options) {
-    LinkedHashMap<String, Object> named = new LinkedHashMap<>();
+    return filterNextflowOutputWithOptions(options, output);
+  }
+
+  /**
+   * Filters Nextflow output with the options of either map overload.
+   *
+   * @param options The filtering options, or {@code null} to use defaults
+   * @param output  The output to filter
+   * @return The filtered output as a List&lt;String&gt;
+   */
+  @SuppressWarnings("unchecked")
+  private static List<String> filterNextflowOutputWithOptions(
+      final Map<String, Object> options,
+      final Object output) {
+    Map<String, Object> opts = Map.of();
     if (options != null) {
-      named.putAll(options);
+      opts = options;
     }
-    return filterNextflowOutput(named, output);
+    return filterNextflowOutput(
+      output,
+      (List<String>) opts.get("additionalPatterns"),
+      !Boolean.FALSE.equals(opts.get("sorted")),
+      Boolean.TRUE.equals(opts.get("keepAnsi")),
+      (List<String>) opts.get("ignore"),
+      (List<String>) opts.get("include"));
   }
 
   // ── OUTPUT SANITIZATION ───────────────────────────────────────────────
@@ -527,7 +559,7 @@ public final class Methods {
   public static Path downloadFromS3(
       final String cloudUri)
       throws IOException, InterruptedException {
-    return downloadFromS3(new LinkedHashMap<String, Object>(), cloudUri);
+    return ArchiveDownloader.downloadFromS3(cloudUri);
   }
 
   /**
@@ -544,6 +576,6 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String cloudUri)
       throws IOException, InterruptedException {
-    return ArchiveDownloader.downloadFromS3(options, cloudUri);
+    return ArchiveDownloader.downloadFromS3(cloudUri);
   }
 }

@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -256,14 +255,12 @@ public final class ArchiveDownloader {
    * Downloads a single file from a cloud URI to a temporary local directory
    * and returns the local {@link Path}.
    *
-   * @param options Reserved for future use (currently unused)
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
    * @throws InterruptedException if the process is interrupted
    */
   public static Path downloadFromS3(
-      final LinkedHashMap<String, Object> options,
       final String cloudUri)
       throws IOException, InterruptedException {
     if (cloudUri == null || cloudUri.isEmpty()) {
