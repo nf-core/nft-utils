@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- [#99](https://github.com/nf-core/nft-utils/pull/99) Build, test and release with mise tools and tasks, replacing `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` (see `docs/CONTRIBUTING.md`) (@maxulysse)
+- [#99](https://github.com/nf-core/nft-utils/pull/99) Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21) (@maxulysse)
+
+### Fixed
+
+- [#99](https://github.com/nf-core/nft-utils/pull/99) Run the JUnit tests during the Maven build: pin `maven-surefire-plugin` to 3.5.4, the default 2.12.4 cannot run JUnit 5 and reported `Tests run: 0` (@maxulysse)
+
 ## [1.2.1]
 
 ### Added
