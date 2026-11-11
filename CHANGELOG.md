@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `tableRemoveComments` opt-in option to remove leading lines starting with `#` (@LouisLeNezet)
+- [#93](https://github.com/nf-core/nft-utils/pull/93) Add `tableRemoveComments` opt-in option to remove leading lines starting with `#` (@LouisLeNezet)
 
 ### Fixed
 
