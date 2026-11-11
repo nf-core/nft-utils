@@ -15,7 +15,33 @@ env:
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
 jobs:
+  # Docs-only changes skip the plugin tests
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      plugin: ${{ steps.filter.outputs.plugin }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+
+      - name: Detect plugin changes
+        id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          predicate-quantifier: every
+          filters: |
+            plugin:
+              - "**"
+              - "!docs/**"
+              - "!**/*.md"
+              - "!mkdocs.yml"
+
   test:
+    needs: [changes]
+    if: needs.changes.outputs.plugin == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -59,7 +85,7 @@ jobs:
   # The only required check here, so matrix changes need no ruleset change
   ci-pass:
     name: CI pass
-    needs: [test]
+    needs: [changes, test]
     if: always()
     runs-on: ubuntu-latest
     steps:
