@@ -20,7 +20,7 @@ mise run bump <version>      # set the version in pom.xml and docs/index.md
 - The version lives in `pom.xml`. `moduleVersion` is filled in at build time.
 - After changing tools in `mise.toml`, run `mise lock` and commit `mise.lock` and `.mise/locks/`: `locked = true` rejects anything not locked.
 - After changing the Maven version, update `distributionSha256Sum` in `.mvn/wrapper/maven-wrapper.properties`.
-- CI takes Nextflow from `setup-nextflow`, so the matrix decides its version, not `mise.toml`.
+- CI sets `NXF_VER` from its matrix: the Nextflow launcher installed by mise then downloads that version.
 - Add user-facing changes to `CHANGELOG.md` under `[Unreleased]`.
 - `[env]` in `mise.toml` holds the settings that change snapshots, and unsets the variables that turn on Nextflow agent mode: run nf-tests through `mise run`, locally and in CI.
 - `mise run assemble` runs checkstyle, PMD and SpotBugs. Fix all violations before pushing.

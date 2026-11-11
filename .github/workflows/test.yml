@@ -14,8 +14,6 @@ env:
   NFT_WORKDIR: "~"
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
-  # Both come from setup-nextflow, so CI has one JDK and the matrix decides the Nextflow version
-  MISE_DISABLE_TOOLS: java,github:nextflow-io/nextflow
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,28 +34,27 @@ jobs:
           path: ~/.m2
           key: maven-${{ hashFiles('pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
 
-      - name: Setup Nextflow ${{ matrix.NXF_VER }}
-        uses: nf-core/setup-nextflow@v3
-        with:
-          version: ${{ matrix.NXF_VER }}
-          java-version: 21
-
       - name: Setup mise
         uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
         with:
           version: 2026.10.19
 
+      # The Nextflow launcher from mise downloads the version set in NXF_VER
+      - name: Select Nextflow ${{ matrix.NXF_VER }}
+        env:
+          VERSION: ${{ matrix.NXF_VER }}
+        run: |
+          if [[ $VERSION == latest-everything ]]; then
+            VERSION=$(for channel in latest edge; do
+              curl -fsSL "https://www.nextflow.io/releases/$channel/version"; echo
+            done | sort -V | tail -1)
+          fi
+          echo "NXF_VER=$VERSION" >> "$GITHUB_ENV"
+
       - name: Test plugin
-        id: test_plugin
-        # filterNextflowOutput snapshots do not match latest-everything yet
-        continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
         run: |
           mise run validate
           mise run validate-noplugins
-
-      - name: Warn on latest-everything failure
-        if: steps.test_plugin.outcome == 'failure'
-        run: echo "::warning::nf-tests failed on Nextflow ${{ matrix.NXF_VER }}"
 
   # The only required check here, so matrix changes need no ruleset change
   ci-pass:

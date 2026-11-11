@@ -60,6 +60,15 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
+				<includes>
+					<include>META-INF/nf-test-plugin</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>META-INF/nf-test-plugin</exclude>
+				</excludes>
 			</resource>
 		</resources>
 		<plugins>
