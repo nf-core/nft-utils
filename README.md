@@ -15,25 +15,7 @@ Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 
 ## Development
 
-Requires Nextflow, nf-test, and Maven.
-
-```bash
-# Install the pixi environment (https://pixi.sh) and open a shell in it
-pixi install
-pixi shell
-
-# Compile the package
-mvn -B clean verify
-
-# Run all tests
-nf-test test --plugins target/nft-utils-*.jar --verbose --debug tests/
-
-# Run a single test and update snapshots
-nf-test test --plugins target/nft-utils-*.jar --update-snapshot tests/sanitizeOutput/
-
-# Test with no plugins installed
-nf-test test --plugins target/nft-utils-*.jar --config tests_noplugins/nf-test_noplugins.config tests_noplugins/sanitizeOutput/
-```
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## Credits
 

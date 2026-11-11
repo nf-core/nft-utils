@@ -14,10 +14,14 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.x
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: 2026.10.19
+          install_args: java
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - name: Obtain version from manifest
         run: |
-          version=$(grep "moduleVersion" src/main/resources/META-INF/nf-test-plugin | sed -e s'/[^=]*=//')
+          version=$(./mvnw -B -q help:evaluate -Dexpression=project.version -DforceStdout)
           [[ $version == *"dev"* ]] && pipeline_version="dev" || pipeline_version=$version
           echo "pipeline_version=$pipeline_version" >> $GITHUB_ENV
       - name: Setup git user

@@ -1,14 +1,4 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["local>nf-core/.github:renovate-config"],
-  customManagers: [
-    {
-      // `# renovate: datasource=... depName=...` above a `*_VER:` env var in workflows
-      customType: "regex",
-      managerFilePatterns: ["/(^|/)\\.github/workflows/.+\\.ya?ml$/"],
-      matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: versioning=(?<versioning>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VER\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s",
-      ],
-    },
-  ],
 }

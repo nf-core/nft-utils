@@ -2,10 +2,8 @@
 .nextflow*
 *.pyc
 data/
-dependency-reduced-pom.xml
 pom.xml
 results/
 testing*
 testing/
 work/
-pixi.lock

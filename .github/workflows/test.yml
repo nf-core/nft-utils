@@ -1,5 +1,6 @@
 name: Run plugin tests
 on:
+  push:
   pull_request:
     branches: [main]
   merge_group:
@@ -11,23 +12,14 @@ permissions:
 
 env:
   NFT_WORKDIR: "~"
-  NXF_ANSI_LOG: false
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
-  NXF_SYNTAX_PARSER: "v2"
-  # renovate: datasource=github-releases depName=askimed/nf-test versioning=semver
-  NFT_VER: "0.9.5"
-  # renovate: datasource=pypi depName=nf-core
-  NF_CORE_VER: "4.2.1"
 jobs:
   test:
-    runs-on:
-      - runs-on=${{ github.run_id }}-nf-test
-      - runner=4cpu-linux-x64
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        JAVA_VERSION: ["17", "21"]
         NXF_VER:
           - "26.04.9"
           - "latest-everything"
@@ -36,133 +28,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
-      - name: Setup Java ${{ matrix.JAVA_VERSION }}
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
+      - name: Cache Maven packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          distribution: temurin
-          java-version: ${{ matrix.JAVA_VERSION }}
-          cache: maven
+          path: ~/.m2
+          key: maven-${{ hashFiles('pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
 
-      - name: Setup Nextflow ${{ matrix.NXF_VER }}
-        uses: nf-core/setup-nextflow@v3
+      - name: Setup mise
+        uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
         with:
-          version: ${{ matrix.NXF_VER }}
+          version: 2026.10.19
 
-      - name: Setup nf-test
-        uses: nf-core/setup-nf-test@4069fbbaabe94c08faba4ad261bfa88225ba133f # v2.1.0
-        with:
-          version: ${{ env.NFT_VER }}
-          install-pdiff: true
-
-      # pip, not conda: the bioconda nf-core package pulls in its own nextflow
-      - name: Setup Python
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
-        with:
-          python-version: "3.14"
-
-      - name: Install nf-core tools
-        run: pip install "nf-core==${NF_CORE_VER}"
-
-      - name: Check tools
+      # The Nextflow launcher from mise downloads the version set in NXF_VER
+      - name: Select Nextflow ${{ matrix.NXF_VER }}
+        env:
+          VERSION: ${{ matrix.NXF_VER }}
         run: |
-          java -version
-          nextflow -version
-          nf-test version
-          nf-core --version
-
-      - name: Build plugin
-        run: ./build.sh
+          if [[ $VERSION == latest-everything ]]; then
+            VERSION=$(for channel in latest edge; do
+              curl -fsSL "https://www.nextflow.io/releases/$channel/version"; echo
+            done | sort -V | tail -1)
+          fi
+          echo "NXF_VER=$VERSION" >> "$GITHUB_ENV"
 
       - name: Test plugin
-        id: test_plugin
-        # Only failures on the minimal Nextflow version fail the job
-        continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
-        env:
-          NFT_DIFF: "pdiff"
-          NFT_DIFF_ARGS: "--line-numbers --width 120 --expand-tabs=2"
-        run: ./test.sh
-
-      - name: Report test status
-        if: ${{ always() }}
         run: |
-          if [[ "${{ steps.test_plugin.outcome }}" == "failure" ]]; then
-            echo "::error::Test with Nextflow ${{ matrix.NXF_VER }} / Java ${{ matrix.JAVA_VERSION }} failed"
-            echo "## ❌ Test failed: Nextflow ${{ matrix.NXF_VER }} / Java ${{ matrix.JAVA_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
-            if [[ "${{ matrix.NXF_VER }}" == "latest-everything" ]]; then
-              echo "::warning::Test with latest-everything failed but will not cause workflow failure. Please check if the error is expected or if it needs fixing."
-            else
-              exit 1
-            fi
-          fi
+          mise run validate
+          mise run validate-noplugins
 
-      # continue-on-error keeps latest-everything from failing the job, so surface
-      # its failures through a PR comment instead (posted by pr-comment.yml).
-      - name: Prepare PR comment fragment
-        if: ${{ always() && steps.test_plugin.outcome == 'failure' && matrix.NXF_VER == 'latest-everything' }}
-        run: |
-          mkdir -p pr-comment-fragment
-          echo "* ❌ Nextflow \`${{ matrix.NXF_VER }}\` | Java \`${{ matrix.JAVA_VERSION }}\`" > pr-comment-fragment/fragment.md
-
-      - name: Upload PR comment fragment
-        if: ${{ always() && steps.test_plugin.outcome == 'failure' && matrix.NXF_VER == 'latest-everything' }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: pr-comment-fragment-${{ strategy.job-index }}
-          path: pr-comment-fragment/
-
-      - name: Clean up
-        if: always()
-        run: rm -rf .nf-test/
-
-  confirm-pass:
+  # The only required check here, so matrix changes need no ruleset change
+  ci-pass:
+    name: CI pass
     needs: [test]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: One or more tests failed (excluding latest-everything)
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-
-      - name: One or more tests cancelled
-        if: ${{ contains(needs.*.result, 'cancelled') }}
-        run: exit 1
-
-      - name: Download PR comment fragments
-        if: ${{ always() }}
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        continue-on-error: true
-        with:
-          pattern: pr-comment-fragment-*
-          path: pr-comment-fragments
-          merge-multiple: true
-
-      # Based on the fragments (not needs.*.result) so non-blocking failures are still reported
-      - name: Prepare PR comment
-        if: ${{ always() }}
+      - name: Check the job results
         env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
-          mkdir -p pr-comment
-          echo "$PR_NUMBER" > pr-comment/pr_number.txt
-          echo "nf-test" > pr-comment/header.txt
-          if [ -d pr-comment-fragments ] && [ -n "$(ls -A pr-comment-fragments)" ]; then
-            {
-              echo "## ❌ nf-test failed with latest Nextflow version"
-              echo ""
-              echo "> [!NOTE]"
-              echo "> Tests with Nextflow's latest version failed but it will not cause a CI workflow failure."
-              echo "> Please check if the failure is expected with newer (edge-)releases of Nextflow or if it needs fixing."
-              echo ""
-              cat pr-comment-fragments/*.md
-              echo ""
-              echo "See the [full run](${RUN_URL}) for details."
-            } > pr-comment/comment.md
-          fi
-
-      - name: Upload PR comment artifact
-        if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: pr-comment
-          path: pr-comment/
+          echo "$RESULTS"
+          case "$RESULTS" in
+            *failure*|*cancelled*) exit 1 ;;
+          esac

@@ -5,19 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- CI now tests the Nextflow version from the matrix: the bioconda `nf-core` package depends on `nextflow`, and that copy shadowed the one from `setup-nextflow`, so every job ran 26.04.6. CI now installs nf-core tools with pip and nf-test with `nf-core/setup-nf-test` instead of micromamba
-
 ### Changed
 
-- Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and `latest-everything`, on Java 17 and 21
-- Add Renovate config to keep nf-core tools and nf-test in CI and the pixi lock file up to date
-- Replace `environment.yml` with a pixi workspace (`pixi.toml`, `pixi.lock`) for local development
-- Show snapshot differences with `pdiff` in CI
-- Failures on `latest-everything` no longer fail CI: they are reported as a warning and in the job summary, plus a PR comment (new `pr-comment.yml` workflow, as in the nf-core pipeline template)
-- Run the nf-test job on nf-core self-hosted runners (RunsOn), as in the nf-core pipeline template, and drop the `push` trigger of `test.yml`: forks have no such runners
-- Use nf-core tools 4.2.1 (was 4.1.0)
+- Build, test and release with mise tools and tasks, replacing `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` (see `docs/CONTRIBUTING.md`)
+- Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21)
+
+### Fixed
+
+- Run the JUnit tests during the Maven build: pin `maven-surefire-plugin` to 3.5.4, the default 2.12.4 cannot run JUnit 5 and reported `Tests run: 0`
 
 ## [1.2.1]
 
