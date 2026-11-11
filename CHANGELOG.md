@@ -176,18 +176,3 @@ First release of nft-utils 🍏🚀
 
 - @adamrtalbot
 - @maxulysse
-
-[1.2.1]: https://github.com/nf-core/nft-utils/releases/tag/1.2.1
-[1.2.0]: https://github.com/nf-core/nft-utils/releases/tag/1.2.0
-[1.1.1]: https://github.com/nf-core/nft-utils/releases/tag/1.1.1
-[1.1.0]: https://github.com/nf-core/nft-utils/releases/tag/1.1.0
-[1.0.0]: https://github.com/nf-core/nft-utils/releases/tag/1.0.0
-[0.0.9]: https://github.com/nf-core/nft-utils/releases/tag/0.0.9
-[0.0.8]: https://github.com/nf-core/nft-utils/releases/tag/0.0.8
-[0.0.7]: https://github.com/nf-core/nft-utils/releases/tag/0.0.7
-[0.0.6]: https://github.com/nf-core/nft-utils/releases/tag/0.0.6
-[0.0.5]: https://github.com/nf-core/nft-utils/releases/tag/0.0.5
-[0.0.4]: https://github.com/nf-core/nft-utils/releases/tag/0.0.4
-[0.0.3]: https://github.com/nf-core/nft-utils/releases/tag/0.0.3
-[0.0.2]: https://github.com/nf-core/nft-utils/releases/tag/0.0.2
-[0.0.1]: https://github.com/nf-core/nft-utils/releases/tag/0.0.1
