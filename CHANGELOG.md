@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#90](https://github.com/nf-core/nft-utils/pull/90) Document `additionalPatterns`, fix the `filterNextflowOutput()` placeholders and sorted lines, and drop the `noSignRequest` option from the `downloadFromS3()` docs, which it never supported (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) Document `additionalPatterns`, fix the `filterNextflowOutput()` placeholders and sorted lines, and document that `downloadFromS3()` reads public buckets without `noSignRequest`, which it never supported (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) Replace raw types in public API signatures with generic types (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `getAllFilesFromPath()` on S3 and `downloadFromS3()` no longer leave the stderr of `aws`/`nextflow` unread, which could hang the call; `downloadFromS3()` errors now include that stderr (@maxulysse)
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Run the JUnit tests during the Maven build: pin `maven-surefire-plugin` to 3.5.4, the default 2.12.4 cannot run JUnit 5 and reported `Tests run: 0` (@maxulysse)

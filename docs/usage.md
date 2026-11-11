@@ -203,7 +203,7 @@ Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future
 
 Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.
 
-It uses `nextflow fs cp`, so it needs Nextflow and the S3 credentials Nextflow uses.
+It uses `nextflow fs cp`, so it needs Nextflow and the S3 credentials Nextflow uses. Public buckets need no credentials and no `noSignRequest` option: Nextflow falls back to anonymous access, even when the configured credentials are invalid.
 
 ```groovy
 def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")
