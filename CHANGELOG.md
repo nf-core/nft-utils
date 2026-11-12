@@ -5,13 +5,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- [#90](https://github.com/nf-core/nft-utils/pull/90) Implement the `additionalPatterns` option of `filterNextflowOutput()`: matches of each regex are removed from every line (previously the option was accepted but ignored) (@maxulysse)
+
 ### Changed
 
+- [#90](https://github.com/nf-core/nft-utils/pull/90) Split `Methods.java` into focused utility classes (`HashUtils`, `YamlUtils`, `ArchiveDownloader`, `FileTraversalUtils`, `NextflowOutputFilter`); public method names and parameters are unchanged (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` throws `IOException` when the download or extraction fails, instead of logging and continuing; it downloads with `curl --fail` to a temporary file first, so HTTP errors and truncated transfers fail too (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` accepts the `compression` type in any case, and URLs ending in `.tar.gzip`, `.tar.bzip2`, `.tgzip` or `.tbzip2` (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) `listToMD5()` no longer declares `NoSuchAlgorithmException`, as every Java platform supports MD5 (@maxulysse)
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Build, test and release with mise tools and tasks, replacing `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` (see `docs/CONTRIBUTING.md`) (@maxulysse)
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21) (@maxulysse)
 
 ### Fixed
 
+- [#90](https://github.com/nf-core/nft-utils/pull/90) Docs: add `additionalPatterns`, fix the `filterNextflowOutput()` placeholders and sorted lines, and replace the `noSignRequest` option of `downloadFromS3()`, which never existed, with a note that public buckets need no credentials (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) Replace raw types in public API signatures with generic types (@maxulysse)
+- [#90](https://github.com/nf-core/nft-utils/pull/90) `getAllFilesFromPath()` on S3 and `downloadFromS3()` no longer leave the stderr of `aws`/`nextflow` unread, which could hang the call; `downloadFromS3()` errors now include that stderr (@maxulysse)
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Run the JUnit tests during the Maven build: pin `maven-surefire-plugin` to 3.5.4, the default 2.12.4 cannot run JUnit 5 and reported `Tests run: 0` (@maxulysse)
 
 ## [1.2.1]
@@ -30,13 +41,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#86](https://github.com/nf-core/nft-utils/pull/86) Add `csvMD5Keys` for `sanitizeOutput` to hash normalized CSV content (@LouisLeNezet)
 
-### Fixed
-
-- [#85](https://github.com/nf-core/nft-utils/pull/85) Fix empty value usage in `sanitizeOutput()`. See [#84](https://github.com/nf-core/nft-utils/issues/84) (@LouisLeNezet)
-
 ### Changed
 
 - [#88](https://github.com/nf-core/nft-utils/pull/88) Clean up documentation prose, add feature list to README, standardize CHANGELOG (@maxulysse)
+
+### Fixed
+
+- [#85](https://github.com/nf-core/nft-utils/pull/85) Fix empty value usage in `sanitizeOutput()`. See [#84](https://github.com/nf-core/nft-utils/issues/84) (@LouisLeNezet)
 
 ## [1.1.1]
 

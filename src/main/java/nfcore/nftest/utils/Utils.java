@@ -4,8 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -18,6 +22,25 @@ public final class Utils {
    * Prevents instantiation of this utility class.
    */
   private Utils() {
+  }
+
+  /**
+   * Compiles glob patterns into path matchers, skipping null or empty globs.
+   *
+   * @param globs The glob patterns, or {@code null}.
+   * @return The path matchers.
+   */
+  static List<PathMatcher> buildMatchers(final List<String> globs) {
+    List<PathMatcher> matchers = new ArrayList<>();
+    if (globs == null) {
+      return matchers;
+    }
+    for (String glob : globs) {
+      if (glob != null && !glob.isEmpty()) {
+        matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
+      }
+    }
+    return matchers;
   }
 
   /**
@@ -95,20 +118,6 @@ public final class Utils {
       int exitCode = process.waitFor();
       return new ProcessResult(exitCode, stderr.toString());
     }
-  }
-
-  /**
-   * Shell escape a string by wrapping in single quotes and escaping existing
-   * single quotes.
-   *
-   * @param s The string to escape for safe use in a shell command.
-   * @return The shell-escaped string
-   */
-  public static String shellEscape(final String s) {
-    if (s == null) {
-      return "''";
-    }
-    return "'" + s.replace("'", "'" + "\"'\"" + "'") + "'";
   }
 
   /**

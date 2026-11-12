@@ -5,11 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Comparator;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -24,6 +21,12 @@ import org.apache.commons.csv.CSVRecord;
  * Utility methods for interacting with Table files.
  */
 public final class TableUtils {
+
+  /** Default number of decimal places for table double values. */
+  public static final int DEFAULT_DOUBLE_DIGITS = 6;
+
+  /** Default decision to keep comments in table. */
+  public static final boolean DEFAULT_REMOVE_COMMENTS = false;
 
   /**
    * Prevents instantiation of this utility class.
@@ -142,7 +145,7 @@ public final class TableUtils {
     final boolean removeComments
   ) {
     try {
-      return md5(normalizeTable(path, digits, removeComments));
+      return HashUtils.md5Hex(normalizeTable(path, digits, removeComments));
     } catch (Exception e) {
       throw new RuntimeException(
         "Failed to calculate normalized Table MD5 for file: " + path,
@@ -449,34 +452,6 @@ public final class TableUtils {
     return output.toString()
       .replace("\r\n", "\n")
       .replace("\r", "\n");
-  }
-
-  /**
-   * Calculates the MD5 hash of a string using UTF-8 encoding.
-   *
-   * @param value the string to hash
-   * @return the MD5 hash as a lowercase hexadecimal string
-   * @throws NoSuchAlgorithmException if the MD5 algorithm is not available
-   */
-  private static String md5(final String value)
-    throws NoSuchAlgorithmException {
-
-    final MessageDigest digest =
-      MessageDigest.getInstance("MD5");
-
-    final byte[] hash = digest.digest(
-      value.getBytes(StandardCharsets.UTF_8)
-    );
-
-    final StringBuilder result = new StringBuilder();
-
-    for (final byte b : hash) {
-      result.append(
-        String.format(Locale.ROOT, "%02x", b)
-      );
-    }
-
-    return result.toString();
   }
 
   /**
