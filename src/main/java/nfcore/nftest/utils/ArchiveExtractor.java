@@ -278,14 +278,12 @@ public final class ArchiveExtractor {
       Files.createDirectories(destParent);
     }
 
-    Utils.ProcessResult result = Utils.runProcess(new ProcessBuilder(
-      "nextflow", "fs", "cp", cloudUri, destFile.toString()
-    ));
-    if (result.getExitCode() != 0) {
-      throw new IOException(
-          "nextflow fs cp returned exit code " + result.getExitCode()
-          + " when downloading: " + cloudUri + "\n" + result.getStderr());
-    }
+    runOrThrow(
+      new ProcessBuilder(
+        "nextflow", "fs", "cp", cloudUri, destFile.toString()
+      ),
+      "Failed to download " + cloudUri
+    );
 
     return destFile;
   }
