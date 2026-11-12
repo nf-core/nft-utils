@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#TBD](https://github.com/nf-core/nft-utils/pull/TBD) Rename `curlAndExtract()` to `extract()`, which also extracts bare local paths in place and downloads `s3://` URLs with `nextflow fs cp`, deleting the download once extracted; `curlAndExtract()` stays as a deprecated alias, and `ArchiveDownloader` is renamed `ArchiveExtractor` (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) Split `Methods.java` into focused utility classes (`HashUtils`, `YamlUtils`, `ArchiveDownloader`, `FileTraversalUtils`, `NextflowOutputFilter`); public method names and parameters are unchanged (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` throws `IOException` when the download or extraction fails, instead of logging and continuing; it downloads with `curl --fail` to a temporary file first, so HTTP errors and truncated transfers fail too (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` accepts the `compression` type in any case, and URLs ending in `.tar.gzip`, `.tar.bzip2`, `.tgzip` or `.tbzip2` (@maxulysse)
@@ -20,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21) (@maxulysse)
 - [#100](https://github.com/nf-core/nft-utils/pull/100) Compile for Java 17 (was 11), the minimum Java of Nextflow `26.04.9` (@maxulysse)
 - [#101](https://github.com/nf-core/nft-utils/pull/101) Lint with `maven-checkstyle-plugin` `3.6.0` (was `3.0.0`), which parses Java 17 syntax such as switch rules (@maxulysse)
+- [#102](https://github.com/nf-core/nft-utils/pull/102) Rename `curlAndExtract()` to `extract()`, which also extracts bare local paths in place and downloads `s3://` URLs with `nextflow fs cp`, deleting the download once extracted; `curlAndExtract()` stays as a deprecated alias, and `ArchiveDownloader` is renamed `ArchiveExtractor` (@maxulysse)
 
 ### Fixed
 
