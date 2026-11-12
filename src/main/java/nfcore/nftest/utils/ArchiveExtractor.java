@@ -70,8 +70,8 @@ public final class ArchiveExtractor {
    * is downloaded with {@code nextflow fs cp} to a temporary file in the
    * destination directory, deleted once extracted.
    *
-   * @param source      the local path or URL (http, https, ftp, file, s3)
-   *                    of the archive
+   * @param source      the local path, file:// URL or other URL Nextflow
+   *                    can read (http(s)://, ftp://, s3://, ...)
    * @param destPath    directory to extract the archive into, or
    *                    {@code null} for a new temporary directory that is
    *                    deleted when the JVM exits

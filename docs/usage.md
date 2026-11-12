@@ -729,13 +729,20 @@ when {
 }
 ```
 
+Without `extractDir`, keep the returned directory in a variable declared at test level, so `when` can read what `setup` set:
+
 ```groovy
-when {
-    def db = extract("https://www.example.com/pretty_database.zip")
-    process {
-        """
-        input[0] = file('${db}/pretty_db')
-        """
+test("pretty database") {
+    def db
+    setup {
+        db = extract("https://www.example.com/pretty_database.zip")
+    }
+    when {
+        process {
+            """
+            input[0] = file('${db}/pretty_db')
+            """
+        }
     }
 }
 ```
