@@ -87,6 +87,18 @@ class ArchiveExtractorTest {
   }
 
   @Test
+  void shouldExtractFileUrlInPlace() throws Exception {
+    Path archive = tempDir.resolve("local.tar");
+    Files.write(archive, tarOf("first"));
+    Path dest = tempDir.resolve("dest");
+
+    ArchiveExtractor.extract(
+      archive.toUri().toString(), dest.toString(), null);
+
+    assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
+  }
+
+  @Test
   void shouldExtractInTemporaryDirectoryByDefault() throws Exception {
     Path archive = tempDir.resolve("local.tar");
     Files.write(archive, tarOf("first"));

@@ -1,6 +1,7 @@
 package nfcore.nftest.utils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,10 +65,10 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Extract an archive in a directory. A local path is extracted in place.
-   * An http(s), ftp or file URL is downloaded with {@code curl}, and any
-   * other URL, such as s3://, with {@code nextflow fs cp}, to a temporary
-   * file in the destination directory, deleted once extracted.
+   * Extract an archive in a directory. A local path or file:// URL is
+   * extracted in place. Any other URL, such as http(s)://, ftp:// or s3://,
+   * is downloaded with {@code nextflow fs cp} to a temporary file in the
+   * destination directory, deleted once extracted.
    *
    * @param source      the local path or URL (http, https, ftp, file, s3)
    *                    of the archive
@@ -99,32 +100,24 @@ public final class ArchiveExtractor {
     List<String> command = extractCommand(type, extractDir.toString());
     Files.createDirectories(extractDir);
 
-    int schemeEnd = source.indexOf("://");
-    String scheme = "";
-    if (schemeEnd >= 0) {
-      scheme = source.substring(0, schemeEnd).toLowerCase(Locale.ROOT);
-    }
-
     Path download = null;
     try {
       Path archive;
-      if (scheme.isEmpty()) {
+      if (!source.contains("://")) {
         archive = Paths.get(source);
+      } else if (source.toLowerCase(Locale.ROOT).startsWith("file://")) {
+        archive = Paths.get(URI.create(source));
       } else {
         // Download first, so a failed or truncated transfer is never
         // handed to the extractor
         download = Files.createTempFile(extractDir, "download", ".tmp");
         archive = download;
-        List<String> fetch = switch (scheme) {
-          case "http", "https", "ftp", "file" -> List.of(
-            "curl", "--fail", "-L", "--retry", "5",
-            "-o", download.toString(), source
-          );
-          default -> List.of(
+        runOrThrow(
+          new ProcessBuilder(
             "nextflow", "fs", "cp", source, download.toString()
-          );
-        };
-        runOrThrow(new ProcessBuilder(fetch), "Failed to download " + source);
+          ),
+          "Failed to download " + source
+        );
       }
       command.add(archive.toString());
       runOrThrow(
