@@ -9,7 +9,7 @@ nextflow_process {
     test("test extract - tar file") {
 
         setup {
-            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", dest: "${launchDir}/dbs")
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", extractDir: "${launchDir}/dbs")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -23,7 +23,7 @@ nextflow_process {
     test("test extract - tar.gz file") {
 
         setup {
-            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", dest: "${launchDir}/dbs")
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", extractDir: "${launchDir}/dbs")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -37,7 +37,7 @@ nextflow_process {
     test("test extract - zip file") {
 
         setup {
-            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", dest: "${launchDir}/dbs")
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", extractDir: "${launchDir}/dbs")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -51,7 +51,7 @@ nextflow_process {
     test("test extract with type - tar file") {
 
         setup {
-            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", dest: "${launchDir}/dbs", compression: "tar")
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", extractDir: "${launchDir}/dbs", compression: "tar")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -65,7 +65,7 @@ nextflow_process {
     test("test extract with type - tar.gzip file") {
 
         setup {
-            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", dest: "${launchDir}/dbs", compression: "tar.gzip")
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", extractDir: "${launchDir}/dbs", compression: "tar.gzip")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -79,7 +79,7 @@ nextflow_process {
     test("test extract with type - zip file") {
 
         setup {
-            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", dest: "${launchDir}/dbs", compression: "zip")
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", extractDir: "${launchDir}/dbs", compression: "zip")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -93,7 +93,7 @@ nextflow_process {
     test("test extract with type - tbzip2 file") {
 
         setup {
-            extract("https://card.mcmaster.ca/latest/data", dest: "${launchDir}/dbs", compression: "tbzip2")
+            extract("https://card.mcmaster.ca/latest/data", extractDir: "${launchDir}/dbs", compression: "tbzip2")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -107,7 +107,7 @@ nextflow_process {
 
         setup {
             "tar cf ${launchDir}/local.tar -C ${baseDir}/tests/extract main.nf".execute().waitFor()
-            extract("${launchDir}/local.tar", dest: "${launchDir}/dbs")
+            extract("${launchDir}/local.tar", extractDir: "${launchDir}/dbs")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")
@@ -122,7 +122,7 @@ nextflow_process {
     test("test extract - s3 file") {
 
         setup {
-            extract("s3://ngi-igenomes/test-data/viralrecon/nextclade_sars-cov-2_MN908947_2022-01-05T19_54_31Z.tar.gz", dest: "${launchDir}/dbs")
+            extract("s3://ngi-igenomes/test-data/viralrecon/nextclade_sars-cov-2_MN908947_2022-01-05T19_54_31Z.tar.gz", extractDir: "${launchDir}/dbs")
         }
         then {
             def files = getAllFilesFromDir("${launchDir}/dbs")

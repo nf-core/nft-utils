@@ -531,7 +531,7 @@ public final class Methods {
   /**
    * Extract an archive.
    *
-   * @param options {@code dest}: directory to extract the archive into,
+   * @param options {@code extractDir}: directory to extract the archive into,
    *                instead of a new temporary directory; {@code compression}:
    *                archive type, instead of the file extension
    * @param source  the local path or URL of the archive
@@ -544,7 +544,7 @@ public final class Methods {
       throws IOException {
     return ArchiveExtractor.extract(
       source,
-      Objects.toString(options.get("dest"), null),
+      Objects.toString(options.get("extractDir"), null),
       Objects.toString(options.get("compression"), null)
     );
   }

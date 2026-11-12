@@ -101,7 +101,7 @@ class ArchiveExtractorTest {
     Files.write(archive, tarOf("first"));
     Path dest = tempDir.resolve("dest");
     LinkedHashMap<String, Object> options = new LinkedHashMap<>();
-    options.put("dest", dest);
+    options.put("extractDir", dest);
     options.put("compression", "tar");
 
     assertEquals(dest, Methods.extract(options, archive.toString()));

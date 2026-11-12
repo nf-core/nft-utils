@@ -708,14 +708,14 @@ Extracts an archive and returns the directory it was extracted into. The archive
 
 Options:
 
-- `dest`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
+- `extractDir`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
 - `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
 
 ```groovy
 setup {
-    extract("https://www.example.com/pretty_database.zip", dest: "${launchDir}/data_dir")
-    extract("s3://my-bucket/beautiful_database.tar.gz", dest: "${launchDir}/data_dir")
-    extract("/data/secret/data", dest: "${launchDir}/data_dir", compression: "tar.bz2")
+    extract("https://www.example.com/pretty_database.zip", extractDir: "${launchDir}/data_dir")
+    extract("s3://my-bucket/beautiful_database.tar.gz", extractDir: "${launchDir}/data_dir")
+    extract("/data/secret/data", extractDir: "${launchDir}/data_dir", compression: "tar.bz2")
 }
 
 when {
@@ -738,4 +738,4 @@ when {
 }
 ```
 
-`curlAndExtract(url, dest)` and `curlAndExtract(url, dest, compression)` are deprecated: they work like `extract(url, dest: dest, compression: compression)` and print a warning.
+`curlAndExtract(url, dir)` and `curlAndExtract(url, dir, compression)` are deprecated: they work like `extract(url, extractDir: dir, compression: compression)` and print a warning.
