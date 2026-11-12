@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Build, test and release with mise tools and tasks, replacing `build.sh`, `test.sh`, `bump-version.sh` and `environment.yml` (see `docs/CONTRIBUTING.md`) (@maxulysse)
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21) (@maxulysse)
 - [#100](https://github.com/nf-core/nft-utils/pull/100) Compile for Java 17 (was 11), the minimum Java of Nextflow `26.04.9` (@maxulysse)
+- [#TBD](https://github.com/nf-core/nft-utils/pull/TBD) Lint with `maven-checkstyle-plugin` `3.6.0` (was `3.0.0`), which parses Java 17 syntax such as switch rules (@maxulysse)
 
 ### Fixed
 
