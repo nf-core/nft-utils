@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#TBD](https://github.com/nf-core/nft-utils/pull/TBD) Compile for Java 17 (was 11), the minimum Java of Nextflow `26.04.9` (@maxulysse)
+- [#100](https://github.com/nf-core/nft-utils/pull/100) Compile for Java 17 (was 11), the minimum Java of Nextflow `26.04.9` (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) Split `Methods.java` into focused utility classes (`HashUtils`, `YamlUtils`, `ArchiveDownloader`, `FileTraversalUtils`, `NextflowOutputFilter`); public method names and parameters are unchanged (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` throws `IOException` when the download or extraction fails, instead of logging and continuing; it downloads with `curl --fail` to a temporary file first, so HTTP errors and truncated transfers fail too (@maxulysse)
 - [#90](https://github.com/nf-core/nft-utils/pull/90) `curlAndExtract()` accepts the `compression` type in any case, and URLs ending in `.tar.gzip`, `.tar.bzip2`, `.tgzip` or `.tbzip2` (@maxulysse)
