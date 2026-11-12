@@ -1,6 +1,7 @@
 package nfcore.nftest.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -109,6 +110,16 @@ class ArchiveExtractorTest {
   }
 
   @Test
+  void shouldRejectUnknownOption() {
+    LinkedHashMap<String, Object> options = new LinkedHashMap<>();
+    options.put("dest", tempDir.resolve("dest"));
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Methods.extract(options, "http://x/data.tar"));
+  }
+
+  @Test
   void shouldFailOnMissingLocalPath() {
     String archive = tempDir.resolve("missing.tar").toString();
     String dest = tempDir.resolve("dest").toString();
@@ -207,6 +218,7 @@ class ArchiveExtractorTest {
         IllegalArgumentException.class,
         () -> ArchiveExtractor.extract("http://x", dest, compression));
     }
+    assertFalse(Files.exists(Path.of(dest)));
   }
 
   @Test

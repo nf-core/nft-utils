@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -517,6 +519,12 @@ public final class Methods {
   // ── ARCHIVE DOWNLOADING ───────────────────────────────────────────────
 
   /**
+   * Named options accepted by {@link #extract(LinkedHashMap, String)}.
+   */
+  private static final Set<String> EXTRACT_OPTIONS =
+    Set.of("extractDir", "compression");
+
+  /**
    * Extract an archive in a new temporary directory, deleted when the JVM
    * exits, with the archive type taken from the file extension.
    *
@@ -537,11 +545,20 @@ public final class Methods {
    * @param source  the local path or URL of the archive
    * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
+   * @throws IllegalArgumentException on an unknown option
    */
   public static Path extract(
       final LinkedHashMap<String, Object> options,
       final String source)
       throws IOException {
+    Set<String> unknown = new HashSet<>(options.keySet());
+    unknown.removeAll(EXTRACT_OPTIONS);
+    if (!unknown.isEmpty()) {
+      throw new IllegalArgumentException(
+        "Unknown extract() options: " + unknown
+        + "; valid options: " + EXTRACT_OPTIONS
+      );
+    }
     return ArchiveExtractor.extract(
       source,
       Objects.toString(options.get("extractDir"), null),

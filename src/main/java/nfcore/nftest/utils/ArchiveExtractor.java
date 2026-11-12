@@ -92,14 +92,12 @@ public final class ArchiveExtractor {
     }
     Path destDir;
     if (destPath == null) {
-      destDir = Files.createTempDirectory("nft-utils-extract");
-      Runtime.getRuntime().addShutdownHook(
-        new Thread(() -> Utils.deleteDirectory(destDir.toFile()))
-      );
+      destDir = temporaryDirectory();
     } else {
-      destDir = Files.createDirectories(Paths.get(destPath));
+      destDir = Paths.get(destPath);
     }
     List<String> command = extractCommand(type, destDir.toString());
+    Files.createDirectories(destDir);
 
     int schemeEnd = source.indexOf("://");
     String scheme = "";
@@ -152,6 +150,26 @@ public final class ArchiveExtractor {
       }
     }
     return destDir;
+  }
+
+  /**
+   * Create a temporary directory that is deleted when the JVM exits.
+   *
+   * @return the directory
+   * @throws IOException if the directory cannot be created
+   */
+  private static Path temporaryDirectory() throws IOException {
+    Path dir = Files.createTempDirectory("nft-utils-extract");
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      try {
+        Utils.deleteDirectory(dir.toFile());
+      } catch (RuntimeException e) {
+        System.err.println(
+          "Warning: failed to delete " + dir + ": " + e.getMessage()
+        );
+      }
+    }));
+    return dir;
   }
 
   /**

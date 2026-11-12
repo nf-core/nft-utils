@@ -711,6 +711,8 @@ Options:
 - `extractDir`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
 - `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
 
+Any other option fails the test.
+
 ```groovy
 setup {
     extract("https://www.example.com/pretty_database.zip", extractDir: "${launchDir}/data_dir")
