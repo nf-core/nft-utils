@@ -90,14 +90,14 @@ public final class ArchiveExtractor {
     if (type == null) {
       type = compressionFromName(source);
     }
-    Path destDir;
+    Path extractDir;
     if (destPath == null) {
-      destDir = temporaryDirectory();
+      extractDir = temporaryDirectory();
     } else {
-      destDir = Paths.get(destPath);
+      extractDir = Paths.get(destPath);
     }
-    List<String> command = extractCommand(type, destDir.toString());
-    Files.createDirectories(destDir);
+    List<String> command = extractCommand(type, extractDir.toString());
+    Files.createDirectories(extractDir);
 
     int schemeEnd = source.indexOf("://");
     String scheme = "";
@@ -113,7 +113,7 @@ public final class ArchiveExtractor {
       } else {
         // Download first, so a failed or truncated transfer is never
         // handed to the extractor
-        download = Files.createTempFile(destDir, "download", ".tmp");
+        download = Files.createTempFile(extractDir, "download", ".tmp");
         archive = download;
         List<String> fetch = switch (scheme) {
           case "http", "https", "ftp", "file" -> List.of(
@@ -149,7 +149,7 @@ public final class ArchiveExtractor {
         }
       }
     }
-    return destDir;
+    return extractDir;
   }
 
   /**
