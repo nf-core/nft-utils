@@ -1212,39 +1212,17 @@ Support for GCS (<code>gs://</code>) and Azure Blob (<code>az://</code>) paths i
 :::</p>
 <h3 id="downloadfroms3"><code>downloadFromS3()</code></h3>
 <p>Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.</p>
-<p>Requires the AWS CLI on the path.</p>
+<p>It uses <code>nextflow fs cp</code>, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no <code>noSignRequest</code> option: Nextflow falls back to anonymous access, even with invalid credentials.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">local_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">downloadFromS3</span><span class="o">(</span><span class="s2">"s3://my-bucket/path/to/file.vcf.gz"</span><span class="o">)</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">path</span><span class="o">(</span><span class="n">local_file</span><span class="o">.</span><span class="na">toString</span><span class="o">())).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
-<p>Supported named parameters:</p>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>noSignRequest</code></td>
-<td><code>Boolean</code></td>
-<td><code>false</code></td>
-<td>Pass <code>--no-sign-request</code> to the AWS CLI for publicly readable buckets</td>
-</tr>
-</tbody>
-</table>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1">// Download a file from a public bucket</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">local_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">downloadFromS3</span><span class="o">(</span><span class="s2">"s3://my-public-bucket/data/sample.vcf.gz"</span><span class="o">,</span><span class="w"> </span><span class="nl">noSignRequest:</span><span class="w"> </span><span class="kc">true</span><span class="o">)</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1">// Combine with getAllFilesFromPath to download and snapshot specific files</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="kt">def</span><span class="w"> </span><span class="n">vcf_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromPath</span><span class="o">(</span><span class="s2">"s3://my-bucket/results/"</span><span class="o">,</span><span class="w"> </span><span class="nl">noSignRequest:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">'**/*.vcf.gz'</span><span class="o">])</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="n">vcf_files</span><span class="o">.</span><span class="na">collect</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">relPath</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">        </span><span class="n">path</span><span class="o">(</span><span class="n">downloadFromS3</span><span class="o">(</span><span class="s2">"s3://my-bucket/results/${relPath}"</span><span class="o">,</span><span class="w"> </span><span class="nl">noSignRequest:</span><span class="w"> </span><span class="kc">true</span><span class="o">).</span><span class="na">toString</span><span class="o">())</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">    </span><span class="o">}</span>
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1">// Combine with getAllFilesFromPath to download and snapshot specific files</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">vcf_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromPath</span><span class="o">(</span><span class="s2">"s3://my-bucket/results/"</span><span class="o">,</span><span class="w"> </span><span class="nl">noSignRequest:</span><span class="w"> </span><span class="kc">true</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s1">'**/*.vcf.gz'</span><span class="o">])</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="n">vcf_files</span><span class="o">.</span><span class="na">collect</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">relPath</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span><span class="n">path</span><span class="o">(</span><span class="n">downloadFromS3</span><span class="o">(</span><span class="s2">"s3://my-bucket/results/${relPath}"</span><span class="o">).</span><span class="na">toString</span><span class="o">())</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
 <h3 id="getallfilesfromdir"><code>getAllFilesFromDir()</code></h3>
 <p>:::caution
@@ -1413,14 +1391,18 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a>
 </span><span id="__span-35-12"><a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a><span class="c1">// Include only lines containing specific strings</span>
 </span><span id="__span-35-13"><a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s2">"Submitted process"</span><span class="o">])</span>
+</span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>
+</span><span id="__span-35-15"><a id="__codelineno-35-15" name="__codelineno-35-15" href="#__codelineno-35-15"></a><span class="c1">// Remove each regex match from every line; `.*foo.*` removes the whole line</span>
+</span><span id="__span-35-16"><a id="__codelineno-35-16" name="__codelineno-35-16" href="#__codelineno-35-16"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_patterns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">additionalPatterns:</span><span class="w"> </span><span class="o">[</span><span class="s">/\d+ ms/</span><span class="o">])</span>
 </span></code></pre></div>
 <p>These line types are sorted alphabetically after censoring:</p>
 <ul>
 <li><code>Staging foreign file</code> messages</li>
 <li><code>Submitted process</code> messages</li>
+<li><code>Creating env using conda:</code> and <code>Pulling Singularity image</code> messages</li>
 <li><code>Check * file for details</code> messages</li>
 <li><code>WARN:</code> messages</li>
-<li><code>ERROR:</code> messages</li>
+<li><code>ERROR ~</code> messages</li>
 </ul>
 <p>Set <code>sorted: false</code> to disable sorting (not recommended; causes snapshot failures).</p>
 <p>All other lines keep their original order.</p>
@@ -1430,16 +1412,18 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="o">[</span>6d/0082ab<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
 </span></code></pre></div>
 <p>become:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="o">[</span>PROCESS_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="o">[</span>PROCESS_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
-</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="o">[</span>PROCESS_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
 </span></code></pre></div>
 <p>ANSI escape codes are stripped by default to prevent garbled text in snapshots. Set <code>keepAnsi: true</code> to preserve them.</p>
 <p>Filtered patterns:</p>
 <ul>
 <li>Empty lines (removed entirely)</li>
 <li>Timestamps (replaced with <code>[TIMESTAMP]</code>)</li>
-<li>Process hashes (replaced with <code>[PROCESS_HASH]</code>)</li>
+<li>Process hashes (replaced with <code>[NXF_HASH]</code>) and 30 to 32 character hex hashes (replaced with <code>[NFT_HASH]</code>)</li>
+<li>The run name (replaced with <code>[RUN_NAME]</code>), the user name in <code>userName :</code> lines (<code>[USER]</code>) and the revision (<code>[REVISION]</code>)</li>
+<li>Container engine names (replaced with <code>[CONTAINER]</code>)</li>
 <li>File paths (replaced with <code>[PATH]</code>), including common ENV variables: <code>HOME</code>, <code>NFT_WORKDIR</code>, <code>NXF_CACHE_DIR</code>, <code>NXF_CONDA_CACHEDIR</code>, <code>NXF_HOME</code>, <code>NXF_SINGULARITY_CACHEDIR</code>, <code>NXF_SINGULARITY_LIBRARYDIR</code>, <code>NXF_TEMP</code>, <code>NXF_WORK</code></li>
 <li>Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with <code>[VERSION]</code></li>
 </ul>
@@ -1452,7 +1436,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="w">        </span><span class="o">}</span>
 </span><span id="__span-38-7"><a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a><span class="w">    </span><span class="o">}</span>
 </span><span id="__span-38-8"><a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a>
-</span><span id="__span-38-9"><a id="__codelineno-38-9" name="__codelineno-38-9" href="#__codelineno-38-9"></a><span class="w">        </span><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-38-9"><a id="__codelineno-38-9" name="__codelineno-38-9" href="#__codelineno-38-9"></a><span class="w">    </span><span class="n">then</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-38-10"><a id="__codelineno-38-10" name="__codelineno-38-10" href="#__codelineno-38-10"></a><span class="w">        </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
 </span><span id="__span-38-11"><a id="__codelineno-38-11" name="__codelineno-38-11" href="#__codelineno-38-11"></a><span class="w">            </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
 </span><span id="__span-38-12"><a id="__codelineno-38-12" name="__codelineno-38-12" href="#__codelineno-38-12"></a><span class="w">        </span><span class="o">).</span><span class="na">match</span><span class="o">()</span>
@@ -1605,7 +1589,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="curlandextract-download-and-extract-an-archive"><code>curlAndExtract()</code> - Download and extract an archive</h3>
-<p>Downloads an archive with <code>curl</code> and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd. The format is auto-detected from the filename, or pass it explicitly. For compressed Tar, use formats like <code>"tar.bz2"</code> or <code>"tbz2"</code>.</p>
+<p>Downloads an archive with <code>curl</code> and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. The format is auto-detected from the filename, or pass it explicitly, in any case. For compressed Tar, use formats like <code>"tar.bz2"</code> or <code>"tbz2"</code>. A failed download or extraction throws, failing the test.</p>
 <p>You are responsible for deleting the data in the <code>cleanup</code> phase.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
