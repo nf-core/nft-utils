@@ -64,57 +64,42 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Extract an archive in the given destination directory, with the archive
-   * type taken from the file extension.
-   *
-   * @param source   the local path or URL (http, https, ftp, file, s3) of
-   *                 the archive
-   * @param destPath directory to extract the archive into
-   * @throws IOException on failure or if archive type is unsupported
-   */
-  public static void extract(
-      final String source,
-      final String destPath)
-      throws IOException {
-    String path = Utils.getURLFileName(source);
-    String name = path.substring(path.lastIndexOf('/') + 1);
-    int dot = name.lastIndexOf('.');
-    if (dot < 0) {
-      throw new IllegalArgumentException(
-        "Unsupported archive type: " + source
-      );
-    }
-    String extension = name.substring(dot + 1);
-    String compression = extension;
-    if (name.endsWith(".tar." + extension)) {
-      compression = "tar." + extension;
-    }
-    extract(source, destPath, compression);
-  }
-
-  /**
-   * Extract an archive in the given destination directory. A local path is
-   * extracted in place. An http(s), ftp or file URL is downloaded with
-   * {@code curl}, and any other URL, such as s3://, with
-   * {@code nextflow fs cp}, to a temporary file in the destination
-   * directory, deleted once extracted.
+   * Extract an archive in a directory. A local path is extracted in place.
+   * An http(s), ftp or file URL is downloaded with {@code curl}, and any
+   * other URL, such as s3://, with {@code nextflow fs cp}, to a temporary
+   * file in the destination directory, deleted once extracted.
    *
    * @param source      the local path or URL (http, https, ftp, file, s3)
    *                    of the archive
-   * @param destPath    directory to extract the archive into
+   * @param destPath    directory to extract the archive into, or
+   *                    {@code null} for a new temporary directory that is
+   *                    deleted when the JVM exits
    * @param compression compression type, in any case: zip, tar, or any of
    *                    the following prefixed with "tar." or "t":
-   *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd
+   *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd;
+   *                    or {@code null} to take it from the file extension
+   * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
    */
-  public static void extract(
+  public static Path extract(
       final String source,
       final String destPath,
       final String compression)
       throws IOException {
-    List<String> command = extractCommand(compression, destPath);
-    Path destDir = Paths.get(destPath);
-    Files.createDirectories(destDir);
+    String type = compression;
+    if (type == null) {
+      type = compressionFromName(source);
+    }
+    Path destDir;
+    if (destPath == null) {
+      destDir = Files.createTempDirectory("nft-utils-extract");
+      Runtime.getRuntime().addShutdownHook(
+        new Thread(() -> Utils.deleteDirectory(destDir.toFile()))
+      );
+    } else {
+      destDir = Files.createDirectories(Paths.get(destPath));
+    }
+    List<String> command = extractCommand(type, destDir.toString());
 
     int schemeEnd = source.indexOf("://");
     String scheme = "";
@@ -166,6 +151,30 @@ public final class ArchiveExtractor {
         }
       }
     }
+    return destDir;
+  }
+
+  /**
+   * Take the compression type from the file extension of an archive.
+   *
+   * @param source the local path or URL of the archive
+   * @return the compression type
+   * @throws IllegalArgumentException if the name has no extension
+   */
+  private static String compressionFromName(final String source) {
+    String path = Utils.getURLFileName(source);
+    String name = path.substring(path.lastIndexOf('/') + 1);
+    int dot = name.lastIndexOf('.');
+    if (dot < 0) {
+      throw new IllegalArgumentException(
+        "Unsupported archive type: " + source
+      );
+    }
+    String extension = name.substring(dot + 1);
+    if (name.endsWith(".tar." + extension)) {
+      return "tar." + extension;
+    }
+    return extension;
   }
 
   /**

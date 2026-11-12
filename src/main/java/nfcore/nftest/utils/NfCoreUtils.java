@@ -389,43 +389,10 @@ public final class NfCoreUtils {
     try {
       // Delete modules directory
       File modulesLibDir = new File(libDir);
-      deleteDirectory(modulesLibDir);
+      Utils.deleteDirectory(modulesLibDir);
     } catch (Exception e) {
       System.err.println("Error during cleanup: " + e.getMessage());
     }
   }
 
-  /**
-   * Helper method to recursively delete a directory and all its contents.
-   *
-   * @param directory The directory to delete
-   */
-  private static void deleteDirectory(final File directory) {
-    if (directory.exists()) {
-      File[] files = directory.listFiles();
-      if (files != null) {
-        for (File file : files) {
-          if (file.isDirectory()) {
-            deleteDirectory(file);
-          } else {
-            try {
-              Files.deleteIfExists(file.toPath());
-            } catch (IOException e) {
-              throw new RuntimeException(
-                "Failed to delete file: " + file, e
-              );
-            }
-          }
-        }
-      }
-
-      try {
-        Files.deleteIfExists(directory.toPath());
-      } catch (IOException e) {
-        throw new RuntimeException(
-          "Failed to delete directory: " + directory, e
-        );
-      }
-    }
-  }
 }

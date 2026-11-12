@@ -704,17 +704,18 @@ then {
 
 ### `extract()` - Extract an archive
 
-Extracts an archive to a destination directory. The archive can be a local path, used in place, an `http(s)://`, `ftp://` or `file://` URL, downloaded with `curl`, or a cloud URL such as `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. The format is auto-detected from the filename, or pass it explicitly, in any case. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`. A failed download or extraction throws, failing the test.
+Extracts an archive and returns the directory it was extracted into. The archive can be a local path, used in place, an `http(s)://`, `ftp://` or `file://` URL, downloaded with `curl`, or a cloud URL such as `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.
 
-You are responsible for deleting the data in the `cleanup` phase.
+Options:
 
-`curlAndExtract()` is a deprecated alias of `extract()`, and prints a warning.
+- `dest`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
+- `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
 
 ```groovy
 setup {
-    extract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
-    extract("s3://my-bucket/beautiful_database.tar.gz", "${launchDir}/data_dir")
-    extract("/data/secret/data", "${launchDir}/data_dir", "tar.bz2")
+    extract("https://www.example.com/pretty_database.zip", dest: "${launchDir}/data_dir")
+    extract("s3://my-bucket/beautiful_database.tar.gz", dest: "${launchDir}/data_dir")
+    extract("/data/secret/data", dest: "${launchDir}/data_dir", compression: "tar.bz2")
 }
 
 when {
@@ -724,8 +725,17 @@ when {
     secret_db_path = "${launchDir}/data_dir/db/secret"
   }
 }
+```
 
-cleanup {
-    new File("${launchDir}/data_dir").deleteDir()
+```groovy
+when {
+    def db = extract("https://www.example.com/pretty_database.zip")
+    process {
+        """
+        input[0] = file('${db}/pretty_db')
+        """
+    }
 }
 ```
+
+`curlAndExtract(url, dest)` and `curlAndExtract(url, dest, compression)` are deprecated: they work like `extract(url, dest: dest, compression: compression)` and print a warning.

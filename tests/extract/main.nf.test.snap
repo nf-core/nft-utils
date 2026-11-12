@@ -1,4 +1,16 @@
 {
+    "test extract - default temporary directory": {
+        "content": [
+            [
+                "hello.txt:md5,e59ff97941044f85df5297e1c302d260"
+            ]
+        ],
+        "timestamp": "2026-11-12T15:16:56.576153399",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.9"
+        }
+    },
     "test extract with type - tar file": {
         "content": [
             [

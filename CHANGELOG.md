@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#99](https://github.com/nf-core/nft-utils/pull/99) Test against Nextflow `26.04.9` (minimum, was `26.01.1-edge`) and the latest release, on Java 21 only (was 17 and 21) (@maxulysse)
 - [#100](https://github.com/nf-core/nft-utils/pull/100) Compile for Java 17 (was 11), the minimum Java of Nextflow `26.04.9` (@maxulysse)
 - [#101](https://github.com/nf-core/nft-utils/pull/101) Lint with `maven-checkstyle-plugin` `3.6.0` (was `3.0.0`), which parses Java 17 syntax such as switch rules (@maxulysse)
-- [#102](https://github.com/nf-core/nft-utils/pull/102) Rename `curlAndExtract()` to `extract()`, which also extracts bare local paths in place and downloads `s3://` URLs with `nextflow fs cp`, deleting the download once extracted; `ArchiveDownloader` is renamed `ArchiveExtractor` (@maxulysse)
+- [#102](https://github.com/nf-core/nft-utils/pull/102) Rename `curlAndExtract()` to `extract()`, which takes `dest` and `compression` as optional named arguments, extracts into a temporary directory when no `dest` is given, and returns the directory; it also extracts bare local paths in place and downloads `s3://` URLs with `nextflow fs cp`, deleting the download once extracted; `ArchiveDownloader` is renamed `ArchiveExtractor` (@maxulysse)
 
 ### Deprecated
 

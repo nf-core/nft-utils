@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -64,7 +65,7 @@ class ArchiveExtractorTest {
       String url = serve(server, 200, tar.length, tar);
       Path dest = tempDir.resolve("dest");
 
-      ArchiveExtractor.extract(url, dest.toString());
+      ArchiveExtractor.extract(url, dest.toString(), null);
 
       assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     } finally {
@@ -78,10 +79,33 @@ class ArchiveExtractorTest {
     Files.write(archive, tarOf("first"));
     Path dest = tempDir.resolve("dest");
 
-    ArchiveExtractor.extract(archive.toString(), dest.toString());
+    ArchiveExtractor.extract(archive.toString(), dest.toString(), null);
 
     assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     assertTrue(Files.exists(archive));
+  }
+
+  @Test
+  void shouldExtractInTemporaryDirectoryByDefault() throws Exception {
+    Path archive = tempDir.resolve("local.tar");
+    Files.write(archive, tarOf("first"));
+
+    Path dest = ArchiveExtractor.extract(archive.toString(), null, null);
+
+    assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
+  }
+
+  @Test
+  void shouldTakeNamedOptions() throws Exception {
+    Path archive = tempDir.resolve("local.data");
+    Files.write(archive, tarOf("first"));
+    Path dest = tempDir.resolve("dest");
+    LinkedHashMap<String, Object> options = new LinkedHashMap<>();
+    options.put("dest", dest);
+    options.put("compression", "tar");
+
+    assertEquals(dest, Methods.extract(options, archive.toString()));
+    assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
   }
 
   @Test
@@ -91,7 +115,7 @@ class ArchiveExtractorTest {
 
     IOException e = assertThrows(
       IOException.class,
-      () -> ArchiveExtractor.extract(archive, dest));
+      () -> ArchiveExtractor.extract(archive, dest, null));
 
     assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
@@ -108,7 +132,7 @@ class ArchiveExtractorTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveExtractor.extract(url, dest));
+        () -> ArchiveExtractor.extract(url, dest, null));
 
       assertTrue(e.getMessage().startsWith("Failed to download http"));
     } finally {
@@ -126,7 +150,7 @@ class ArchiveExtractorTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveExtractor.extract(url, dest.toString()));
+        () -> ArchiveExtractor.extract(url, dest.toString(), null));
 
       assertTrue(e.getMessage().startsWith("Failed to download http"));
       assertEquals(0, dest.toFile().list().length);
@@ -146,7 +170,7 @@ class ArchiveExtractorTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveExtractor.extract(url, dest));
+        () -> ArchiveExtractor.extract(url, dest, null));
 
       assertTrue(e.getMessage().startsWith("Failed to extract"));
     } finally {
@@ -192,7 +216,7 @@ class ArchiveExtractorTest {
         "http://x/data", "http://x/data.gz", "http://x/v1.2/notes.txt")) {
       assertThrows(
         IllegalArgumentException.class,
-        () -> ArchiveExtractor.extract(url, dest));
+        () -> ArchiveExtractor.extract(url, dest, null));
     }
   }
 }

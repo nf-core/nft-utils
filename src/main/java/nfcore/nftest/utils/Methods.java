@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -516,44 +517,45 @@ public final class Methods {
   // ── ARCHIVE DOWNLOADING ───────────────────────────────────────────────
 
   /**
-   * Extract an archive in the given destination directory.
-   * Dispatches based on the file extension.
+   * Extract an archive in a new temporary directory, deleted when the JVM
+   * exits, with the archive type taken from the file extension.
    *
-   * @param source   the local path or URL of the archive
-   * @param destPath directory to extract the archive into
+   * @param source the local path or URL of the archive
+   * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
    */
-  public static void extract(
-      final String source,
-      final String destPath)
-      throws IOException {
-    ArchiveExtractor.extract(source, destPath);
+  public static Path extract(final String source) throws IOException {
+    return ArchiveExtractor.extract(source, null, null);
   }
 
   /**
-   * Extract an archive in the given destination directory.
-   * Dispatches based on the {@code compression} parameter.
+   * Extract an archive.
    *
-   * @param source      the local path or URL of the archive
-   * @param destPath    directory to extract the archive into
-   * @param compression compression type
+   * @param options {@code dest}: directory to extract the archive into,
+   *                instead of a new temporary directory; {@code compression}:
+   *                archive type, instead of the file extension
+   * @param source  the local path or URL of the archive
+   * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
    */
-  public static void extract(
-      final String source,
-      final String destPath,
-      final String compression)
+  public static Path extract(
+      final LinkedHashMap<String, Object> options,
+      final String source)
       throws IOException {
-    ArchiveExtractor.extract(source, destPath, compression);
+    return ArchiveExtractor.extract(
+      source,
+      Objects.toString(options.get("dest"), null),
+      Objects.toString(options.get("compression"), null)
+    );
   }
 
   /**
-   * Deprecated alias of {@link #extract(String, String)}.
+   * Deprecated: extract an archive in the given destination directory.
    *
    * @param urlString the local path or URL of the archive
    * @param destPath  directory to extract the archive into
    * @throws IOException on failure or if archive type is unsupported
-   * @deprecated use {@link #extract(String, String)}
+   * @deprecated use {@link #extract(LinkedHashMap, String)}
    */
   @Deprecated
   public static void curlAndExtract(
@@ -563,17 +565,17 @@ public final class Methods {
     System.err.println(
       "Warning: curlAndExtract() is deprecated, use extract() instead"
     );
-    extract(urlString, destPath);
+    ArchiveExtractor.extract(urlString, destPath, null);
   }
 
   /**
-   * Deprecated alias of {@link #extract(String, String, String)}.
+   * Deprecated: extract an archive in the given destination directory.
    *
    * @param urlString   the local path or URL of the archive
    * @param destPath    directory to extract the archive into
    * @param compression compression type
    * @throws IOException on failure or if archive type is unsupported
-   * @deprecated use {@link #extract(String, String, String)}
+   * @deprecated use {@link #extract(LinkedHashMap, String)}
    */
   @Deprecated
   public static void curlAndExtract(
@@ -584,7 +586,7 @@ public final class Methods {
     System.err.println(
       "Warning: curlAndExtract() is deprecated, use extract() instead"
     );
-    extract(urlString, destPath, compression);
+    ArchiveExtractor.extract(urlString, destPath, compression);
   }
 
   /**
