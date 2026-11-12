@@ -516,35 +516,69 @@ public final class Methods {
   // ── ARCHIVE DOWNLOADING ───────────────────────────────────────────────
 
   /**
-   * Download an archive and extract it in the given destination directory.
-   * Dispatches based on the URL's file extension.
+   * Extract an archive in the given destination directory.
+   * Dispatches based on the file extension.
    *
-   * @param urlString the URL to fetch
-   * @param destPath  directory to extract the archive into
+   * @param source   the local path or URL of the archive
+   * @param destPath directory to extract the archive into
    * @throws IOException on failure or if archive type is unsupported
    */
-  public static void curlAndExtract(
-      final String urlString,
+  public static void extract(
+      final String source,
       final String destPath)
       throws IOException {
-    ArchiveDownloader.curlAndExtract(urlString, destPath);
+    ArchiveExtractor.extract(source, destPath);
   }
 
   /**
-   * Download an archive and extract it in the given destination directory.
+   * Extract an archive in the given destination directory.
    * Dispatches based on the {@code compression} parameter.
    *
-   * @param urlString   the URL to fetch
+   * @param source      the local path or URL of the archive
    * @param destPath    directory to extract the archive into
    * @param compression compression type
    * @throws IOException on failure or if archive type is unsupported
    */
+  public static void extract(
+      final String source,
+      final String destPath,
+      final String compression)
+      throws IOException {
+    ArchiveExtractor.extract(source, destPath, compression);
+  }
+
+  /**
+   * Deprecated alias of {@link #extract(String, String)}.
+   *
+   * @param urlString the local path or URL of the archive
+   * @param destPath  directory to extract the archive into
+   * @throws IOException on failure or if archive type is unsupported
+   * @deprecated use {@link #extract(String, String)}
+   */
+  @Deprecated
+  public static void curlAndExtract(
+      final String urlString,
+      final String destPath)
+      throws IOException {
+    extract(urlString, destPath);
+  }
+
+  /**
+   * Deprecated alias of {@link #extract(String, String, String)}.
+   *
+   * @param urlString   the local path or URL of the archive
+   * @param destPath    directory to extract the archive into
+   * @param compression compression type
+   * @throws IOException on failure or if archive type is unsupported
+   * @deprecated use {@link #extract(String, String, String)}
+   */
+  @Deprecated
   public static void curlAndExtract(
       final String urlString,
       final String destPath,
       final String compression)
       throws IOException {
-    ArchiveDownloader.curlAndExtract(urlString, destPath, compression);
+    extract(urlString, destPath, compression);
   }
 
   /**
@@ -559,7 +593,7 @@ public final class Methods {
   public static Path downloadFromS3(
       final String cloudUri)
       throws IOException, InterruptedException {
-    return ArchiveDownloader.downloadFromS3(cloudUri);
+    return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 
   /**
@@ -576,6 +610,6 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String cloudUri)
       throws IOException, InterruptedException {
-    return ArchiveDownloader.downloadFromS3(cloudUri);
+    return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 }

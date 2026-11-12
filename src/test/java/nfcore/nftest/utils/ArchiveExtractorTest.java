@@ -18,7 +18,7 @@ import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class ArchiveDownloaderTest {
+class ArchiveExtractorTest {
 
   private static final int TAR_BLOCK = 512;
 
@@ -64,12 +64,36 @@ class ArchiveDownloaderTest {
       String url = serve(server, 200, tar.length, tar);
       Path dest = tempDir.resolve("dest");
 
-      ArchiveDownloader.curlAndExtract(url, dest.toString());
+      ArchiveExtractor.extract(url, dest.toString());
 
       assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     } finally {
       server.stop(0);
     }
+  }
+
+  @Test
+  void shouldExtractLocalPath() throws Exception {
+    Path archive = tempDir.resolve("local.tar");
+    Files.write(archive, tarOf("first"));
+    Path dest = tempDir.resolve("dest");
+
+    ArchiveExtractor.extract(archive.toString(), dest.toString());
+
+    assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
+    assertTrue(Files.exists(archive));
+  }
+
+  @Test
+  void shouldFailOnMissingLocalPath() {
+    String archive = tempDir.resolve("missing.tar").toString();
+    String dest = tempDir.resolve("dest").toString();
+
+    IOException e = assertThrows(
+      IOException.class,
+      () -> ArchiveExtractor.extract(archive, dest));
+
+    assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
 
   @Test
@@ -84,7 +108,7 @@ class ArchiveDownloaderTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveDownloader.curlAndExtract(url, dest));
+        () -> ArchiveExtractor.extract(url, dest));
 
       assertTrue(e.getMessage().startsWith("Failed to download http"));
     } finally {
@@ -102,7 +126,7 @@ class ArchiveDownloaderTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveDownloader.curlAndExtract(url, dest.toString()));
+        () -> ArchiveExtractor.extract(url, dest.toString()));
 
       assertTrue(e.getMessage().startsWith("Failed to download http"));
       assertEquals(0, dest.toFile().list().length);
@@ -122,7 +146,7 @@ class ArchiveDownloaderTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveDownloader.curlAndExtract(url, dest));
+        () -> ArchiveExtractor.extract(url, dest));
 
       assertTrue(e.getMessage().startsWith("Failed to extract"));
     } finally {
@@ -143,7 +167,7 @@ class ArchiveDownloaderTest {
       String url = serve(server, 200, body.length, body);
       Path dest = tempDir.resolve("dest");
 
-      ArchiveDownloader.curlAndExtract(url, dest.toString(), "TGZ");
+      ArchiveExtractor.extract(url, dest.toString(), "TGZ");
 
       assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     } finally {
@@ -157,7 +181,7 @@ class ArchiveDownloaderTest {
     for (String compression : List.of("rar", "tar.rar", "t")) {
       assertThrows(
         IllegalArgumentException.class,
-        () -> ArchiveDownloader.curlAndExtract("http://x", dest, compression));
+        () -> ArchiveExtractor.extract("http://x", dest, compression));
     }
   }
 
@@ -168,7 +192,7 @@ class ArchiveDownloaderTest {
         "http://x/data", "http://x/data.gz", "http://x/v1.2/notes.txt")) {
       assertThrows(
         IllegalArgumentException.class,
-        () -> ArchiveDownloader.curlAndExtract(url, dest));
+        () -> ArchiveExtractor.extract(url, dest));
     }
   }
 }

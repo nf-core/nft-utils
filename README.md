@@ -9,7 +9,7 @@ nf-test plugin with utility functions for pipeline-level snapshot testing.
 - `getAllFilesFromPath()` - list files from local or S3 paths
 - `removeNextflowVersion()` - strip Nextflow version from YAML files
 - `nfcoreInstall()` - install nf-core modules for testing
-- `curlAndExtract()` - download and extract archives in test setup
+- `extract()` - extract local, remote or S3 archives in test setup
 
 Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 

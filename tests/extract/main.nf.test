@@ -1,0 +1,135 @@
+nextflow_process {
+
+    name "Test Process extract"
+    script "./main.nf"
+    process "TEST_MODULE"
+
+    tag "test"
+
+    test("test extract - tar file") {
+
+        setup {
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", "${launchDir}/dbs")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test extract - tar.gz file") {
+
+        setup {
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test extract - zip file") {
+
+        setup {
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", "${launchDir}/dbs")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test extract with type - tar file") {
+
+        setup {
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", "${launchDir}/dbs", "tar")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test extract with type - tar.gzip file") {
+
+        setup {
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", "${launchDir}/dbs", "tar.gzip")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test extract with type - zip file") {
+
+        setup {
+            extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", "${launchDir}/dbs", "zip")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+
+    test("test extract with type - tbzip2 file") {
+
+        setup {
+            extract("https://card.mcmaster.ca/latest/data", "${launchDir}/dbs", "tbzip2")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+    test("test extract - local path") {
+
+        setup {
+            "tar cf ${launchDir}/local.tar -C ${baseDir}/tests/extract main.nf".execute().waitFor()
+            extract("${launchDir}/local.tar", "${launchDir}/dbs")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+            new File("${launchDir}/local.tar").delete()
+        }
+    }
+
+    test("test extract - s3 file") {
+
+        setup {
+            extract("s3://ngi-igenomes/test-data/viralrecon/nextclade_sars-cov-2_MN908947_2022-01-05T19_54_31Z.tar.gz", "${launchDir}/dbs")
+        }
+        then {
+            def files = getAllFilesFromDir("${launchDir}/dbs")
+            assert snapshot(files).match()
+        }
+        cleanup {
+            new File("${launchDir}/dbs").deleteDir()
+        }
+    }
+}

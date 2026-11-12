@@ -702,17 +702,19 @@ then {
 }
 ```
 
-### `curlAndExtract()` - Download and extract an archive
+### `extract()` - Extract an archive
 
-Downloads an archive with `curl` and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. The format is auto-detected from the filename, or pass it explicitly, in any case. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`. A failed download or extraction throws, failing the test.
+Extracts an archive to a destination directory. The archive can be a local path, used in place, an `http(s)://`, `ftp://` or `file://` URL, downloaded with `curl`, or a cloud URL such as `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. The format is auto-detected from the filename, or pass it explicitly, in any case. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`. A failed download or extraction throws, failing the test.
 
 You are responsible for deleting the data in the `cleanup` phase.
 
+`curlAndExtract()` is a deprecated alias of `extract()`.
+
 ```groovy
 setup {
-    curlAndExtract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
-    curlAndExtract("https://www.example.com/beautiful_database.tar.gz", "${launchDir}/data_dir")
-    curlAndExtract("https://www.example.com/secret/data", "${launchDir}/data_dir", "tar.bz2")
+    extract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
+    extract("s3://my-bucket/beautiful_database.tar.gz", "${launchDir}/data_dir")
+    extract("/data/secret/data", "${launchDir}/data_dir", "tar.bz2")
 }
 
 when {

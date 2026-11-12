@@ -8,18 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
- * Utility methods for downloading and extracting archive files from URLs
- * and cloud storage.
+ * Utility methods for extracting archive files from local paths, URLs
+ * and cloud storage, and for downloading files from cloud storage.
  */
-public final class ArchiveDownloader {
+public final class ArchiveExtractor {
 
   /**
    * Prevents instantiation of this utility class.
    */
-  private ArchiveDownloader() {
+  private ArchiveExtractor() {
   }
 
   /**
@@ -44,59 +43,6 @@ public final class ArchiveDownloader {
   );
 
   /**
-   * Download a file to a temporary file in the destination directory, run the
-   * extraction command on it, then delete it. Downloading first means a failed
-   * or truncated transfer is never handed to the extractor.
-   *
-   * @param urlString the URL to fetch
-   * @param destPath  directory to extract the archive into
-   * @param extractor builds the extraction command for the downloaded file
-   * @throws IOException on failure
-   */
-  private static void downloadAndExtract(
-      final String urlString,
-      final String destPath,
-      final Function<Path, ProcessBuilder> extractor)
-      throws IOException {
-    Path destDir = Paths.get(destPath);
-    Files.createDirectories(destDir);
-
-    Path tempFile = Files.createTempFile(destDir, "download", ".tmp");
-
-    try {
-      runOrThrow(
-        new ProcessBuilder(
-          "curl", "--fail", "-L", "--retry", "5",
-          "-o", tempFile.toString(), urlString
-        ),
-        "Failed to download " + urlString
-      );
-      runOrThrow(
-        extractor.apply(tempFile),
-        "Failed to extract " + urlString
-      );
-      System.out.println(
-        "Successfully downloaded and extracted file: "
-        + urlString
-      );
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IOException(
-        "Interrupted while downloading " + urlString, e
-      );
-    } finally {
-      try {
-        Files.deleteIfExists(tempFile);
-      } catch (IOException e) {
-        System.err.println(
-          "Warning: failed to delete temporary file "
-          + tempFile + ": " + e.getMessage()
-        );
-      }
-    }
-  }
-
-  /**
    * Runs a process and throws if it exits with a non-zero code.
    *
    * @param pb      the process to run
@@ -118,23 +64,24 @@ public final class ArchiveDownloader {
   }
 
   /**
-   * Download an archive and extract it in the given destination directory,
-   * with the archive type taken from the URL's file extension.
+   * Extract an archive in the given destination directory, with the archive
+   * type taken from the file extension.
    *
-   * @param urlString the URL to fetch
-   * @param destPath  directory to extract the archive into
+   * @param source   the local path or URL (http, https, ftp, file, s3) of
+   *                 the archive
+   * @param destPath directory to extract the archive into
    * @throws IOException on failure or if archive type is unsupported
    */
-  public static void curlAndExtract(
-      final String urlString,
+  public static void extract(
+      final String source,
       final String destPath)
       throws IOException {
-    String path = Utils.getURLFileName(urlString);
+    String path = Utils.getURLFileName(source);
     String name = path.substring(path.lastIndexOf('/') + 1);
     int dot = name.lastIndexOf('.');
     if (dot < 0) {
       throw new IllegalArgumentException(
-        "Unsupported archive type in URL: " + urlString
+        "Unsupported archive type: " + source
       );
     }
     String extension = name.substring(dot + 1);
@@ -142,24 +89,98 @@ public final class ArchiveDownloader {
     if (name.endsWith(".tar." + extension)) {
       compression = "tar." + extension;
     }
-    curlAndExtract(urlString, destPath, compression);
+    extract(source, destPath, compression);
   }
 
   /**
-   * Download an archive and extract it in the given destination directory.
+   * Extract an archive in the given destination directory. A local path is
+   * extracted in place. An http(s), ftp or file URL is downloaded with
+   * {@code curl}, and any other URL, such as s3://, with
+   * {@code nextflow fs cp}, to a temporary file in the destination
+   * directory, deleted once extracted.
    *
-   * @param urlString   the URL to fetch
+   * @param source      the local path or URL (http, https, ftp, file, s3)
+   *                    of the archive
    * @param destPath    directory to extract the archive into
    * @param compression compression type, in any case: zip, tar, or any of
    *                    the following prefixed with "tar." or "t":
    *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd
    * @throws IOException on failure or if archive type is unsupported
    */
-  public static void curlAndExtract(
-      final String urlString,
+  public static void extract(
+      final String source,
       final String destPath,
       final String compression)
       throws IOException {
+    List<String> command = extractCommand(compression, destPath);
+    Path destDir = Paths.get(destPath);
+    Files.createDirectories(destDir);
+
+    int schemeEnd = source.indexOf("://");
+    String scheme = "";
+    if (schemeEnd >= 0) {
+      scheme = source.substring(0, schemeEnd).toLowerCase(Locale.ROOT);
+    }
+
+    Path download = null;
+    try {
+      Path archive;
+      if (scheme.isEmpty()) {
+        archive = Paths.get(source);
+      } else {
+        // Download first, so a failed or truncated transfer is never
+        // handed to the extractor
+        download = Files.createTempFile(destDir, "download", ".tmp");
+        archive = download;
+        List<String> fetch = switch (scheme) {
+          case "http", "https", "ftp", "file" -> List.of(
+            "curl", "--fail", "-L", "--retry", "5",
+            "-o", download.toString(), source
+          );
+          default -> List.of(
+            "nextflow", "fs", "cp", source, download.toString()
+          );
+        };
+        runOrThrow(new ProcessBuilder(fetch), "Failed to download " + source);
+      }
+      command.add(archive.toString());
+      runOrThrow(
+        new ProcessBuilder(command),
+        "Failed to extract " + source
+      );
+      System.out.println("Successfully extracted: " + source);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException(
+        "Interrupted while extracting " + source, e
+      );
+    } finally {
+      if (download != null) {
+        try {
+          Files.deleteIfExists(download);
+        } catch (IOException e) {
+          System.err.println(
+            "Warning: failed to delete downloaded file "
+            + download + ": " + e.getMessage()
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Build the extraction command for a compression type, without the
+   * archive path, which the caller appends last.
+   *
+   * @param compression compression type, see
+   *                    {@link #extract(String, String, String)}
+   * @param destPath    directory to extract the archive into
+   * @return the command, ending with the option that takes the archive path
+   * @throws IllegalArgumentException if the compression type is unsupported
+   */
+  private static List<String> extractCommand(
+      final String compression,
+      final String destPath) {
     if (compression == null || compression.isEmpty()) {
       throw new IllegalArgumentException(
         "The 'compression' parameter is required."
@@ -167,18 +188,11 @@ public final class ArchiveDownloader {
     }
     String lower = compression.toLowerCase(Locale.ROOT);
     if (lower.equals("zip")) {
-      downloadAndExtract(
-        urlString,
-        destPath,
-        archive -> new ProcessBuilder(
-          "unzip", "-o", archive.toString(), "-d", destPath
-        )
-      );
-      return;
+      return new ArrayList<>(List.of("unzip", "-o", "-d", destPath));
     }
 
-    List<String> tarCmd = new ArrayList<>(
-      List.of("tar", "xaf", "-", "-C", destPath)
+    List<String> command = new ArrayList<>(
+      List.of("tar", "-x", "-C", destPath)
     );
     if (!lower.equals("tar")) {
       String suffix = "";
@@ -193,13 +207,10 @@ public final class ArchiveDownloader {
           "Unsupported compression type: " + compression
         );
       }
-      tarCmd.add(tarFlag);
+      command.add(tarFlag);
     }
-    downloadAndExtract(
-      urlString,
-      destPath,
-      archive -> new ProcessBuilder(tarCmd).redirectInput(archive.toFile())
-    );
+    command.add("-f");
+    return command;
   }
 
   /**
