@@ -560,6 +560,9 @@ public final class Methods {
       final String urlString,
       final String destPath)
       throws IOException {
+    System.err.println(
+      "Warning: curlAndExtract() is deprecated, use extract() instead"
+    );
     extract(urlString, destPath);
   }
 
@@ -578,6 +581,9 @@ public final class Methods {
       final String destPath,
       final String compression)
       throws IOException {
+    System.err.println(
+      "Warning: curlAndExtract() is deprecated, use extract() instead"
+    );
     extract(urlString, destPath, compression);
   }
 

@@ -708,7 +708,7 @@ Extracts an archive to a destination directory. The archive can be a local path,
 
 You are responsible for deleting the data in the `cleanup` phase.
 
-`curlAndExtract()` is a deprecated alias of `extract()`.
+`curlAndExtract()` is a deprecated alias of `extract()`, and prints a warning.
 
 ```groovy
 setup {
