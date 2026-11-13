@@ -702,17 +702,22 @@ then {
 }
 ```
 
-### `curlAndExtract()` - Download and extract an archive
+### `extract()` - Extract an archive
 
-Downloads an archive with `curl` and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. The format is auto-detected from the filename, or pass it explicitly, in any case. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`. A failed download or extraction throws, failing the test.
+Extracts an archive and returns the directory it was extracted into. The archive can be a local path or a `file://` URL, used in place, or any other URL Nextflow can read, such as `http(s)://`, `ftp://` or `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.
 
-You are responsible for deleting the data in the `cleanup` phase.
+Options:
+
+- `extractDir`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
+- `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
+
+Any other option fails the test.
 
 ```groovy
 setup {
-    curlAndExtract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
-    curlAndExtract("https://www.example.com/beautiful_database.tar.gz", "${launchDir}/data_dir")
-    curlAndExtract("https://www.example.com/secret/data", "${launchDir}/data_dir", "tar.bz2")
+    extract("https://www.example.com/pretty_database.zip", extractDir: "${launchDir}/data_dir")
+    extract("s3://my-bucket/beautiful_database.tar.gz", extractDir: "${launchDir}/data_dir")
+    extract("/data/secret/data", extractDir: "${launchDir}/data_dir", compression: "tar.bz2")
 }
 
 when {
@@ -722,8 +727,24 @@ when {
     secret_db_path = "${launchDir}/data_dir/db/secret"
   }
 }
+```
 
-cleanup {
-    new File("${launchDir}/data_dir").deleteDir()
+Without `extractDir`, keep the returned directory in a variable declared at test level, so `when` can read what `setup` set:
+
+```groovy
+test("pretty database") {
+    def db
+    setup {
+        db = extract("https://www.example.com/pretty_database.zip")
+    }
+    when {
+        process {
+            """
+            input[0] = file('${db}/pretty_db')
+            """
+        }
+    }
 }
 ```
+
+`curlAndExtract(url, dir)` and `curlAndExtract(url, dir, compression)` are deprecated: they work like `extract(url, extractDir: dir, compression: compression)` and print a warning.

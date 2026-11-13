@@ -1,10 +1,12 @@
 package nfcore.nftest.utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
@@ -140,6 +142,40 @@ public final class Utils {
       pathPart = urlString;
     }
     return pathPart.toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * Recursively delete a directory and all its contents.
+   *
+   * @param directory The directory to delete
+   */
+  static void deleteDirectory(final File directory) {
+    if (directory.exists()) {
+      File[] files = directory.listFiles();
+      if (files != null) {
+        for (File file : files) {
+          if (file.isDirectory()) {
+            deleteDirectory(file);
+          } else {
+            try {
+              Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+              throw new RuntimeException(
+                "Failed to delete file: " + file, e
+              );
+            }
+          }
+        }
+      }
+
+      try {
+        Files.deleteIfExists(directory.toPath());
+      } catch (IOException e) {
+        throw new RuntimeException(
+          "Failed to delete directory: " + directory, e
+        );
+      }
+    }
   }
 
   /**

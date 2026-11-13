@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -516,35 +519,91 @@ public final class Methods {
   // ── ARCHIVE DOWNLOADING ───────────────────────────────────────────────
 
   /**
-   * Download an archive and extract it in the given destination directory.
-   * Dispatches based on the URL's file extension.
+   * Named options accepted by {@link #extract(LinkedHashMap, String)}.
+   */
+  private static final Set<String> EXTRACT_OPTIONS =
+    Set.of("extractDir", "compression");
+
+  /**
+   * Extract an archive in a new temporary directory, deleted when the JVM
+   * exits, with the archive type taken from the file extension.
    *
-   * @param urlString the URL to fetch
-   * @param destPath  directory to extract the archive into
+   * @param source the local path or URL of the archive
+   * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
    */
+  public static Path extract(final String source) throws IOException {
+    return ArchiveExtractor.extract(source, null, null);
+  }
+
+  /**
+   * Extract an archive.
+   *
+   * @param options {@code extractDir}: directory to extract the archive into,
+   *                instead of a new temporary directory; {@code compression}:
+   *                archive type, instead of the file extension
+   * @param source  the local path or URL of the archive
+   * @return the directory the archive was extracted into
+   * @throws IOException on failure or if archive type is unsupported
+   * @throws IllegalArgumentException on an unknown option
+   */
+  public static Path extract(
+      final LinkedHashMap<String, Object> options,
+      final String source)
+      throws IOException {
+    Set<String> unknown = new HashSet<>(options.keySet());
+    unknown.removeAll(EXTRACT_OPTIONS);
+    if (!unknown.isEmpty()) {
+      throw new IllegalArgumentException(
+        "Unknown extract() options: " + unknown
+        + "; valid options: " + EXTRACT_OPTIONS
+      );
+    }
+    return ArchiveExtractor.extract(
+      source,
+      Objects.toString(options.get("extractDir"), null),
+      Objects.toString(options.get("compression"), null)
+    );
+  }
+
+  /**
+   * Deprecated: extract an archive in the given destination directory.
+   *
+   * @param urlString the local path or URL of the archive
+   * @param destPath  directory to extract the archive into
+   * @throws IOException on failure or if archive type is unsupported
+   * @deprecated use {@link #extract(LinkedHashMap, String)}
+   */
+  @Deprecated
   public static void curlAndExtract(
       final String urlString,
       final String destPath)
       throws IOException {
-    ArchiveDownloader.curlAndExtract(urlString, destPath);
+    System.err.println(
+      "Warning: curlAndExtract() is deprecated, use extract() instead"
+    );
+    ArchiveExtractor.extract(urlString, destPath, null);
   }
 
   /**
-   * Download an archive and extract it in the given destination directory.
-   * Dispatches based on the {@code compression} parameter.
+   * Deprecated: extract an archive in the given destination directory.
    *
-   * @param urlString   the URL to fetch
+   * @param urlString   the local path or URL of the archive
    * @param destPath    directory to extract the archive into
    * @param compression compression type
    * @throws IOException on failure or if archive type is unsupported
+   * @deprecated use {@link #extract(LinkedHashMap, String)}
    */
+  @Deprecated
   public static void curlAndExtract(
       final String urlString,
       final String destPath,
       final String compression)
       throws IOException {
-    ArchiveDownloader.curlAndExtract(urlString, destPath, compression);
+    System.err.println(
+      "Warning: curlAndExtract() is deprecated, use extract() instead"
+    );
+    ArchiveExtractor.extract(urlString, destPath, compression);
   }
 
   /**
@@ -559,7 +618,7 @@ public final class Methods {
   public static Path downloadFromS3(
       final String cloudUri)
       throws IOException, InterruptedException {
-    return ArchiveDownloader.downloadFromS3(cloudUri);
+    return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 
   /**
@@ -576,6 +635,6 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String cloudUri)
       throws IOException, InterruptedException {
-    return ArchiveDownloader.downloadFromS3(cloudUri);
+    return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 }
