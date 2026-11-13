@@ -652,10 +652,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#curlandextract-download-and-extract-an-archive" class="md-nav__link">
+  <a href="#extract-extract-an-archive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        curlAndExtract() - Download and extract an archive
+        extract() - Extract an archive
       
     </span>
   </a>
@@ -1002,10 +1002,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#curlandextract-download-and-extract-an-archive" class="md-nav__link">
+  <a href="#extract-extract-an-archive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        curlAndExtract() - Download and extract an archive
+        extract() - Extract an archive
       
     </span>
   </a>
@@ -1588,13 +1588,18 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstablePatterns:</span><span class="o">[</span><span class="s2">"**/*.log"</span><span class="o">],</span><span class="w"> </span><span class="nl">ignorePatterns:</span><span class="o">[</span><span class="s2">"**/VERSION_*"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
 </span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="o">}</span>
 </span></code></pre></div>
-<h3 id="curlandextract-download-and-extract-an-archive"><code>curlAndExtract()</code> - Download and extract an archive</h3>
-<p>Downloads an archive with <code>curl</code> and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. The format is auto-detected from the filename, or pass it explicitly, in any case. For compressed Tar, use formats like <code>"tar.bz2"</code> or <code>"tbz2"</code>. A failed download or extraction throws, failing the test.</p>
-<p>You are responsible for deleting the data in the <code>cleanup</code> phase.</p>
+<h3 id="extract-extract-an-archive"><code>extract()</code> - Extract an archive</h3>
+<p>Extracts an archive and returns the directory it was extracted into. The archive can be a local path or a <code>file://</code> URL, used in place, or any other URL Nextflow can read, such as <code>http(s)://</code>, <code>ftp://</code> or <code>s3://</code>, downloaded with <code>nextflow fs cp</code>. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.</p>
+<p>Options:</p>
+<ul>
+<li><code>extractDir</code>: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use <code>"${launchDir}/..."</code> rather than <code>outputDir</code>, so the files are never picked up as outputs.</li>
+<li><code>compression</code>: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like <code>"tar.bz2"</code> or <code>"tbz2"</code>.</li>
+</ul>
+<p>Any other option fails the test.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
-</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/beautiful_database.tar.gz"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
-</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="w">    </span><span class="n">curlAndExtract</span><span class="o">(</span><span class="s2">"https://www.example.com/secret/data"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">,</span><span class="w"> </span><span class="s2">"tar.bz2"</span><span class="o">)</span>
+</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
+</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"s3://my-bucket/beautiful_database.tar.gz"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
+</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"/data/secret/data"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">,</span><span class="w"> </span><span class="nl">compression:</span><span class="w"> </span><span class="s2">"tar.bz2"</span><span class="o">)</span>
 </span><span id="__span-51-5"><a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a><span class="o">}</span>
 </span><span id="__span-51-6"><a id="__codelineno-51-6" name="__codelineno-51-6" href="#__codelineno-51-6"></a>
 </span><span id="__span-51-7"><a id="__codelineno-51-7" name="__codelineno-51-7" href="#__codelineno-51-7"></a><span class="n">when</span><span class="w"> </span><span class="o">{</span>
@@ -1604,11 +1609,23 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-51-11"><a id="__codelineno-51-11" name="__codelineno-51-11" href="#__codelineno-51-11"></a><span class="w">    </span><span class="n">secret_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/secret"</span>
 </span><span id="__span-51-12"><a id="__codelineno-51-12" name="__codelineno-51-12" href="#__codelineno-51-12"></a><span class="w">  </span><span class="o">}</span>
 </span><span id="__span-51-13"><a id="__codelineno-51-13" name="__codelineno-51-13" href="#__codelineno-51-13"></a><span class="o">}</span>
-</span><span id="__span-51-14"><a id="__codelineno-51-14" name="__codelineno-51-14" href="#__codelineno-51-14"></a>
-</span><span id="__span-51-15"><a id="__codelineno-51-15" name="__codelineno-51-15" href="#__codelineno-51-15"></a><span class="n">cleanup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-51-16"><a id="__codelineno-51-16" name="__codelineno-51-16" href="#__codelineno-51-16"></a><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">File</span><span class="o">(</span><span class="s2">"${launchDir}/data_dir"</span><span class="o">).</span><span class="na">deleteDir</span><span class="o">()</span>
-</span><span id="__span-51-17"><a id="__codelineno-51-17" name="__codelineno-51-17" href="#__codelineno-51-17"></a><span class="o">}</span>
 </span></code></pre></div>
+<p>Without <code>extractDir</code>, keep the returned directory in a variable declared at test level, so <code>when</code> can read what <code>setup</code> set:</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">"pretty database"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-52-2"><a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a><span class="w">    </span><span class="kt">def</span><span class="w"> </span><span class="n">db</span>
+</span><span id="__span-52-3"><a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a><span class="w">    </span><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-52-4"><a id="__codelineno-52-4" name="__codelineno-52-4" href="#__codelineno-52-4"></a><span class="w">        </span><span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">)</span>
+</span><span id="__span-52-5"><a id="__codelineno-52-5" name="__codelineno-52-5" href="#__codelineno-52-5"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-52-6"><a id="__codelineno-52-6" name="__codelineno-52-6" href="#__codelineno-52-6"></a><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-52-7"><a id="__codelineno-52-7" name="__codelineno-52-7" href="#__codelineno-52-7"></a><span class="w">        </span><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-52-8"><a id="__codelineno-52-8" name="__codelineno-52-8" href="#__codelineno-52-8"></a><span class="w">            </span><span class="s2">"""</span>
+</span><span id="__span-52-9"><a id="__codelineno-52-9" name="__codelineno-52-9" href="#__codelineno-52-9"></a><span class="s2">            input[0] = file('${db}/pretty_db')</span>
+</span><span id="__span-52-10"><a id="__codelineno-52-10" name="__codelineno-52-10" href="#__codelineno-52-10"></a><span class="s2">            """</span>
+</span><span id="__span-52-11"><a id="__codelineno-52-11" name="__codelineno-52-11" href="#__codelineno-52-11"></a><span class="w">        </span><span class="o">}</span>
+</span><span id="__span-52-12"><a id="__codelineno-52-12" name="__codelineno-52-12" href="#__codelineno-52-12"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-52-13"><a id="__codelineno-52-13" name="__codelineno-52-13" href="#__codelineno-52-13"></a><span class="o">}</span>
+</span></code></pre></div>
+<p><code>curlAndExtract(url, dir)</code> and <code>curlAndExtract(url, dir, compression)</code> are deprecated: they work like <code>extract(url, extractDir: dir, compression: compression)</code> and print a warning.</p>
 
 
 
