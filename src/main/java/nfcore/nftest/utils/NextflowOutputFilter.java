@@ -32,10 +32,19 @@ public final class NextflowOutputFilter {
       "[TIMESTAMP]"),
     rule("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]"),
     rule("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]"),
+    // Nextflow work directory, e.g. 7b/b7421f…; before the bare hash rule
+    rule("\\b[0-9a-f]{2}/[0-9a-f]{30}\\b", "[NFT_HASH]"),
     rule("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
-    rule("revision: [0-9a-f]{10}", "revision: [REVISION]"),
-    rule(".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*", ""),
-    rule(".*Please consider updating your version.*", "")
+    rule("revision: [0-9a-f]{10}", "revision: [REVISION]")
+  );
+
+  /** Matches lines that are removed entirely. */
+  private static final List<Pattern> DROPPED_LINES = List.of(
+    Pattern.compile("Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available"),
+    Pattern.compile("Please consider updating your version"),
+    // Printed only when the plugin or container cache is cold
+    Pattern.compile("Downloading plugin "),
+    Pattern.compile("cache directory has not been defined -- Remote image")
   );
 
   /** Rules applied to a line after paths and the run name are replaced. */
@@ -270,11 +279,15 @@ public final class NextflowOutputFilter {
    * @param line The output line to sanitize.
    * @param capturedRunName The run name captured from the Nextflow launching
    *     line, or {@code null} if no run name was captured.
-   * @return The sanitized output line.
+   * @return The sanitized output line, or an empty string for a line that is
+   *     removed entirely.
    */
   public static String filterLinePattern(
       final String line,
       final String capturedRunName) {
+    if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())) {
+      return "";
+    }
     String filtered = line;
 
     if (!USER_NAME.isEmpty()) {
