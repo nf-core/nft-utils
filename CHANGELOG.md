@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#58](https://github.com/nf-core/nft-utils/issues/58) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
-- [#59](https://github.com/nf-core/nft-utils/issues/59) `filterNextflowOutput()` removes `Downloading plugin` lines and container cache warnings (@maxulysse)
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` removes `Downloading plugin` lines and container cache warnings (@maxulysse)
 
 ## [1.3.0]
 
