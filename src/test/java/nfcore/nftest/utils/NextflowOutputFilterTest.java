@@ -44,12 +44,6 @@ class NextflowOutputFilterTest {
   }
 
   @Test
-  void shouldReturnEmptyLineForDroppedLine() {
-    assertEquals("",
-      Methods.filterLinePattern("Downloading plugin nf-schema@2.5.1", null));
-  }
-
-  @Test
   void shouldAcceptOptionsMapAfterOutput() {
     List<String> result = Methods.filterNextflowOutput(
       "b line\na line", Map.<String, Object>of("ignore", List.of("b ")));

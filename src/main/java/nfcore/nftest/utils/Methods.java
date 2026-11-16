@@ -322,8 +322,7 @@ public final class Methods {
    * @param line The output line to sanitize.
    * @param capturedRunName The run name captured from the Nextflow launching
    *     line, or {@code null}.
-   * @return The sanitized output line, or an empty string for a line that is
-   *     removed entirely.
+   * @return The sanitized output line.
    */
   public static String filterLinePattern(
       final String line,

@@ -127,6 +127,9 @@ public final class NextflowOutputFilter {
       if (!keepAnsi) {
         filtered = ANSI.matcher(filtered).replaceAll("");
       }
+      if (isDropped(filtered)) {
+        continue;
+      }
 
       if (capturedRunName == null) {
         capturedRunName = captureRunName(filtered);
@@ -211,6 +214,16 @@ public final class NextflowOutputFilter {
   }
 
   /**
+   * Checks whether a line is removed entirely.
+   *
+   * @param line The line to check
+   * @return {@code true} if the line matches one of {@link #DROPPED_LINES}
+   */
+  private static boolean isDropped(final String line) {
+    return DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find());
+  }
+
+  /**
    * Extracts the run name from the Nextflow launching line.
    *
    * @param line The line to inspect
@@ -279,15 +292,11 @@ public final class NextflowOutputFilter {
    * @param line The output line to sanitize.
    * @param capturedRunName The run name captured from the Nextflow launching
    *     line, or {@code null} if no run name was captured.
-   * @return The sanitized output line, or an empty string for a line that is
-   *     removed entirely.
+   * @return The sanitized output line.
    */
   public static String filterLinePattern(
       final String line,
       final String capturedRunName) {
-    if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())) {
-      return "";
-    }
     String filtered = line;
 
     if (!USER_NAME.isEmpty()) {
