@@ -203,28 +203,19 @@ Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future
 
 Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.
 
-Requires the AWS CLI on the path.
+It uses `nextflow fs cp`, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no `noSignRequest` option: Nextflow falls back to anonymous access, even with invalid credentials.
 
 ```groovy
 def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")
 assert snapshot(path(local_file.toString())).match()
 ```
 
-Supported named parameters:
-
-| Option          | Type      | Default | Description                                                           |
-| --------------- | --------- | ------- | --------------------------------------------------------------------- |
-| `noSignRequest` | `Boolean` | `false` | Pass `--no-sign-request` to the AWS CLI for publicly readable buckets |
-
 ```groovy
-// Download a file from a public bucket
-def local_file = downloadFromS3("s3://my-public-bucket/data/sample.vcf.gz", noSignRequest: true)
-
 // Combine with getAllFilesFromPath to download and snapshot specific files
 def vcf_files = getAllFilesFromPath("s3://my-bucket/results/", noSignRequest: true, include: ['**/*.vcf.gz'])
 assert snapshot(
     vcf_files.collect { relPath ->
-        path(downloadFromS3("s3://my-bucket/results/${relPath}", noSignRequest: true).toString())
+        path(downloadFromS3("s3://my-bucket/results/${relPath}").toString())
     }
 ).match()
 ```
@@ -465,15 +456,19 @@ def filtered_with_ignore = filterNextflowOutput(workflow.stdout, ignore: ["Submi
 
 // Include only lines containing specific strings
 def filtered_with_include = filterNextflowOutput(workflow.stdout, include: ["Submitted process"])
+
+// Remove each regex match from every line; `.*foo.*` removes the whole line
+def filtered_with_patterns = filterNextflowOutput(workflow.stdout, additionalPatterns: [/\d+ ms/])
 ```
 
 These line types are sorted alphabetically after censoring:
 
 - `Staging foreign file` messages
 - `Submitted process` messages
+- `Creating env using conda:` and `Pulling Singularity image` messages
 - `Check * file for details` messages
 - `WARN:` messages
-- `ERROR:` messages
+- `ERROR ~` messages
 
 Set `sorted: false` to disable sorting (not recommended; causes snapshot failures).
 
@@ -490,9 +485,9 @@ Example: process submissions like
 become:
 
 ```bash
-[PROCESS_HASH] Submitted process > FASTQC (sample_1)
-[PROCESS_HASH] Submitted process > FASTQC (sample_2)
-[PROCESS_HASH] Submitted process > FASTQC (sample_3)
+[NXF_HASH] Submitted process > FASTQC (sample_1)
+[NXF_HASH] Submitted process > FASTQC (sample_2)
+[NXF_HASH] Submitted process > FASTQC (sample_3)
 ```
 
 ANSI escape codes are stripped by default to prevent garbled text in snapshots. Set `keepAnsi: true` to preserve them.
@@ -501,7 +496,9 @@ Filtered patterns:
 
 - Empty lines (removed entirely)
 - Timestamps (replaced with `[TIMESTAMP]`)
-- Process hashes (replaced with `[PROCESS_HASH]`)
+- Process hashes (replaced with `[NXF_HASH]`) and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
+- The run name (replaced with `[RUN_NAME]`), the user name in `userName :` lines (`[USER]`) and the revision (`[REVISION]`)
+- Container engine names (replaced with `[CONTAINER]`)
 - File paths (replaced with `[PATH]`), including common ENV variables: `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
 - Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with `[VERSION]`
 
@@ -516,7 +513,7 @@ test("my_pipeline_test") {
         }
     }
 
-        then {
+    then {
         assert snapshot(
             filterNextflowOutput(workflow.stdout + workflow.stderr)
         ).match()
@@ -705,17 +702,22 @@ then {
 }
 ```
 
-### `curlAndExtract()` - Download and extract an archive
+### `extract()` - Extract an archive
 
-Downloads an archive with `curl` and extracts it to a destination directory. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zstd. The format is auto-detected from the filename, or pass it explicitly. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
+Extracts an archive and returns the directory it was extracted into. The archive can be a local path or a `file://` URL, used in place, or any other URL Nextflow can read, such as `http(s)://`, `ftp://` or `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.
 
-You are responsible for deleting the data in the `cleanup` phase.
+Options:
+
+- `extractDir`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
+- `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
+
+Any other option fails the test.
 
 ```groovy
 setup {
-    curlAndExtract("https://www.example.com/pretty_database.zip", "${launchDir}/data_dir")
-    curlAndExtract("https://www.example.com/beautiful_database.tar.gz", "${launchDir}/data_dir")
-    curlAndExtract("https://www.example.com/secret/data", "${launchDir}/data_dir", "tar.bz2")
+    extract("https://www.example.com/pretty_database.zip", extractDir: "${launchDir}/data_dir")
+    extract("s3://my-bucket/beautiful_database.tar.gz", extractDir: "${launchDir}/data_dir")
+    extract("/data/secret/data", extractDir: "${launchDir}/data_dir", compression: "tar.bz2")
 }
 
 when {
@@ -725,8 +727,24 @@ when {
     secret_db_path = "${launchDir}/data_dir/db/secret"
   }
 }
+```
 
-cleanup {
-    new File("${launchDir}/data_dir").deleteDir()
+Without `extractDir`, keep the returned directory in a variable declared at test level, so `when` can read what `setup` set:
+
+```groovy
+test("pretty database") {
+    def db
+    setup {
+        db = extract("https://www.example.com/pretty_database.zip")
+    }
+    when {
+        process {
+            """
+            input[0] = file('${db}/pretty_db')
+            """
+        }
+    }
 }
 ```
+
+`curlAndExtract(url, dir)` and `curlAndExtract(url, dir, compression)` are deprecated: they work like `extract(url, extractDir: dir, compression: compression)` and print a warning.
