@@ -12,15 +12,15 @@
                         ],
                         "id": "test",
                         "meta": null,
-                        "report": "test.report.txt:md5,d1995b15b27b55d4541edf929a7c6011"
+                        "report": "test.report.txt:md5,c086176cbc6d6568590b550bc0c1f427"
                     }
                 ]
             }
         ],
-        "timestamp": "2026-11-17T15:07:03.514423302",
+        "timestamp": "2026-11-17T16:24:01.269742",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.10.6"
+            "nextflow": "26.04.9"
         }
     },
     "Record sanitize output - with unstableKeys record fields": {
@@ -39,15 +39,15 @@
                         "meta": {
                             "sample": "a"
                         },
-                        "report": "test.report.txt:md5,d1995b15b27b55d4541edf929a7c6011"
+                        "report": "test.report.txt:md5,c086176cbc6d6568590b550bc0c1f427"
                     }
                 ]
             }
         ],
-        "timestamp": "2026-11-17T15:06:59.896580248",
+        "timestamp": "2026-11-17T16:23:58.664768",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.10.6"
+            "nextflow": "26.04.9"
         }
     },
     "Record sanitize output - with tableMD5Keys and unstablePatterns": {
@@ -64,15 +64,15 @@
                         "id": "test",
                         "log": "test.log",
                         "meta": null,
-                        "report": "test.report.txt:md5NormedTable,d1995b15b27b55d4541edf929a7c6011"
+                        "report": "test.report.txt:md5NormedTable,4ec29e9e1c04a5906592445840d9ed04"
                     }
                 ]
             }
         ],
-        "timestamp": "2026-11-17T15:07:07.177771573",
+        "timestamp": "2026-11-17T16:24:03.853115",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.10.6"
+            "nextflow": "26.04.9"
         }
     }
 }

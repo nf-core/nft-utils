@@ -43,7 +43,7 @@ nextflow_process {
         }
         then {
             assert process.success
-            assert snapshot(sanitizeOutput(process.out, tableMD5Keys:["report"], unstableKeys:["log"], unstablePatterns:["**/test1*"])).match()
+            assert snapshot(sanitizeOutput(process.out, tableMD5Keys:["report"], tableDoubleDigits:2, tableRemoveComments:true, unstableKeys:["log"], unstablePatterns:["**/test1*"])).match()
         }
     }
 
@@ -63,7 +63,7 @@ nextflow_process {
             } catch (RuntimeException e) {
                 error = e.message
             }
-            assert error == "Key 'missing' not present in channel or in its records"
+            assert error == "Key 'missing' not present in channel names or record fields"
         }
     }
 }

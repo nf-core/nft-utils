@@ -43,7 +43,7 @@ public final class OutputSanitizer {
       }
       throw new RuntimeException(
         "Key '" + keyList + "' not present in channel"
-        + (recordFields.isEmpty() ? "" : " or in its records")
+        + (recordFields.isEmpty() ? "" : " names or record fields")
       );
     }
   }
@@ -211,6 +211,11 @@ public final class OutputSanitizer {
       variantsMD5Keys = List.of();
     }
 
+    List<PathMatcher> unstableMatchers = Utils.buildMatchers(unstablePatterns);
+    List<PathMatcher> ignoreMatchers = Utils.buildMatchers(ignorePatterns);
+    Function<Object, Object> patternSanitizer =
+      v -> applyPatterns(v, unstableMatchers, ignoreMatchers);
+
     Map<String, Function<Object, Object>> fieldSanitizers = new HashMap<>();
     addFieldSanitizers(fieldSanitizers, channel, ignoreKeys, v -> IGNORE);
     addFieldSanitizers(
@@ -253,13 +258,9 @@ public final class OutputSanitizer {
           tableDoubleDigits,
           tableRemoveComments
         ));
-      } else if (fieldSanitizers.isEmpty()) {
-        output.put(key, checkPattern(value, unstablePatterns, ignorePatterns));
       } else {
         output.put(key, sanitizeRecords(
-          value,
-          fieldSanitizers,
-          v -> checkPattern(v, unstablePatterns, ignorePatterns)
+          value, fieldSanitizers, patternSanitizer
         ));
       }
     }
@@ -268,14 +269,15 @@ public final class OutputSanitizer {
 
   /**
    * Registers a sanitizer for each key that names a record field rather
-   * than a channel.
+   * than a channel. A key that names a channel is not registered, so a
+   * record field sharing that name gets the default handling.
    *
    * @param fieldSanitizers Map from record field name to its sanitizer.
    * @param channel The channel map whose names take precedence.
    * @param keys Keys configured for one sanitization option.
    * @param sanitizer The sanitizer that option applies.
    */
-  private static void addFieldSanitizers(
+  static void addFieldSanitizers(
       final Map<String, Function<Object, Object>> fieldSanitizers,
       final Map<String, Object> channel,
       final List<String> keys,
@@ -291,7 +293,9 @@ public final class OutputSanitizer {
    * Sanitizes the records emitted on a channel field by field.
    *
    * Fields with a registered sanitizer use it, and all other fields, as well
-   * as channel items that are not records, use the default sanitizer.
+   * as channel items that are not records, use the default sanitizer. With
+   * no field sanitizers, the result equals applying the default sanitizer to
+   * the whole value.
    *
    * @param value The channel value to sanitize.
    * @param fieldSanitizers Map from record field name to its sanitizer.
@@ -436,12 +440,25 @@ public final class OutputSanitizer {
       final List<String> unstablePatterns,
       final List<String> ignorePatterns) {
 
-    List<PathMatcher> ignoreMatchers =
-      Utils.buildMatchers(ignorePatterns);
+    return applyPatterns(
+      value,
+      Utils.buildMatchers(unstablePatterns),
+      Utils.buildMatchers(ignorePatterns)
+    );
+  }
 
-    List<PathMatcher> unstableMatchers =
-      Utils.buildMatchers(unstablePatterns);
-
+  /**
+   * Recursively applies compiled unstable and ignore matchers to a value.
+   *
+   * @param value The value to sanitize.
+   * @param unstableMatchers Matchers identifying unstable values.
+   * @param ignoreMatchers Matchers identifying values to ignore.
+   * @return The sanitized value.
+   */
+  private static Object applyPatterns(
+      final Object value,
+      final List<PathMatcher> unstableMatchers,
+      final List<PathMatcher> ignoreMatchers) {
     return recursiveParse(value, strValue -> {
       boolean matchIgnore = ignoreMatchers.stream()
         .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));

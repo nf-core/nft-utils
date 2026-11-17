@@ -20,7 +20,7 @@ process TYPED {
 
     script:
     """
-    echo "report for ${id}" > ${id}.report.txt
+    printf '# generated\\nid\\tvalue\\n%s\\t0.123456789\\n' ${id} > ${id}.report.txt
     date > ${id}.log
     mkdir -p folder/sub_folder
     touch folder/test1.txt

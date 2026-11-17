@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -193,7 +194,7 @@ class OutputSanitizerTest {
       () -> OutputSanitizer.validateKeysInChannel(List.of("bam"), channel)
     );
     assertEquals(
-      "Key 'bam' not present in channel or in its records",
+      "Key 'bam' not present in channel names or record fields",
       exception.getMessage()
     );
   }
@@ -234,6 +235,35 @@ class OutputSanitizerTest {
     assertEquals(
       List.of(Map.of("id", "test", "log", "renamed"), "/tmp/dir/other.txt"),
       sanitized
+    );
+  }
+
+  @Test
+  void addFieldSanitizersShouldSkipChannelNames() {
+    Map<String, Object> channel = Map.of(
+      "log", List.of("/tmp/a.log"),
+      "0", List.of(Map.of("id", "test", "log", "/tmp/b.log", "report", "x"))
+    );
+    Map<String, Function<Object, Object>> fieldSanitizers = new HashMap<>();
+    OutputSanitizer.addFieldSanitizers(
+      fieldSanitizers, channel, List.of("log", "report"), v -> v
+    );
+    assertEquals(Set.of("report"), fieldSanitizers.keySet());
+  }
+
+  @Test
+  void sanitizeRecordsWithoutFieldSanitizersShouldMatchDefault() {
+    Function<Object, Object> drop = v -> OutputSanitizer.checkPattern(
+      v, List.of("**/*.log"), List.of("**/*.tmp")
+    );
+    Object value = List.of(
+      Map.of("id", "test", "log", "/a/b.log", "skip", "/a/c.tmp"),
+      List.of(Map.of("id", "t"), "/a/d.log", "/a/e.tmp", ""),
+      "/a/f.tmp"
+    );
+    assertEquals(
+      drop.apply(value),
+      OutputSanitizer.sanitizeRecords(value, Map.of(), drop)
     );
   }
 }
