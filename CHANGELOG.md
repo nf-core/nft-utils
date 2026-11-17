@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `removeNextflowVersion()`, `removeFromYamlMap()` and `readYamlFile()` throw on missing files (@maxulysse)
-- [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `nfcoreInstall()` throws when a module fails to install (@maxulysse)
-- [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
+- [#105](https://github.com/nf-core/nft-utils/pull/105) `removeNextflowVersion()`, `removeFromYamlMap()` and `readYamlFile()` throw on missing files (@maxulysse)
+- [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` throws when a module fails to install (@maxulysse)
+- [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
 
 ### Fixed
 
-- [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `nfcoreInstall()` no longer hangs when `nf-core` asks a question (@maxulysse)
-- [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `nfcoreInstall()` supports library paths with spaces (@maxulysse)
+- [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` no longer hangs when `nf-core` asks a question (@maxulysse)
+- [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` supports library paths with spaces (@maxulysse)
 
 ## [1.3.0]
 
