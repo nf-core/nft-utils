@@ -4,8 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -168,6 +171,99 @@ class OutputSanitizerTest {
     assertEquals(
       Map.of("bam", "example.bam"),
       outputCheck
+    );
+  }
+
+  @Test
+  void shouldAcceptKeyPresentAsRecordField() {
+    Map<String, Object> channel = Map.of(
+      "0", List.of(Map.of("id", "test", "log", "/tmp/test.log"))
+    );
+    assertDoesNotThrow(() ->
+      OutputSanitizer.validateKeysInChannel(List.of("0", "log"), channel)
+    );
+  }
+
+  @Test
+  void shouldRejectKeyAbsentFromChannelAndRecords() {
+    Map<String, Object> channel = Map.of(
+      "0", List.of(Map.of("id", "test", "log", "/tmp/test.log"))
+    );
+    RuntimeException exception = assertThrows(
+      RuntimeException.class,
+      () -> OutputSanitizer.validateKeysInChannel(List.of("bam"), channel)
+    );
+    assertEquals(
+      "Key 'bam' not present in channel names or record fields",
+      exception.getMessage()
+    );
+  }
+
+  @Test
+  void recordFieldNamesShouldIgnoreTuples() {
+    Map<String, Object> channel = Map.of(
+      "html", List.of(List.of(Map.of("id", "test"), "/tmp/test.html")),
+      "0", List.of(Map.of("id", "test", "log", "/tmp/test.log"))
+    );
+    assertEquals(
+      Set.of("id", "log"),
+      OutputSanitizer.recordFieldNames(channel)
+    );
+    assertEquals(
+      Set.of(),
+      OutputSanitizer.recordFieldNames(Map.of("html", channel.get("html")))
+    );
+  }
+
+  @Test
+  void sanitizeRecordsShouldApplyFieldSanitizers() {
+    Function<Object, Object> drop = v -> OutputSanitizer.checkPattern(
+      v, List.of(), List.of("**")
+    );
+    Object sanitized = OutputSanitizer.sanitizeRecords(
+      List.of(
+        Map.of(
+          "id", "test",
+          "log", "/tmp/dir/test.log",
+          "report", "/tmp/dir/test.txt"
+        ),
+        "/tmp/dir/other.txt"
+      ),
+      Map.of("log", v -> "renamed", "report", drop),
+      v -> v
+    );
+    assertEquals(
+      List.of(Map.of("id", "test", "log", "renamed"), "/tmp/dir/other.txt"),
+      sanitized
+    );
+  }
+
+  @Test
+  void addFieldSanitizersShouldSkipChannelNames() {
+    Map<String, Object> channel = Map.of(
+      "log", List.of("/tmp/a.log"),
+      "0", List.of(Map.of("id", "test", "log", "/tmp/b.log", "report", "x"))
+    );
+    Map<String, Function<Object, Object>> fieldSanitizers = new HashMap<>();
+    OutputSanitizer.addFieldSanitizers(
+      fieldSanitizers, channel, List.of("log", "report"), v -> v
+    );
+    assertEquals(Set.of("report"), fieldSanitizers.keySet());
+  }
+
+  @Test
+  void sanitizeRecordsWithoutFieldSanitizersShouldMatchDefault() {
+    Function<Object, Object> drop = v -> OutputSanitizer.checkPattern(
+      v, List.of("**/*.log"), List.of("**/*.tmp")
+    );
+    Object value = List.of(
+      Map.of("id", "test", "log", "/a/b.log", "skip", "/a/c.tmp"),
+      List.of(Map.of("id", "t"), "/a/d.log", "/a/e.tmp", ""),
+      "/a/f.tmp"
+    );
+    assertEquals(
+      drop.apply(value),
+      OutputSanitizer.sanitizeRecords(value, Map.of(), drop)
     );
   }
 }
