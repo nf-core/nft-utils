@@ -110,7 +110,8 @@ public final class YamlUtils {
    * @param key2 The nested key to remove, or {@code null} or empty to remove
    *     the entire {@code key1} entry.
    * @return A merged map containing the processed YAML data.
-   * @throws IOException If no file matches or a file cannot be read.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
@@ -121,6 +122,13 @@ public final class YamlUtils {
 
     for (String yamlFilePath : resolveWildcardPaths(versionFile.toString())) {
       Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
+      for (Map.Entry<String, ?> entry : yamlData.entrySet()) {
+        if (!(entry.getValue() instanceof Map)) {
+          throw new IOException(
+            yamlFilePath + ": expected a map under '" + entry.getKey() + "'"
+          );
+        }
+      }
 
       if (yamlData.containsKey(key1)) {
         if (key2 == null || key2.isEmpty()) {

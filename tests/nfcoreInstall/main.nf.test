@@ -27,6 +27,23 @@ nextflow_process {
 
     }
 
+    test("test module list - library path with spaces") {
+
+        setup {
+            nfcoreInitialise("${launchDir}/library with spaces/")
+            nfcoreInstall("${launchDir}/library with spaces/", ["minimap2/index"])
+        }
+
+        then {
+            assert path("${launchDir}/library with spaces/modules/nf-core/minimap2/index/main.nf").exists()
+        }
+
+        cleanup {
+          new File("${launchDir}/library with spaces/").deleteDir()
+        }
+
+    }
+
     test("test module list - reinstall") {
 
         setup {

@@ -39,13 +39,13 @@ Supports wildcard patterns when the filename varies:
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
 ```
 
-The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files. A missing file, or a wildcard matching no file, fails the test.
+The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.
 
 **Note:** Returned YAML has keys sorted alphabetically at all levels for consistent output.
 
 ### `removeFromYamlMap()`
 
-Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths. A missing file, or a wildcard matching no file, fails the test.
+Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.
 
 #### Remove a specific subkey (3 arguments)
 
@@ -569,7 +569,7 @@ A `state/` directory inside the library tracks which modules have been installed
 
 ### `nfcoreLink()` - Link a temporary library to your modules directory
 
-Symlinks modules from the temporary library into your project's modules directory.
+Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test.
 
 ```groovy
 setup {
@@ -583,7 +583,7 @@ This creates a symlink at `${baseDir}/modules/nf-core`. Reference nf-core module
 
 ### `nfcoreUnlink()` - Unlink a temporary library from your modules directory
 
-Removes all symlinks pointing to the temporary library. Takes the same arguments as `nfcoreLink()`.
+Removes all symlinks pointing to the temporary library. Takes the same arguments as `nfcoreLink()`, and also fails the test on a missing library or modules directory.
 
 ```groovy
 setup {
@@ -612,7 +612,7 @@ cleanup {
 
 ### `nfcoreDeleteLibrary()` - Completely delete a temporary library
 
-Deletes the temporary library and all its contents.
+Deletes the temporary library and all its contents. A file that cannot be deleted fails the test; a missing library does not.
 
 ```groovy
 

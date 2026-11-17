@@ -74,10 +74,11 @@ class UtilsTest {
   }
 
   @Test
-  void shouldThrowWithStderrOnFailure() {
+  void shouldThrowWithOutputOnFailure() {
     IOException e = assertThrows(IOException.class, () -> Utils.runOrThrow(
-      new ProcessBuilder("sh", "-c", "echo boom >&2; exit 3"), "Failed"));
-    assertEquals("Failed: exit code 3\nboom\n", e.getMessage());
+      new ProcessBuilder("sh", "-c", "echo ask; echo boom >&2; exit 3"),
+      "Failed"));
+    assertEquals("Failed: exit code 3\nask\nboom\n", e.getMessage());
   }
 
   @Test

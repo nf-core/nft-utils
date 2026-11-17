@@ -48,7 +48,8 @@ public final class Methods {
    *
    * @param versionFile The YAML file path or wildcard pattern to process.
    * @return A map containing the YAML data with the Nextflow version removed.
-   * @throws IOException If no file matches or a file cannot be read.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeNextflowVersion(
       final CharSequence versionFile)
@@ -65,7 +66,8 @@ public final class Methods {
    * @param key2 The nested key to remove, or {@code null} or empty to remove
    *     the entire {@code key1} entry.
    * @return A merged map containing the processed YAML data.
-   * @throws IOException If no file matches or a file cannot be read.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
@@ -81,7 +83,8 @@ public final class Methods {
    * @param versionFile The YAML content containing the map to modify.
    * @param key1 The key to remove from the YAML map.
    * @return A map containing the updated YAML data.
-   * @throws IOException If no file matches or a file cannot be read.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,

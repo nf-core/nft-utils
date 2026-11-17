@@ -98,7 +98,7 @@ public final class NfCoreUtils {
           throw new IllegalArgumentException("Module name is required");
         }
       } else {
-        throw new RuntimeException(
+        throw new IllegalArgumentException(
           "Unsupported module type: "
           + moduleObj.getClass().getSimpleName()
           + ". Expected String or Map."
@@ -116,7 +116,8 @@ public final class NfCoreUtils {
    * @param name The module name (required)
    * @param sha The SHA hash (optional)
    * @param remote The remote repository (optional)
-   * @throws IOException if the install command fails or is interrupted
+   * @throws IOException if the install command fails or is interrupted, or
+   *     the state file cannot be written
    */
   private static void installModule(
       final String libDir,
@@ -151,7 +152,7 @@ public final class NfCoreUtils {
       + " with: " + String.join(" ", command)
     );
     System.out.println("Successfully installed module: " + name);
-    writeModuleStateFile(stateFile);
+    Files.write(stateFile.toPath(), new byte[0], StandardOpenOption.CREATE);
   }
 
   /**
@@ -178,23 +179,6 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Write a state file to mark a module as installed.
-   *
-   * @param stateFile The state file to create
-   */
-  private static void writeModuleStateFile(final File stateFile) {
-    try {
-      Files.write(
-        stateFile.toPath(),
-        new byte[0],
-        StandardOpenOption.CREATE
-      );
-    } catch (IOException e) {
-      throw new RuntimeException("Could not write module state file", e);
-    }
-  }
-
-  /**
    * Traverse through a modules directory and link modules at the lowest
    * possible position.
    *
@@ -205,6 +189,8 @@ public final class NfCoreUtils {
    * @param modulesDir Location to make the library available at
    * @param mode Operation to perform: {@code "link"} to create symlinks or
    * {@code "unlink"} to remove them.
+   * @throws RuntimeException if either directory does not exist or a link
+   *     cannot be created or removed
    */
   public static void nfcoreLibraryLinker(
       final String libDir,
@@ -214,25 +200,18 @@ public final class NfCoreUtils {
       File libModulesDir = new File(libDir + "/modules");
       File destModulesDir = new File(modulesDir);
 
-      // Capitalise mode string for error messages
-      String capMode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
-
-      if (!libModulesDir.exists() || !libModulesDir.isDirectory()) {
-        System.err.println(
-          "Warning: Library modules directory does not exist: "
+      if (!libModulesDir.isDirectory()) {
+        throw new IOException(
+          "Library modules directory does not exist: "
           + libModulesDir.getAbsolutePath()
         );
-        System.err.println(capMode + "ing halted!");
-        return;
       }
 
       if (!destModulesDir.exists()) {
-        System.err.println(
-          "Warning: Modules directory does not exist: "
+        throw new IOException(
+          "Modules directory does not exist: "
           + destModulesDir.getAbsolutePath()
         );
-        System.err.println(capMode + "ing halted!");
-        return;
       }
 
       // Starting at the organisation-dir (e.g. nf-core) - link it if it
@@ -258,8 +237,7 @@ public final class NfCoreUtils {
         }
       }
     } catch (IOException e) {
-      System.err.println("Error creating symlinks: " + e.getMessage());
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to " + mode + " " + libDir, e);
     }
   }
 
@@ -365,14 +343,7 @@ public final class NfCoreUtils {
    */
   public static void nfcoreDeleteLibrary(final String libDir) {
     System.out.println("Deleting temporary nf-core library: " + libDir);
-
-    try {
-      // Delete modules directory
-      File modulesLibDir = new File(libDir);
-      Utils.deleteDirectory(modulesLibDir);
-    } catch (Exception e) {
-      System.err.println("Error during cleanup: " + e.getMessage());
-    }
+    Utils.deleteDirectory(new File(libDir));
   }
 
 }

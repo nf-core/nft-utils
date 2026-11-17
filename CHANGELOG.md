@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `removeNextflowVersion()`, `removeFromYamlMap()` and `readYamlFile()` throw on missing files (@maxulysse)
 - [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `nfcoreInstall()` throws when a module fails to install (@maxulysse)
+- [#XXX](https://github.com/nf-core/nft-utils/pull/XXX) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
 
 ### Fixed
 

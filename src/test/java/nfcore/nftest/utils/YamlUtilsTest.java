@@ -41,4 +41,12 @@ class YamlUtilsTest {
     assertThrows(IOException.class, () -> Methods.removeNextflowVersion(
       dir.resolve("*_versions.yml").toString()));
   }
+
+  @Test
+  void shouldThrowForKeyWithoutNestedKeys() throws IOException {
+    Path file = Files.writeString(dir.resolve("versions.yml"), "Workflow:\n");
+    IOException e = assertThrows(IOException.class,
+      () -> Methods.removeNextflowVersion(file.toString()));
+    assertEquals(file + ": expected a map under 'Workflow'", e.getMessage());
+  }
 }
