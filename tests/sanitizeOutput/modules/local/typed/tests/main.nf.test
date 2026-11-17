@@ -1,0 +1,69 @@
+nextflow_process {
+
+    name "Test sanitizeOutput with record outputs"
+    script "../main.nf"
+    process "TYPED"
+    tag "sanitizeOutput"
+
+    test("Record sanitize output - with unstableKeys record fields") {
+        when {
+          process {
+            """
+            input[0] = record(id: 'test', meta: record(sample: 'a'))
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, unstableKeys:["log", "folder"])).match()
+        }
+    }
+
+    test("Record sanitize output - with ignoreKeys record field and no meta") {
+        when {
+          process {
+            """
+            input[0] = record(id: 'test')
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, ignoreKeys:["log"])).match()
+        }
+    }
+
+    test("Record sanitize output - with tableMD5Keys and unstablePatterns") {
+        when {
+          process {
+            """
+            input[0] = record(id: 'test')
+            """
+          }
+        }
+        then {
+            assert process.success
+            assert snapshot(sanitizeOutput(process.out, tableMD5Keys:["report"], unstableKeys:["log"], unstablePatterns:["**/test1*"])).match()
+        }
+    }
+
+    test("Record sanitize output - rejects unknown key") {
+        when {
+          process {
+            """
+            input[0] = record(id: 'test')
+            """
+          }
+        }
+        then {
+            assert process.success
+            def error = null
+            try {
+                sanitizeOutput(process.out, unstableKeys:["missing"])
+            } catch (RuntimeException e) {
+                error = e.message
+            }
+            assert error == "Key 'missing' not present in channel or in its records"
+        }
+    }
+}

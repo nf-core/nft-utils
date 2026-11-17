@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.nio.file.Files;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
@@ -22,25 +24,55 @@ public final class OutputSanitizer {
   }
 
   /**
-   * Validates that all specified keys are present in the given channel.
+   * Validates that all specified keys are present in the given channel,
+   * either as a channel name or as a field of the records it emits.
    *
    * @param keysList The list of keys that must be present in the channel.
    * @param channel The channel map to validate.
-   * @throws RuntimeException If any of the specified keys is not present in
-   *     the channel.
+   * @throws RuntimeException If any of the specified keys is neither a
+   *     channel name nor a record field.
    */
   static void validateKeysInChannel(
     final List<String> keysList,
     final Map<String, Object> channel) {
 
+    Set<String> recordFields = recordFieldNames(channel);
     for (String keyList : keysList) {
-      if (!channel.containsKey(keyList)) {
-        throw new RuntimeException(
-          "Key '" + keyList
-          + "' not present in channel"
-        );
+      if (channel.containsKey(keyList) || recordFields.contains(keyList)) {
+        continue;
+      }
+      throw new RuntimeException(
+        "Key '" + keyList + "' not present in channel"
+        + (recordFields.isEmpty() ? "" : " or in its records")
+      );
+    }
+  }
+
+  /**
+   * Collects the field names of the records emitted by a channel.
+   *
+   * nf-test deserializes the records of a typed process as maps, so a map
+   * emitted directly on a channel is treated as a record. Tuples of untyped
+   * processes are lists and do not match.
+   *
+   * @param channel The channel map to inspect.
+   * @return The names of the fields of all records in the channel.
+   */
+  static Set<String> recordFieldNames(final Map<String, Object> channel) {
+    Set<String> fields = new TreeSet<>();
+    for (Object value : channel.values()) {
+      if (!(value instanceof List)) {
+        continue;
+      }
+      for (Object item : (List<?>) value) {
+        if (item instanceof Map) {
+          for (Object field : ((Map<?, ?>) item).keySet()) {
+            fields.add(String.valueOf(field));
+          }
+        }
       }
     }
+    return fields;
   }
 
   /**
@@ -179,6 +211,23 @@ public final class OutputSanitizer {
       variantsMD5Keys = List.of();
     }
 
+    Map<String, Function<Object, Object>> fieldSanitizers = new HashMap<>();
+    addFieldSanitizers(fieldSanitizers, channel, ignoreKeys, v -> IGNORE);
+    addFieldSanitizers(
+      fieldSanitizers, channel, unstableKeys, OutputSanitizer::fixUnstable
+    );
+    addFieldSanitizers(
+      fieldSanitizers, channel, readsMD5Keys,
+      v -> BamUtils.bamMD5(v, referenceFasta)
+    );
+    addFieldSanitizers(
+      fieldSanitizers, channel, variantsMD5Keys, VcfUtils::vcfMD5
+    );
+    addFieldSanitizers(
+      fieldSanitizers, channel, tableMD5Keys,
+      v -> TableUtils.tableMD5(v, tableDoubleDigits, tableRemoveComments)
+    );
+
     TreeMap<String, Object> output = new TreeMap<String, Object>();
     Integer channelSize = (Integer) channel.size();
     for (Map.Entry<String, Object> entry : channel.entrySet()) {
@@ -204,11 +253,80 @@ public final class OutputSanitizer {
           tableDoubleDigits,
           tableRemoveComments
         ));
-      } else {
+      } else if (fieldSanitizers.isEmpty()) {
         output.put(key, checkPattern(value, unstablePatterns, ignorePatterns));
+      } else {
+        output.put(key, sanitizeRecords(
+          value,
+          fieldSanitizers,
+          v -> checkPattern(v, unstablePatterns, ignorePatterns)
+        ));
       }
     }
     return output;
+  }
+
+  /**
+   * Registers a sanitizer for each key that names a record field rather
+   * than a channel.
+   *
+   * @param fieldSanitizers Map from record field name to its sanitizer.
+   * @param channel The channel map whose names take precedence.
+   * @param keys Keys configured for one sanitization option.
+   * @param sanitizer The sanitizer that option applies.
+   */
+  private static void addFieldSanitizers(
+      final Map<String, Function<Object, Object>> fieldSanitizers,
+      final Map<String, Object> channel,
+      final List<String> keys,
+      final Function<Object, Object> sanitizer) {
+    for (String key : keys) {
+      if (!channel.containsKey(key)) {
+        fieldSanitizers.put(key, sanitizer);
+      }
+    }
+  }
+
+  /**
+   * Sanitizes the records emitted on a channel field by field.
+   *
+   * Fields with a registered sanitizer use it, and all other fields, as well
+   * as channel items that are not records, use the default sanitizer.
+   *
+   * @param value The channel value to sanitize.
+   * @param fieldSanitizers Map from record field name to its sanitizer.
+   * @param defaultSanitizer The sanitizer for everything else.
+   * @return The sanitized channel value.
+   */
+  static Object sanitizeRecords(
+      final Object value,
+      final Map<String, Function<Object, Object>> fieldSanitizers,
+      final Function<Object, Object> defaultSanitizer) {
+    if (!(value instanceof List)) {
+      return defaultSanitizer.apply(value);
+    }
+    ArrayList<Object> fixedList = new ArrayList<>();
+    for (Object item : (List<?>) value) {
+      Object parsed;
+      if (item instanceof Map) {
+        Map<Object, Object> fixedRecord = new TreeMap<>();
+        for (Map.Entry<?, ?> field : ((Map<?, ?>) item).entrySet()) {
+          Object fieldValue = fieldSanitizers
+            .getOrDefault(String.valueOf(field.getKey()), defaultSanitizer)
+            .apply(field.getValue());
+          if (fieldValue != IGNORE) {
+            fixedRecord.put(field.getKey(), fieldValue);
+          }
+        }
+        parsed = fixedRecord;
+      } else {
+        parsed = defaultSanitizer.apply(item);
+      }
+      if (parsed != IGNORE) {
+        fixedList.add(parsed);
+      }
+    }
+    return fixedList;
   }
 
   /**

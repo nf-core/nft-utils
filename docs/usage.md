@@ -702,6 +702,15 @@ then {
 }
 ```
 
+Records: a typed process (`nextflow.enable.types = true`) emits records, which reach the test as maps. The key options above also accept record field names: a key that is not a channel name applies to that field of every record, and the other fields are sanitized as usual. A key that is neither a channel name nor a record field fails the test.
+
+```groovy
+then {
+  // process.out is [0: [[id: "test", meta: null, lc_extrap: "/path/to/test.lc_extrap.txt", log: "/path/to/test.command.log"]]]
+  assert snapshot(sanitizeOutput(process.out, unstableKeys:["log"])).match()
+}
+```
+
 ### `extract()` - Extract an archive
 
 Extracts an archive and returns the directory it was extracted into. The archive can be a local path or a `file://` URL, used in place, or any other URL Nextflow can read, such as `http(s)://`, `ftp://` or `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.

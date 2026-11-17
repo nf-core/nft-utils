@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -168,6 +170,70 @@ class OutputSanitizerTest {
     assertEquals(
       Map.of("bam", "example.bam"),
       outputCheck
+    );
+  }
+
+  @Test
+  void shouldAcceptKeyPresentAsRecordField() {
+    Map<String, Object> channel = Map.of(
+      "0", List.of(Map.of("id", "test", "log", "/tmp/test.log"))
+    );
+    assertDoesNotThrow(() ->
+      OutputSanitizer.validateKeysInChannel(List.of("0", "log"), channel)
+    );
+  }
+
+  @Test
+  void shouldRejectKeyAbsentFromChannelAndRecords() {
+    Map<String, Object> channel = Map.of(
+      "0", List.of(Map.of("id", "test", "log", "/tmp/test.log"))
+    );
+    RuntimeException exception = assertThrows(
+      RuntimeException.class,
+      () -> OutputSanitizer.validateKeysInChannel(List.of("bam"), channel)
+    );
+    assertEquals(
+      "Key 'bam' not present in channel or in its records",
+      exception.getMessage()
+    );
+  }
+
+  @Test
+  void recordFieldNamesShouldIgnoreTuples() {
+    Map<String, Object> channel = Map.of(
+      "html", List.of(List.of(Map.of("id", "test"), "/tmp/test.html")),
+      "0", List.of(Map.of("id", "test", "log", "/tmp/test.log"))
+    );
+    assertEquals(
+      Set.of("id", "log"),
+      OutputSanitizer.recordFieldNames(channel)
+    );
+    assertEquals(
+      Set.of(),
+      OutputSanitizer.recordFieldNames(Map.of("html", channel.get("html")))
+    );
+  }
+
+  @Test
+  void sanitizeRecordsShouldApplyFieldSanitizers() {
+    Function<Object, Object> drop = v -> OutputSanitizer.checkPattern(
+      v, List.of(), List.of("**")
+    );
+    Object sanitized = OutputSanitizer.sanitizeRecords(
+      List.of(
+        Map.of(
+          "id", "test",
+          "log", "/tmp/dir/test.log",
+          "report", "/tmp/dir/test.txt"
+        ),
+        "/tmp/dir/other.txt"
+      ),
+      Map.of("log", v -> "renamed", "report", drop),
+      v -> v
+    );
+    assertEquals(
+      List.of(Map.of("id", "test", "log", "renamed"), "/tmp/dir/other.txt"),
+      sanitized
     );
   }
 }

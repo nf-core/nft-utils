@@ -1,0 +1,78 @@
+{
+    "Record sanitize output - with ignoreKeys record field and no meta": {
+        "content": [
+            {
+                "0": [
+                    {
+                        "folder": [
+                            [
+                                "test2.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "test1.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ],
+                        "id": "test",
+                        "meta": null,
+                        "report": "test.report.txt:md5,d1995b15b27b55d4541edf929a7c6011"
+                    }
+                ]
+            }
+        ],
+        "timestamp": "2026-11-17T15:07:03.514423302",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "Record sanitize output - with unstableKeys record fields": {
+        "content": [
+            {
+                "0": [
+                    {
+                        "folder": [
+                            [
+                                "test2.txt"
+                            ],
+                            "test1.txt"
+                        ],
+                        "id": "test",
+                        "log": "test.log",
+                        "meta": {
+                            "sample": "a"
+                        },
+                        "report": "test.report.txt:md5,d1995b15b27b55d4541edf929a7c6011"
+                    }
+                ]
+            }
+        ],
+        "timestamp": "2026-11-17T15:06:59.896580248",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "Record sanitize output - with tableMD5Keys and unstablePatterns": {
+        "content": [
+            {
+                "0": [
+                    {
+                        "folder": [
+                            [
+                                "test2.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "test1.txt"
+                        ],
+                        "id": "test",
+                        "log": "test.log",
+                        "meta": null,
+                        "report": "test.report.txt:md5NormedTable,d1995b15b27b55d4541edf929a7c6011"
+                    }
+                ]
+            }
+        ],
+        "timestamp": "2026-11-17T15:07:07.177771573",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

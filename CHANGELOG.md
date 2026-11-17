@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- [#106](https://github.com/nf-core/nft-utils/pull/106) `sanitizeOutput()` accepts record field names in `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, `variantsMD5Keys` and `tableMD5Keys`, for the record outputs of typed processes (@pinin4fjords)
+
 ## [1.3.0]
 
 ### Added
