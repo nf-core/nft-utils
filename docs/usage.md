@@ -39,13 +39,13 @@ Supports wildcard patterns when the filename varies:
 assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")).match()
 ```
 
-The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files.
+The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files. A missing file, or a wildcard matching no file, fails the test.
 
 **Note:** Returned YAML has keys sorted alphabetically at all levels for consistent output.
 
 ### `removeFromYamlMap()`
 
-Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths.
+Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths. A missing file, or a wildcard matching no file, fails the test.
 
 #### Remove a specific subkey (3 arguments)
 
@@ -538,6 +538,7 @@ setup {
 ### `nfcoreInstall()` - Install modules to a temporary library
 
 Installs nf-core modules into a temporary library. Pass the library path and either a list of module names (`tool/subtool` format) or a list of maps with `name`, `sha`, and `remote` keys (`sha` and `remote` are optional).
+A module that fails to install fails the test, including when `nf-core` asks a question, such as whether to delete a corrupted modules cache.
 
 ```groovy
 setup {

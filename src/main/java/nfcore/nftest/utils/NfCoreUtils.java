@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -66,11 +67,13 @@ public final class NfCoreUtils {
    * @param libDir An nf-core library initialised by nfcoreSetup()
    * @param modules List of module names (strings) or module maps
    * with keys: name (required), sha (optional), remote (optional)
+   * @throws IOException if a module fails to install
    */
   @SuppressWarnings("unchecked")
   public static void nfcoreInstall(
       final String libDir,
-      final List<?> modules) {
+      final List<?> modules)
+      throws IOException {
     System.out.println("Installing nf-core modules...");
 
     if (modules == null || modules.isEmpty()) {
@@ -102,11 +105,7 @@ public final class NfCoreUtils {
         );
       }
 
-      try {
-        installModule(libDir, name, sha, remote);
-      } catch (IOException e) {
-        System.err.println(e.getMessage());
-      }
+      installModule(libDir, name, sha, remote);
     }
   }
 
@@ -135,41 +134,22 @@ public final class NfCoreUtils {
       return;
     }
 
-    StringBuilder command = new StringBuilder(
-      "cd " + libDir + " && nf-core --verbose modules"
+    List<String> command = new ArrayList<>(
+      List.of("nf-core", "--verbose", "modules")
     );
-
     if (remote != null && !remote.isEmpty()) {
-      command.append(" --git-remote ").append(remote);
+      command.addAll(List.of("--git-remote", remote));
     }
-
-    command.append(" install ").append(name);
-
+    command.addAll(List.of("install", name));
     if (sha != null && !sha.isEmpty()) {
-      command.append(" --sha ").append(sha);
+      command.addAll(List.of("--sha", sha));
     }
 
-    ProcessBuilder processBuilder = new ProcessBuilder(
-      "bash", "-c", command.toString()
+    Utils.runOrThrow(
+      new ProcessBuilder(command).directory(new File(libDir)),
+      "Failed to install module " + name
+      + " with: " + String.join(" ", command)
     );
-    Utils.ProcessResult result;
-    try {
-      result = Utils.runProcess(processBuilder);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IOException(
-        "Interrupted installing module " + name, e
-      );
-    }
-
-    if (result.getExitCode() != 0) {
-      throw new IOException(
-        "Failed to install module " + name
-        + ": exit code " + result.getExitCode() + "\n"
-        + "Installation command: " + command + "\n"
-        + result.getStderr()
-      );
-    }
     System.out.println("Successfully installed module: " + name);
     writeModuleStateFile(stateFile);
   }

@@ -33,11 +33,12 @@ public final class Methods {
    * Reads a Version YAML file and returns its contents as a nested map.
    *
    * @param filePath The path to the YAML file to read.
-   * @return A nested map containing the YAML data, or {@code null} if the file
-   *     cannot be read.
+   * @return A nested map containing the YAML data, empty for an empty file.
+   * @throws IOException If the file cannot be read.
    */
   public static Map<String, Map<String, Object>> readYamlFile(
-      final String filePath) {
+      final String filePath)
+      throws IOException {
     return YamlUtils.readYamlFile(filePath);
   }
 
@@ -47,9 +48,11 @@ public final class Methods {
    *
    * @param versionFile The YAML file path or wildcard pattern to process.
    * @return A map containing the YAML data with the Nextflow version removed.
+   * @throws IOException If no file matches or a file cannot be read.
    */
   public static Map<String, Map<String, Object>> removeNextflowVersion(
-      final CharSequence versionFile) {
+      final CharSequence versionFile)
+      throws IOException {
     return YamlUtils.removeFromYamlMap(versionFile, "Workflow", "Nextflow");
   }
 
@@ -62,11 +65,13 @@ public final class Methods {
    * @param key2 The nested key to remove, or {@code null} or empty to remove
    *     the entire {@code key1} entry.
    * @return A merged map containing the processed YAML data.
+   * @throws IOException If no file matches or a file cannot be read.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
       final String key1,
-      final String key2) {
+      final String key2)
+      throws IOException {
     return YamlUtils.removeFromYamlMap(versionFile, key1, key2);
   }
 
@@ -76,10 +81,12 @@ public final class Methods {
    * @param versionFile The YAML content containing the map to modify.
    * @param key1 The key to remove from the YAML map.
    * @return A map containing the updated YAML data.
+   * @throws IOException If no file matches or a file cannot be read.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
-      final String key1) {
+      final String key1)
+      throws IOException {
     return YamlUtils.removeFromYamlMap(versionFile, key1, null);
   }
 
@@ -236,8 +243,10 @@ public final class Methods {
    *
    * @param libDir  An nf-core library initialised by nfcoreInitialise()
    * @param modules List of module names (strings) or module maps
+   * @throws IOException if a module fails to install
    */
-  public static void nfcoreInstall(final String libDir, final List<?> modules) {
+  public static void nfcoreInstall(final String libDir, final List<?> modules)
+      throws IOException {
     NfCoreUtils.nfcoreInstall(libDir, modules);
   }
 
@@ -613,11 +622,10 @@ public final class Methods {
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
-   * @throws InterruptedException if the process is interrupted
    */
   public static Path downloadFromS3(
       final String cloudUri)
-      throws IOException, InterruptedException {
+      throws IOException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 
@@ -629,12 +637,11 @@ public final class Methods {
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
-   * @throws InterruptedException if the process is interrupted
    */
   public static Path downloadFromS3(
       final LinkedHashMap<String, Object> options,
       final String cloudUri)
-      throws IOException, InterruptedException {
+      throws IOException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 }
