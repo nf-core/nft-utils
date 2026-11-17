@@ -236,8 +236,10 @@ public final class Methods {
    * Creates the modules directory and .nf-core.yml configuration file.
    *
    * @param libDir The directory path to initialise an nf-core library at
+   * @throws IOException if the library cannot be created
    */
-  public static void nfcoreInitialise(final String libDir) {
+  public static void nfcoreInitialise(final String libDir)
+      throws IOException {
     NfCoreUtils.nfcoreInitialise(libDir);
   }
 
@@ -259,9 +261,12 @@ public final class Methods {
    *
    * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
+   * @throws IOException if either directory does not exist or a link cannot
+   *     be created
    */
-  public static void nfcoreLink(final String libDir, final String modulesDir) {
-    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "link");
+  public static void nfcoreLink(final String libDir, final String modulesDir)
+      throws IOException {
+    NfCoreUtils.nfcoreLink(libDir, modulesDir);
   }
 
   /**
@@ -269,11 +274,14 @@ public final class Methods {
    *
    * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
+   * @throws IOException if either directory does not exist or a link cannot
+   *     be read or removed
    */
   public static void nfcoreUnlink(
       final String libDir,
-      final String modulesDir) {
-    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "unlink");
+      final String modulesDir)
+      throws IOException {
+    NfCoreUtils.nfcoreUnlink(libDir, modulesDir);
   }
 
   /**

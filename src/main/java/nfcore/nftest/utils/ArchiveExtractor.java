@@ -182,7 +182,7 @@ public final class ArchiveExtractor {
     }
     String lower = compression.toLowerCase(Locale.ROOT);
     if (lower.equals("zip")) {
-      return new ArrayList<>(List.of("unzip", "-o", "-d", destPath));
+      return new ArrayList<>(List.of("unzip", "-q", "-o", "-d", destPath));
     }
 
     List<String> command = new ArrayList<>(
