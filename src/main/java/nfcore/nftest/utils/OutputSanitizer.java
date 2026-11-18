@@ -1,7 +1,9 @@
 package nfcore.nftest.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +35,7 @@ public final class OutputSanitizer {
    *     channel name nor a record field.
    */
   static void validateKeysInChannel(
-    final List<String> keysList,
+    final Collection<String> keysList,
     final Map<String, Object> channel) {
 
     Set<String> recordFields = recordFieldNames(channel);
@@ -188,11 +190,21 @@ public final class OutputSanitizer {
       variantsMD5Keys, tableMD5Keys
     );
 
-    validateKeysInChannel(unstableKeys, channel);
-    validateKeysInChannel(ignoreKeys, channel);
-    validateKeysInChannel(readsMD5Keys, channel);
-    validateKeysInChannel(variantsMD5Keys, channel);
-    validateKeysInChannel(tableMD5Keys, channel);
+    Map<String, Function<Object, Object>> keySanitizers =
+      new LinkedHashMap<>();
+    unstableKeys.forEach(
+      k -> keySanitizers.put(k, OutputSanitizer::fixUnstable)
+    );
+    ignoreKeys.forEach(k -> keySanitizers.put(k, v -> IGNORE));
+    readsMD5Keys.forEach(
+      k -> keySanitizers.put(k, v -> BamUtils.bamMD5(v, referenceFasta))
+    );
+    variantsMD5Keys.forEach(k -> keySanitizers.put(k, VcfUtils::vcfMD5));
+    tableMD5Keys.forEach(k -> keySanitizers.put(k, v -> TableUtils.tableMD5(
+      v, tableDoubleDigits, tableRemoveComments
+    )));
+
+    validateKeysInChannel(keySanitizers.keySet(), channel);
 
     if (!readsMD5Keys.isEmpty() && !BamUtils.isNftBamAvailable()) {
       System.err.println(
@@ -200,7 +212,7 @@ public final class OutputSanitizer {
         + "Cannot calculate reads MD5 for BAM/SAM/CRAM files; "
         + "output may be unstable."
       );
-      readsMD5Keys = List.of();
+      keySanitizers.keySet().removeAll(readsMD5Keys);
     }
     if (!variantsMD5Keys.isEmpty() && !VcfUtils.isNftVcfAvailable()) {
       System.err.println(
@@ -208,85 +220,24 @@ public final class OutputSanitizer {
         + "Cannot calculate variants MD5 for VCF files; "
         + "output may be unstable."
       );
-      variantsMD5Keys = List.of();
+      keySanitizers.keySet().removeAll(variantsMD5Keys);
     }
 
-    List<PathMatcher> unstableMatchers = Utils.buildMatchers(unstablePatterns);
-    List<PathMatcher> ignoreMatchers = Utils.buildMatchers(ignorePatterns);
+    // A channel name takes precedence over a record field of the same name
+    Map<String, Function<Object, Object>> fieldSanitizers =
+      new HashMap<>(keySanitizers);
+    fieldSanitizers.keySet().removeAll(channel.keySet());
     Function<Object, Object> patternSanitizer =
-      v -> applyPatterns(v, unstableMatchers, ignoreMatchers);
+      patternSanitizer(unstablePatterns, ignorePatterns);
+    Function<Object, Object> channelSanitizer =
+      v -> sanitizeRecords(v, fieldSanitizers, patternSanitizer);
 
-    Map<String, Function<Object, Object>> fieldSanitizers = new HashMap<>();
-    addFieldSanitizers(fieldSanitizers, channel, ignoreKeys, v -> IGNORE);
-    addFieldSanitizers(
-      fieldSanitizers, channel, unstableKeys, OutputSanitizer::fixUnstable
-    );
-    addFieldSanitizers(
-      fieldSanitizers, channel, readsMD5Keys,
-      v -> BamUtils.bamMD5(v, referenceFasta)
-    );
-    addFieldSanitizers(
-      fieldSanitizers, channel, variantsMD5Keys, VcfUtils::vcfMD5
-    );
-    addFieldSanitizers(
-      fieldSanitizers, channel, tableMD5Keys,
-      v -> TableUtils.tableMD5(v, tableDoubleDigits, tableRemoveComments)
-    );
-
-    TreeMap<String, Object> output = new TreeMap<String, Object>();
-    Integer channelSize = (Integer) channel.size();
-    for (Map.Entry<String, Object> entry : channel.entrySet()) {
-      String key = entry.getKey();
-      Object value = entry.getValue();
-      if (key.matches("^\\d+$") && channelSize > 1) {
-        // Skip numeric keys if there is more than one entry in the channel
-        continue;
-      }
-      if (ignoreKeys.contains(key)) {
-        continue;
-      }
-
-      if (unstableKeys.contains(key)) {
-        output.put(key, fixUnstable(value));
-      } else if (readsMD5Keys.contains(key)) {
-        output.put(key, BamUtils.bamMD5(value, referenceFasta));
-      } else if (variantsMD5Keys.contains(key)) {
-        output.put(key, VcfUtils.vcfMD5(value));
-      } else if (tableMD5Keys.contains(key)) {
-        output.put(key, TableUtils.tableMD5(
-          value,
-          tableDoubleDigits,
-          tableRemoveComments
-        ));
-      } else {
-        output.put(key, sanitizeRecords(
-          value, fieldSanitizers, patternSanitizer
-        ));
-      }
+    TreeMap<String, Object> named = new TreeMap<>(channel);
+    if (named.size() > 1) {
+      // nf-test lists named outputs twice, by index and by name
+      named.keySet().removeIf(key -> key.matches("^\\d+$"));
     }
-    return output;
-  }
-
-  /**
-   * Registers a sanitizer for each key that names a record field rather
-   * than a channel. A key that names a channel is not registered, so a
-   * record field sharing that name gets the default handling.
-   *
-   * @param fieldSanitizers Map from record field name to its sanitizer.
-   * @param channel The channel map whose names take precedence.
-   * @param keys Keys configured for one sanitization option.
-   * @param sanitizer The sanitizer that option applies.
-   */
-  static void addFieldSanitizers(
-      final Map<String, Function<Object, Object>> fieldSanitizers,
-      final Map<String, Object> channel,
-      final List<String> keys,
-      final Function<Object, Object> sanitizer) {
-    for (String key : keys) {
-      if (!channel.containsKey(key)) {
-        fieldSanitizers.put(key, sanitizer);
-      }
-    }
+    return sanitizeMap(named, keySanitizers, channelSanitizer);
   }
 
   /**
@@ -309,28 +260,56 @@ public final class OutputSanitizer {
     if (!(value instanceof List)) {
       return defaultSanitizer.apply(value);
     }
+    return sanitizeList((List<?>) value, item -> item instanceof Map
+      ? sanitizeMap((Map<?, ?>) item, fieldSanitizers, defaultSanitizer)
+      : defaultSanitizer.apply(item));
+  }
+
+  /**
+   * Sanitizes the items of a list, dropping the items that resolve to the
+   * {@code IGNORE} marker.
+   *
+   * @param items The items to sanitize.
+   * @param sanitizer The sanitizer of each item.
+   * @return The sanitized items, in order.
+   */
+  private static List<Object> sanitizeList(
+      final List<?> items,
+      final Function<Object, Object> sanitizer) {
     ArrayList<Object> fixedList = new ArrayList<>();
-    for (Object item : (List<?>) value) {
-      Object parsed;
-      if (item instanceof Map) {
-        Map<Object, Object> fixedRecord = new TreeMap<>();
-        for (Map.Entry<?, ?> field : ((Map<?, ?>) item).entrySet()) {
-          Object fieldValue = fieldSanitizers
-            .getOrDefault(String.valueOf(field.getKey()), defaultSanitizer)
-            .apply(field.getValue());
-          if (fieldValue != IGNORE) {
-            fixedRecord.put(field.getKey(), fieldValue);
-          }
-        }
-        parsed = fixedRecord;
-      } else {
-        parsed = defaultSanitizer.apply(item);
-      }
+    for (Object item : items) {
+      Object parsed = sanitizer.apply(item);
       if (parsed != IGNORE) {
         fixedList.add(parsed);
       }
     }
     return fixedList;
+  }
+
+  /**
+   * Sanitizes the values of a map, keeping its keys and dropping the values
+   * that resolve to the {@code IGNORE} marker.
+   *
+   * @param <K> The type of the map keys.
+   * @param map The map to sanitize.
+   * @param keySanitizers Map from key to its sanitizer.
+   * @param defaultSanitizer The sanitizer for the other keys.
+   * @return The sanitized map, sorted by key.
+   */
+  private static <K> TreeMap<K, Object> sanitizeMap(
+      final Map<K, ?> map,
+      final Map<String, Function<Object, Object>> keySanitizers,
+      final Function<Object, Object> defaultSanitizer) {
+    TreeMap<K, Object> fixedMap = new TreeMap<>();
+    for (Map.Entry<K, ?> entry : map.entrySet()) {
+      Object parsed = keySanitizers
+        .getOrDefault(String.valueOf(entry.getKey()), defaultSanitizer)
+        .apply(entry.getValue());
+      if (parsed != IGNORE) {
+        fixedMap.put(entry.getKey(), parsed);
+      }
+    }
+    return fixedMap;
   }
 
   /**
@@ -362,18 +341,11 @@ public final class OutputSanitizer {
       }
       java.nio.file.Path path = Paths.get(strValue);
       if (Files.isDirectory(path)) {
-        ArrayList<Object> fixedList = new ArrayList<>();
         try (var children = Files.list(path)) {
-          children
-            .sorted()
-            .forEach(child -> {
-              Object parsed = recursiveParse(child.toString(), applyFct);
-              if (parsed != IGNORE) {
-                fixedList.add(parsed);
-              }
-            });
-
-          return fixedList;
+          return sanitizeList(
+            children.sorted().map(java.nio.file.Path::toString).toList(),
+            v -> recursiveParse(v, applyFct)
+          );
         } catch (java.io.IOException e) {
           throw new RuntimeException(
             "Failed to read directory: " + path, e
@@ -382,25 +354,11 @@ public final class OutputSanitizer {
       }
       return applyFct.apply(strValue);
     } else if (value instanceof List) {
-      List<?> listValue = (List<?>) value;
-      ArrayList<Object> fixedList = new ArrayList<>();
-      for (Object item : listValue) {
-        Object parsed = recursiveParse(item, applyFct);
-        if (parsed != IGNORE) {
-          fixedList.add(parsed);
-        }
-      }
-      return fixedList;
+      return sanitizeList((List<?>) value, v -> recursiveParse(v, applyFct));
     } else if (value instanceof Map) {
-      Map<?, ?> mapValue = (Map<?, ?>) value;
-      Map<Object, Object> fixedMap = new TreeMap<>();
-      for (Map.Entry<?, ?> entry : mapValue.entrySet()) {
-        Object parsed = recursiveParse(entry.getValue(), applyFct);
-        if (parsed != IGNORE) {
-          fixedMap.put(entry.getKey(), parsed);
-        }
-      }
-      return fixedMap;
+      return sanitizeMap(
+        (Map<?, ?>) value, Map.of(), v -> recursiveParse(v, applyFct)
+      );
     } else {
       return value;
     }
@@ -424,42 +382,23 @@ public final class OutputSanitizer {
   }
 
   /**
-   * Recursively applies the configured unstable and ignore patterns to a value.
+   * Builds a sanitizer that recursively applies the unstable and ignore
+   * patterns to a value.
    *
    * Values matching {@code ignorePatterns} are excluded, while values matching
    * {@code unstablePatterns} have their paths reduced to file names. A value
    * matching both patterns causes a {@link RuntimeException}.
    *
-   * @param value The value to sanitize.
    * @param unstablePatterns The glob patterns identifying unstable values.
    * @param ignorePatterns The glob patterns identifying values to ignore.
-   * @return The sanitized value.
+   * @return The sanitizer.
    */
-  static Object checkPattern(
-      final Object value,
+  static Function<Object, Object> patternSanitizer(
       final List<String> unstablePatterns,
       final List<String> ignorePatterns) {
-
-    return applyPatterns(
-      value,
-      Utils.buildMatchers(unstablePatterns),
-      Utils.buildMatchers(ignorePatterns)
-    );
-  }
-
-  /**
-   * Recursively applies compiled unstable and ignore matchers to a value.
-   *
-   * @param value The value to sanitize.
-   * @param unstableMatchers Matchers identifying unstable values.
-   * @param ignoreMatchers Matchers identifying values to ignore.
-   * @return The sanitized value.
-   */
-  private static Object applyPatterns(
-      final Object value,
-      final List<PathMatcher> unstableMatchers,
-      final List<PathMatcher> ignoreMatchers) {
-    return recursiveParse(value, strValue -> {
+    List<PathMatcher> unstableMatchers = Utils.buildMatchers(unstablePatterns);
+    List<PathMatcher> ignoreMatchers = Utils.buildMatchers(ignorePatterns);
+    return value -> recursiveParse(value, strValue -> {
       boolean matchIgnore = ignoreMatchers.stream()
         .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
       boolean matchUnstable = unstableMatchers.stream()
