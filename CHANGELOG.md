@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#107](https://github.com/nf-core/nft-utils/pull/107) Simplify `sanitizeOutput()` internals; output is unchanged (@maxulysse)
 
+### Fixed
+
+- [#109](https://github.com/nf-core/nft-utils/pull/109) `sanitizeOutput()` keeps unnamed outputs instead of dropping them (@maxulysse)
+
 ## [1.3.0]
 
 ### Added
