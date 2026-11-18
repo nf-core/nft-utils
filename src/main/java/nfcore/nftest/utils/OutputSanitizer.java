@@ -190,7 +190,6 @@ public final class OutputSanitizer {
       variantsMD5Keys, tableMD5Keys
     );
 
-    // Sanitizer of each key, applied to the channel or record field it names
     Map<String, Function<Object, Object>> keySanitizers =
       new LinkedHashMap<>();
     unstableKeys.forEach(
@@ -235,7 +234,7 @@ public final class OutputSanitizer {
 
     TreeMap<String, Object> named = new TreeMap<>(channel);
     if (named.size() > 1) {
-      // Skip numeric keys if there is more than one entry in the channel
+      // nf-test lists named outputs twice, by index and by name
       named.keySet().removeIf(key -> key.matches("^\\d+$"));
     }
     return sanitizeMap(named, keySanitizers, channelSanitizer);

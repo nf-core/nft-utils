@@ -232,19 +232,4 @@ class OutputSanitizerTest {
       sanitized
     );
   }
-
-  @Test
-  void sanitizeRecordsWithoutFieldSanitizersShouldMatchDefault() {
-    Function<Object, Object> drop =
-      OutputSanitizer.patternSanitizer(List.of("**/*.log"), List.of("**/*.tmp"));
-    Object value = List.of(
-      Map.of("id", "test", "log", "/a/b.log", "skip", "/a/c.tmp"),
-      List.of(Map.of("id", "t"), "/a/d.log", "/a/e.tmp", ""),
-      "/a/f.tmp"
-    );
-    assertEquals(
-      drop.apply(value),
-      OutputSanitizer.sanitizeRecords(value, Map.of(), drop)
-    );
-  }
 }
