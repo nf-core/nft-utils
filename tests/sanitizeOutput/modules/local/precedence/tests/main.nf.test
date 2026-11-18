@@ -6,9 +6,18 @@ nextflow_process {
     tag "sanitizeOutput"
 
     test("Channel name takes precedence over record field") {
+        when {
+          process {
+            """
+            input[0] = 'test'
+            """
+          }
+        }
         then {
             assert process.success
-            assert sanitizeOutput(process.out, ignoreKeys:["log"]) == [report: [[id: "test", log: "test.log"]]]
+            def output = sanitizeOutput(process.out, ignoreKeys:["log"])
+            assert output.keySet() == ["report"] as Set
+            assert output.report[0].keySet() == ["id", "log"] as Set
         }
     }
 }

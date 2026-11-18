@@ -1,10 +1,14 @@
+nextflow.enable.types = true
+
 process PRECEDENCE {
+    input:
+    id: String
+
     output:
-    path "test.log", emit: log
-    val report, emit: report
+    report = record(id: id, log: file("test.log"))
+    log    = file("test.log")
 
     script:
-    report = [id: "test", log: "test.log"]
     """
     date > test.log
     """
