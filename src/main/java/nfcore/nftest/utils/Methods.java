@@ -235,8 +235,8 @@ public final class Methods {
    * @param path    The file to read.
    * @return The remaining lines, in order.
    * @throws IOException If the file cannot be read.
-   * @throws IllegalArgumentException on an unknown option or a line number
-   *     out of range
+   * @throws IllegalArgumentException on an unknown option, a wrong option
+   *     type or a line number out of range
    */
   public static List<String> excludeLines(
       final LinkedHashMap<String, Object> options,

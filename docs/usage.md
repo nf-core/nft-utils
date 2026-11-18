@@ -447,7 +447,7 @@ Reads a file and returns its lines, minus the excluded ones.
 | `lines`  | `List<Integer>` | `[]`    | 1-based numbers of the lines to remove           |
 | `ignore` | `List<String>`  | `[]`    | Remove the lines containing any of these strings |
 
-Line numbers outside the file throw an error. They shift when the file gains or loses lines, so prefer `ignore` when the unstable lines have a recognisable content.
+Unknown options, wrong option types and line numbers outside the file throw an error. Line numbers shift when the file gains or loses lines, so prefer `ignore` when the unstable lines have a recognisable content.
 
 ```groovy
 assert snapshot(
