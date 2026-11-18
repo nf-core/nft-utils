@@ -13,10 +13,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 /**
- * Utility methods for process execution, shell escaping, and file path
- * manipulation.
+ * Utility methods for process execution, shell escaping, file path
+ * manipulation, and line filtering.
  */
 public final class Utils {
 
@@ -214,17 +215,20 @@ public final class Utils {
   }
 
   /**
-   * Reads a file and returns its lines, minus the given line numbers.
+   * Reads a file and returns its lines, minus the lines with the given
+   * numbers and the lines containing any of the given strings.
    *
    * @param path The file to read.
    * @param lineNumbers The 1-based numbers of the lines to remove.
+   * @param ignore Strings whose lines are removed.
    * @return The remaining lines, in order.
    * @throws IOException If the file cannot be read.
    * @throws IllegalArgumentException If a line number is out of range.
    */
   public static List<String> excludeLines(
       final String path,
-      final List<Integer> lineNumbers) throws IOException {
+      final List<Integer> lineNumbers,
+      final List<String> ignore) throws IOException {
     List<String> lines = Files.readAllLines(Paths.get(path));
     for (int number : lineNumbers) {
       if (number < 1 || number > lines.size()) {
@@ -234,12 +238,10 @@ public final class Utils {
         );
       }
     }
-    List<String> kept = new ArrayList<>();
-    for (int i = 0; i < lines.size(); i++) {
-      if (!lineNumbers.contains(i + 1)) {
-        kept.add(lines.get(i));
-      }
-    }
-    return kept;
+    return IntStream.rangeClosed(1, lines.size())
+      .filter(n -> !lineNumbers.contains(n))
+      .mapToObj(n -> lines.get(n - 1))
+      .filter(line -> ignore.stream().noneMatch(line::contains))
+      .toList();
   }
 }

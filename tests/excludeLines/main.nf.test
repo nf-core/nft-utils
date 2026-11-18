@@ -6,11 +6,27 @@ nextflow_workflow {
 
     tag "excludeLines"
 
-    test("Should remove lines by 1-based number") {
+    test("Should remove lines by number and content") {
 
         then {
             assert workflow.success
-            assert excludeLines("$baseDir/tests/excludeLines/input.txt", [2, 4]) == ["header", "result: 42"]
+            def input = "$baseDir/tests/excludeLines/input.txt"
+            assert excludeLines(input, lines: [2, 4]) == ["header", "result: 42"]
+            assert excludeLines(input, ignore: ["run "]) == ["header", "result: 42"]
+            assert excludeLines(input, lines: [1], ignore: ["date:"]) == ["result: 42", "run time: 3s"]
+        }
+
+    }
+
+    test("Should reject unknown options") {
+
+        then {
+            try {
+                excludeLines("$baseDir/tests/excludeLines/input.txt", line: [2])
+                assert false : "excludeLines() should reject the unknown option"
+            } catch (IllegalArgumentException e) {
+                assert e.message.contains("Unknown excludeLines() options: [line]")
+            }
         }
 
     }

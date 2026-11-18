@@ -440,11 +440,18 @@ A common use case: read a file, remove unstable lines with [`excludeLines()`](#e
 
 ### `excludeLines()`
 
-Reads a file and returns its lines, minus the given 1-based line numbers. Line numbers outside the file throw an error.
+Reads a file and returns its lines, minus the excluded ones.
+
+| Option   | Type            | Default | Description                                      |
+| -------- | --------------- | ------- | ------------------------------------------------ |
+| `lines`  | `List<Integer>` | `[]`    | 1-based numbers of the lines to remove           |
+| `ignore` | `List<String>`  | `[]`    | Remove the lines containing any of these strings |
+
+Line numbers outside the file throw an error. They shift when the file gains or loses lines, so prefer `ignore` when the unstable lines have a recognisable content.
 
 ```groovy
 assert snapshot(
-  listToMD5(excludeLines("$outputDir/report.txt", [2, 4]))
+  listToMD5(excludeLines("$outputDir/report.txt", lines: [1], ignore: ["run date:"]))
 ).match()
 ```
 

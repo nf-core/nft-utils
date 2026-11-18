@@ -76,11 +76,15 @@ class UtilsTest {
     Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b", "c", "d"));
     assertEquals(
       List.of("b", "d"),
-      Utils.excludeLines(file.toString(), List.of(3, 1))
+      Utils.excludeLines(file.toString(), List.of(3, 1), List.of())
     );
     assertEquals(
       List.of("a", "b", "c", "d"),
-      Utils.excludeLines(file.toString(), List.of())
+      Utils.excludeLines(file.toString(), List.of(), List.of())
+    );
+    assertEquals(
+      List.of("a"),
+      Utils.excludeLines(file.toString(), List.of(4), List.of("b", "c"))
     );
   }
 
@@ -90,11 +94,11 @@ class UtilsTest {
     Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b"));
     assertThrows(
       IllegalArgumentException.class,
-      () -> Utils.excludeLines(file.toString(), List.of(0))
+      () -> Utils.excludeLines(file.toString(), List.of(0), List.of())
     );
     assertThrows(
       IllegalArgumentException.class,
-      () -> Utils.excludeLines(file.toString(), List.of(3))
+      () -> Utils.excludeLines(file.toString(), List.of(3), List.of())
     );
   }
 }

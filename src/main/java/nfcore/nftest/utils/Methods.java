@@ -221,18 +221,32 @@ public final class Methods {
   }
 
   /**
-   * Reads a file and returns its lines, minus the given line numbers, for
-   * example to hash a file with {@code listToMD5()} without unstable lines.
+   * Named options accepted by {@link #excludeLines(LinkedHashMap, String)}.
+   */
+  private static final Set<String> EXCLUDE_LINES_OPTIONS =
+    Set.of("lines", "ignore");
+
+  /**
+   * Reads a file and returns its lines, minus the excluded ones, for example
+   * to hash a file with {@code listToMD5()} without its unstable lines.
    *
-   * @param path The file to read.
-   * @param lineNumbers The 1-based numbers of the lines to remove.
+   * @param options {@code lines}: 1-based numbers of the lines to remove;
+   *                {@code ignore}: strings whose lines are removed
+   * @param path    The file to read.
    * @return The remaining lines, in order.
    * @throws IOException If the file cannot be read.
+   * @throws IllegalArgumentException on an unknown option or a line number
+   *     out of range
    */
+  @SuppressWarnings("unchecked")
   public static List<String> excludeLines(
-      final String path,
-      final List<Integer> lineNumbers) throws IOException {
-    return Utils.excludeLines(path, lineNumbers);
+      final LinkedHashMap<String, Object> options,
+      final String path) throws IOException {
+    rejectUnknownOptions("excludeLines", options, EXCLUDE_LINES_OPTIONS);
+    return Utils.excludeLines(
+      path,
+      (List<Integer>) options.getOrDefault("lines", List.of()),
+      (List<String>) options.getOrDefault("ignore", List.of()));
   }
 
   // ── nf-core MODULE MANAGEMENT ─────────────────────────────────────────
@@ -566,14 +580,7 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String source)
       throws IOException {
-    Set<String> unknown = new HashSet<>(options.keySet());
-    unknown.removeAll(EXTRACT_OPTIONS);
-    if (!unknown.isEmpty()) {
-      throw new IllegalArgumentException(
-        "Unknown extract() options: " + unknown
-        + "; valid options: " + EXTRACT_OPTIONS
-      );
-    }
+    rejectUnknownOptions("extract", options, EXTRACT_OPTIONS);
     return ArchiveExtractor.extract(
       source,
       Objects.toString(options.get("extractDir"), null),
@@ -651,5 +658,27 @@ public final class Methods {
       final String cloudUri)
       throws IOException, InterruptedException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
+  }
+
+  /**
+   * Rejects named options that a function does not accept.
+   *
+   * @param function The function name, for the error message.
+   * @param options  The named options passed.
+   * @param valid    The options the function accepts.
+   * @throws IllegalArgumentException on an unknown option
+   */
+  private static void rejectUnknownOptions(
+      final String function,
+      final Map<String, Object> options,
+      final Set<String> valid) {
+    Set<String> unknown = new HashSet<>(options.keySet());
+    unknown.removeAll(valid);
+    if (!unknown.isEmpty()) {
+      throw new IllegalArgumentException(
+        "Unknown " + function + "() options: " + unknown
+        + "; valid options: " + valid
+      );
+    }
   }
 }
