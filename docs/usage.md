@@ -379,6 +379,8 @@ def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore
 def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
 ```
 
+With `relative: true`, the list holds `String` paths, not files: snapshot it as is, since `stable_name*.name` fails with `MissingPropertyException`.
+
 ### `getAllFilesFromChannel()`
 
 Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/").
