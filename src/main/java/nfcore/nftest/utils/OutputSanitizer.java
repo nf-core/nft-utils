@@ -232,12 +232,22 @@ public final class OutputSanitizer {
     Function<Object, Object> channelSanitizer =
       v -> sanitizeRecords(v, fieldSanitizers, patternSanitizer);
 
-    TreeMap<String, Object> named = new TreeMap<>(channel);
-    if (named.size() > 1) {
-      // nf-test lists named outputs twice, by index and by name
-      named.keySet().removeIf(key -> key.matches("^\\d+$"));
-    }
-    return sanitizeMap(named, keySanitizers, channelSanitizer);
+    // nf-test lists named outputs twice, by index and by name:
+    // drop one index entry per named output, keep unnamed outputs
+    TreeMap<String, Object> outputs = new TreeMap<>(channel);
+    channel.forEach((name, value) -> {
+      if (!isIndex(name)) {
+        outputs.keySet().stream()
+          .filter(key -> isIndex(key) && value.equals(outputs.get(key)))
+          .findFirst()
+          .ifPresent(outputs::remove);
+      }
+    });
+    return sanitizeMap(outputs, keySanitizers, channelSanitizer);
+  }
+
+  private static boolean isIndex(final String key) {
+    return key.matches("^\\d+$");
   }
 
   /**

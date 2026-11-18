@@ -1,0 +1,18 @@
+nextflow_process {
+
+    name "Test sanitizeOutput with unnamed outputs"
+    script "../main.nf"
+    process "UNNAMED"
+    tag "sanitizeOutput"
+
+    test("Unnamed outputs are kept next to named ones") {
+        then {
+            assert process.success
+            def output = sanitizeOutput(process.out)
+            assert output.keySet() == ["0", "1", "c"] as Set
+            assert output["0"][0] ==~ /.*a\.txt/
+            assert output["1"][0] ==~ /.*b\.txt/
+            assert output.c[0] ==~ /.*c\.txt/
+        }
+    }
+}
