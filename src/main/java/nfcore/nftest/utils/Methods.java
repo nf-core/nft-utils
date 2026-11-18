@@ -3,7 +3,6 @@ package nfcore.nftest.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -243,19 +242,12 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String path) throws IOException {
     rejectUnknownOptions("excludeLines", options, EXCLUDE_LINES_OPTIONS);
-    List<Integer> lines = new ArrayList<>();
-    for (Object number : listOption("excludeLines", options, "lines")) {
-      if (!(number instanceof Integer)) {
-        throw new IllegalArgumentException(
-          "excludeLines() option 'lines' must hold line numbers, got: "
-          + number
-        );
-      }
-      lines.add((Integer) number);
-    }
+    List<Integer> lines =
+      listOption("excludeLines", options, "lines", Integer.class);
     // toString() turns Groovy GStrings into Strings
-    List<String> ignore = listOption("excludeLines", options, "ignore")
-      .stream().map(Object::toString).toList();
+    List<String> ignore =
+      listOption("excludeLines", options, "ignore", CharSequence.class)
+        .stream().map(Object::toString).toList();
     return Utils.excludeLines(path, lines, ignore);
   }
 
@@ -671,25 +663,32 @@ public final class Methods {
   }
 
   /**
-   * Reads a named option that must be a list, defaulting to an empty list.
+   * Reads a named option that must be a list of the given type, defaulting
+   * to an empty list.
    *
+   * @param <T>      The item type.
    * @param function The function name, for the error message.
    * @param options  The named options passed.
    * @param name     The option name.
+   * @param type     The item type.
    * @return The option value.
-   * @throws IllegalArgumentException if the option is not a list
+   * @throws IllegalArgumentException if the option is not a list of
+   *     {@code type}
    */
-  private static List<?> listOption(
+  private static <T> List<T> listOption(
       final String function,
       final Map<String, Object> options,
-      final String name) {
+      final String name,
+      final Class<T> type) {
     Object value = options.getOrDefault(name, List.of());
-    if (!(value instanceof List)) {
+    if (!(value instanceof List<?> list)
+        || !list.stream().allMatch(type::isInstance)) {
       throw new IllegalArgumentException(
-        function + "() option '" + name + "' must be a list, got: " + value
+        function + "() option '" + name + "' must be a list of "
+        + type.getSimpleName() + ", got: " + value
       );
     }
-    return (List<?>) value;
+    return list.stream().map(type::cast).toList();
   }
 
   /**

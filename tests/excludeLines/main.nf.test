@@ -35,8 +35,9 @@ nextflow_workflow {
             def input = "$baseDir/tests/excludeLines/input.txt"
             [
                 [[line: [2]], "Unknown excludeLines() options: [line]"],
-                [[ignore: "run"], "option 'ignore' must be a list"],
-                [[lines: [1, 3..4]], "option 'lines' must hold line numbers"],
+                [[ignore: "run"], "option 'ignore' must be a list of CharSequence"],
+                [[ignore: [42]], "option 'ignore' must be a list of CharSequence"],
+                [[lines: [1, 3..4]], "option 'lines' must be a list of Integer"],
             ].each { options, message ->
                 try {
                     excludeLines(options, input)
