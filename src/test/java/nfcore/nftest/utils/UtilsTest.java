@@ -101,4 +101,15 @@ class UtilsTest {
       () -> Utils.excludeLines(file.toString(), List.of(3), List.of())
     );
   }
+
+  @Test
+  void shouldReadInvalidUtf8(@TempDir final Path dir) throws IOException {
+    Path file = Files.write(
+      dir.resolve("in.txt"), new byte[] {'a', '\n', (byte) 0xE9, '\n'}
+    );
+    assertEquals(
+      List.of("a", "\uFFFD"),
+      Utils.excludeLines(file.toString(), List.of(), List.of())
+    );
+  }
 }

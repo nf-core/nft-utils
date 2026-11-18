@@ -3,6 +3,7 @@ package nfcore.nftest.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -238,15 +239,24 @@ public final class Methods {
    * @throws IllegalArgumentException on an unknown option or a line number
    *     out of range
    */
-  @SuppressWarnings("unchecked")
   public static List<String> excludeLines(
       final LinkedHashMap<String, Object> options,
       final String path) throws IOException {
     rejectUnknownOptions("excludeLines", options, EXCLUDE_LINES_OPTIONS);
-    return Utils.excludeLines(
-      path,
-      (List<Integer>) options.getOrDefault("lines", List.of()),
-      (List<String>) options.getOrDefault("ignore", List.of()));
+    List<Integer> lines = new ArrayList<>();
+    for (Object number : listOption("excludeLines", options, "lines")) {
+      if (!(number instanceof Integer)) {
+        throw new IllegalArgumentException(
+          "excludeLines() option 'lines' must hold line numbers, got: "
+          + number
+        );
+      }
+      lines.add((Integer) number);
+    }
+    // toString() turns Groovy GStrings into Strings
+    List<String> ignore = listOption("excludeLines", options, "ignore")
+      .stream().map(Object::toString).toList();
+    return Utils.excludeLines(path, lines, ignore);
   }
 
   // ── nf-core MODULE MANAGEMENT ─────────────────────────────────────────
@@ -658,6 +668,28 @@ public final class Methods {
       final String cloudUri)
       throws IOException, InterruptedException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
+  }
+
+  /**
+   * Reads a named option that must be a list, defaulting to an empty list.
+   *
+   * @param function The function name, for the error message.
+   * @param options  The named options passed.
+   * @param name     The option name.
+   * @return The option value.
+   * @throws IllegalArgumentException if the option is not a list
+   */
+  private static List<?> listOption(
+      final String function,
+      final Map<String, Object> options,
+      final String name) {
+    Object value = options.getOrDefault(name, List.of());
+    if (!(value instanceof List)) {
+      throw new IllegalArgumentException(
+        function + "() option '" + name + "' must be a list, got: " + value
+      );
+    }
+    return (List<?>) value;
   }
 
   /**

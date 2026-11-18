@@ -18,14 +18,32 @@ nextflow_workflow {
 
     }
 
-    test("Should reject unknown options") {
+    test("Should accept ranges and GStrings") {
 
         then {
-            try {
-                excludeLines("$baseDir/tests/excludeLines/input.txt", line: [2])
-                assert false : "excludeLines() should reject the unknown option"
-            } catch (IllegalArgumentException e) {
-                assert e.message.contains("Unknown excludeLines() options: [line]")
+            def input = "$baseDir/tests/excludeLines/input.txt"
+            def key = "run"
+            assert excludeLines(input, lines: 2..4) == ["header"]
+            assert excludeLines(input, ignore: ["${key} "]) == ["header", "result: 42"]
+        }
+
+    }
+
+    test("Should reject invalid options") {
+
+        then {
+            def input = "$baseDir/tests/excludeLines/input.txt"
+            [
+                [[line: [2]], "Unknown excludeLines() options: [line]"],
+                [[ignore: "run"], "option 'ignore' must be a list"],
+                [[lines: [1, 3..4]], "option 'lines' must hold line numbers"],
+            ].each { options, message ->
+                try {
+                    excludeLines(options, input)
+                    assert false : "excludeLines() should reject ${options}"
+                } catch (IllegalArgumentException e) {
+                    assert e.message.contains(message)
+                }
             }
         }
 

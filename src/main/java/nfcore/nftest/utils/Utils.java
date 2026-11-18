@@ -229,7 +229,10 @@ public final class Utils {
       final String path,
       final List<Integer> lineNumbers,
       final List<String> ignore) throws IOException {
-    List<String> lines = Files.readAllLines(Paths.get(path));
+    // Invalid UTF-8 bytes become U+FFFD instead of failing the read
+    List<String> lines = new String(
+      Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8
+    ).lines().toList();
     for (int number : lineNumbers) {
       if (number < 1 || number > lines.size()) {
         throw new IllegalArgumentException(
