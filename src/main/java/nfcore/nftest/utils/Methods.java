@@ -220,6 +220,21 @@ public final class Methods {
     return HashUtils.listToMD5(input);
   }
 
+  /**
+   * Reads a file and returns its lines, minus the given line numbers, for
+   * example to hash a file with {@code listToMD5()} without unstable lines.
+   *
+   * @param path The file to read.
+   * @param lineNumbers The 1-based numbers of the lines to remove.
+   * @return The remaining lines, in order.
+   * @throws IOException If the file cannot be read.
+   */
+  public static List<String> excludeLines(
+      final String path,
+      final List<Integer> lineNumbers) throws IOException {
+    return Utils.excludeLines(path, lineNumbers);
+  }
+
   // ── nf-core MODULE MANAGEMENT ─────────────────────────────────────────
 
   /**

@@ -1,0 +1,18 @@
+nextflow_workflow {
+
+    name "Test excludeLines"
+    script "./main.nf"
+    workflow "TEST"
+
+    tag "excludeLines"
+
+    test("Should remove lines by 1-based number") {
+
+        then {
+            assert workflow.success
+            assert excludeLines("$baseDir/tests/excludeLines/input.txt", [2, 4]) == ["header", "result: 42"]
+        }
+
+    }
+
+}

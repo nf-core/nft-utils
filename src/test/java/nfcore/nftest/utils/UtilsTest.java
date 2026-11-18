@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class UtilsTest {
 
@@ -67,5 +69,32 @@ class UtilsTest {
     Path path = Paths.get("/tmp/some.directory/example.vcf.gz.gz");
     assertEquals("vcf", Utils.getExtension(path, false));
     assertEquals("gz", Utils.getExtension(path, true));
+  }
+
+  @Test
+  void shouldExcludeLinesByNumber(@TempDir final Path dir) throws IOException {
+    Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b", "c", "d"));
+    assertEquals(
+      List.of("b", "d"),
+      Utils.excludeLines(file.toString(), List.of(3, 1))
+    );
+    assertEquals(
+      List.of("a", "b", "c", "d"),
+      Utils.excludeLines(file.toString(), List.of())
+    );
+  }
+
+  @Test
+  void shouldRejectOutOfRangeLineNumbers(@TempDir final Path dir)
+      throws IOException {
+    Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b"));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Utils.excludeLines(file.toString(), List.of(0))
+    );
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Utils.excludeLines(file.toString(), List.of(3))
+    );
   }
 }

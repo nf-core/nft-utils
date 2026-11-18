@@ -436,7 +436,17 @@ test("Process output test") {
 
 Converts a list of values to an MD5 hash. All values must be convertible to strings.
 
-A common use case: read a file, remove unstable lines, then regenerate the MD5 hash.
+A common use case: read a file, remove unstable lines with [`excludeLines()`](#excludelines), then regenerate the MD5 hash.
+
+### `excludeLines()`
+
+Reads a file and returns its lines, minus the given 1-based line numbers. Line numbers outside the file throw an error.
+
+```groovy
+assert snapshot(
+  listToMD5(excludeLines("$outputDir/report.txt", [2, 4]))
+).match()
+```
 
 ### `filterNextflowOutput()`
 

@@ -212,4 +212,34 @@ public final class Utils {
     }
     return extension;
   }
+
+  /**
+   * Reads a file and returns its lines, minus the given line numbers.
+   *
+   * @param path The file to read.
+   * @param lineNumbers The 1-based numbers of the lines to remove.
+   * @return The remaining lines, in order.
+   * @throws IOException If the file cannot be read.
+   * @throws IllegalArgumentException If a line number is out of range.
+   */
+  public static List<String> excludeLines(
+      final String path,
+      final List<Integer> lineNumbers) throws IOException {
+    List<String> lines = Files.readAllLines(Paths.get(path));
+    for (int number : lineNumbers) {
+      if (number < 1 || number > lines.size()) {
+        throw new IllegalArgumentException(
+          "Line " + number + " is out of range: "
+          + path + " has " + lines.size() + " lines"
+        );
+      }
+    }
+    List<String> kept = new ArrayList<>();
+    for (int i = 0; i < lines.size(); i++) {
+      if (!lineNumbers.contains(i + 1)) {
+        kept.add(lines.get(i));
+      }
+    }
+    return kept;
+  }
 }
