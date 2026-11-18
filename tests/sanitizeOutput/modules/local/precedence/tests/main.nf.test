@@ -1,0 +1,14 @@
+nextflow_process {
+
+    name "Test sanitizeOutput when a channel and a record field share a name"
+    script "../main.nf"
+    process "PRECEDENCE"
+    tag "sanitizeOutput"
+
+    test("Channel name takes precedence over record field") {
+        then {
+            assert process.success
+            assert sanitizeOutput(process.out, ignoreKeys:["log"]) == [report: [[id: "test", log: "test.log"]]]
+        }
+    }
+}

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,14 +125,13 @@ class OutputSanitizerTest {
     }
 
     @Test
-    void checkPatternFailMatchBothIgnoreAndUnstable() {
+    void patternSanitizerFailMatchBothIgnoreAndUnstable() {
         RuntimeException exception = assertThrows(
             RuntimeException.class,
-            () -> OutputSanitizer.checkPattern(
-                List.of("MyFile.bam", "MyFile.vcf"),
+            () -> OutputSanitizer.patternSanitizer(
                 List.of("*.bam", "*.vcf"),
                 List.of("*.vcf")
-            )
+            ).apply(List.of("MyFile.bam", "MyFile.vcf"))
         );
 
         assertEquals(
@@ -143,15 +141,14 @@ class OutputSanitizerTest {
     }
 
   @Test
-  void checkPatternShouldIgnoreTxtFileAndSimplifyBamInList() {
-    Object outputCheck = OutputSanitizer.checkPattern(
-      List.of(
-        "/tmp/some.directory/example.bam",
-        "/tmp/some.directory/example.txt"
-      ),
+  void patternSanitizerShouldIgnoreTxtFileAndSimplifyBamInList() {
+    Object outputCheck = OutputSanitizer.patternSanitizer(
       List.of("**/*.bam"),
       List.of("**/*.txt")
-    );
+    ).apply(List.of(
+      "/tmp/some.directory/example.bam",
+      "/tmp/some.directory/example.txt"
+    ));
     assertEquals(
       List.of("example.bam"),
       outputCheck
@@ -159,15 +156,14 @@ class OutputSanitizerTest {
   }
 
   @Test
-  void checkPatternShouldIgnoreTxtFileAndSimplifyBamInMap() {
-    Object outputCheck = OutputSanitizer.checkPattern(
-      Map.of(
-        "bam", "/tmp/some.directory/example.bam",
-        "txt", "/tmp/some.directory/example.txt"
-      ),
+  void patternSanitizerShouldIgnoreTxtFileAndSimplifyBamInMap() {
+    Object outputCheck = OutputSanitizer.patternSanitizer(
       List.of("**/*.bam"),
       List.of("**/*.txt")
-    );
+    ).apply(Map.of(
+      "bam", "/tmp/some.directory/example.bam",
+      "txt", "/tmp/some.directory/example.txt"
+    ));
     assertEquals(
       Map.of("bam", "example.bam"),
       outputCheck
@@ -217,9 +213,8 @@ class OutputSanitizerTest {
 
   @Test
   void sanitizeRecordsShouldApplyFieldSanitizers() {
-    Function<Object, Object> drop = v -> OutputSanitizer.checkPattern(
-      v, List.of(), List.of("**")
-    );
+    Function<Object, Object> drop =
+      OutputSanitizer.patternSanitizer(List.of(), List.of("**"));
     Object sanitized = OutputSanitizer.sanitizeRecords(
       List.of(
         Map.of(
@@ -239,23 +234,9 @@ class OutputSanitizerTest {
   }
 
   @Test
-  void addFieldSanitizersShouldSkipChannelNames() {
-    Map<String, Object> channel = Map.of(
-      "log", List.of("/tmp/a.log"),
-      "0", List.of(Map.of("id", "test", "log", "/tmp/b.log", "report", "x"))
-    );
-    Map<String, Function<Object, Object>> fieldSanitizers = new HashMap<>();
-    OutputSanitizer.addFieldSanitizers(
-      fieldSanitizers, channel, List.of("log", "report"), v -> v
-    );
-    assertEquals(Set.of("report"), fieldSanitizers.keySet());
-  }
-
-  @Test
   void sanitizeRecordsWithoutFieldSanitizersShouldMatchDefault() {
-    Function<Object, Object> drop = v -> OutputSanitizer.checkPattern(
-      v, List.of("**/*.log"), List.of("**/*.tmp")
-    );
+    Function<Object, Object> drop =
+      OutputSanitizer.patternSanitizer(List.of("**/*.log"), List.of("**/*.tmp"));
     Object value = List.of(
       Map.of("id", "test", "log", "/a/b.log", "skip", "/a/c.tmp"),
       List.of(Map.of("id", "t"), "/a/d.log", "/a/e.tmp", ""),
