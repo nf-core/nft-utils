@@ -495,11 +495,12 @@ Filtered patterns:
 
 - Empty lines (removed entirely)
 - Timestamps (replaced with `[TIMESTAMP]`)
-- Process hashes (replaced with `[NXF_HASH]`) and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
+- Process hashes (replaced with `[NXF_HASH]`), work directory hashes such as `7b/b7421f…` and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
 - The run name (replaced with `[RUN_NAME]`), the user name in `userName :` lines (`[USER]`) and the revision (`[REVISION]`)
 - Container engine names (replaced with `[CONTAINER]`)
 - File paths (replaced with `[PATH]`), including common ENV variables: `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
 - Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with `[VERSION]`
+- Lines printed only when a cache is empty: `Downloading plugin` messages and container `cache directory has not been defined` warnings (removed entirely)
 
 Example test:
 

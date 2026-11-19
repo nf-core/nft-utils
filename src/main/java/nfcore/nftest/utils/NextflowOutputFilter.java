@@ -32,16 +32,24 @@ public final class NextflowOutputFilter {
       "[TIMESTAMP]"),
     rule("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]"),
     rule("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]"),
-    rule("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
-    rule("revision: [0-9a-f]{10}", "revision: [REVISION]"),
-    rule(".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*", ""),
-    rule(".*Please consider updating your version.*", "")
+    // Optional prefix covers Nextflow work directories, e.g. 7b/b7421f…
+    rule("\\b(?:[0-9a-f]{2}/)?[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
+    rule("revision: [0-9a-f]{10}", "revision: [REVISION]")
+  );
+
+  /** Matches lines that are removed entirely. */
+  private static final List<Pattern> DROPPED_LINES = List.of(
+    Pattern.compile("Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available"),
+    Pattern.compile("Please consider updating your version"),
+    Pattern.compile("containerEngine"),
+    // Printed only when the plugin or container cache is cold
+    Pattern.compile("Downloading plugin "),
+    Pattern.compile("cache directory has not been defined -- Remote image")
   );
 
   /** Rules applied to a line after paths and the run name are replaced. */
   private static final List<UnaryOperator<String>> RULES_AFTER_RUN_NAME =
     List.of(
-      rule(".*containerEngine.*", ""),
       rule(
         "apptainer|charliecloud|conda|docker|mamba|podman|shifter"
         + "|singularity|wave",
@@ -110,13 +118,9 @@ public final class NextflowOutputFilter {
     String capturedRunName = null;
 
     for (String line : toLines(output)) {
-      if (!keepLine(line, ignore, include)) {
+      String filtered = keepAnsi ? line : ANSI.matcher(line).replaceAll("");
+      if (!keepLine(filtered, ignore, include)) {
         continue;
-      }
-
-      String filtered = line;
-      if (!keepAnsi) {
-        filtered = ANSI.matcher(filtered).replaceAll("");
       }
 
       if (capturedRunName == null) {
@@ -181,7 +185,8 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Applies the ignore and include lists to a line.
+   * Applies the ignore and include lists to a line and rejects lines
+   * matching {@link #DROPPED_LINES}.
    *
    * @param line    The line to check
    * @param ignore  Strings rejecting the line, or {@code null}
@@ -193,6 +198,9 @@ public final class NextflowOutputFilter {
       final String line,
       final List<String> ignore,
       final List<String> include) {
+    if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())) {
+      return false;
+    }
     if (ignore != null && ignore.stream().anyMatch(line::contains)) {
       return false;
     }
