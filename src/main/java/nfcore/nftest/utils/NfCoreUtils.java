@@ -28,7 +28,7 @@ public final class NfCoreUtils {
    * @throws IOException if the library cannot be created
    */
   public static void nfcoreInitialise(final String libDir) throws IOException {
-    System.out.println("\n");
+    System.out.println();
     System.out.println("Creating a temporary nf-core library at " + libDir);
 
     // state/ tracks the installed modules
