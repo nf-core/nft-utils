@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - [#109](https://github.com/nf-core/nft-utils/pull/109) `sanitizeOutput()` keeps unnamed outputs instead of dropping them (@maxulysse)
+- [#110](https://github.com/nf-core/nft-utils/pull/110) Docs: `relative: true` paths are strings, so `*.name` does not apply (@maxulysse)
 
 ## [1.3.0]
 
