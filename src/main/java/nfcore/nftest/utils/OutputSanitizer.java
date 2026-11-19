@@ -255,7 +255,7 @@ public final class OutputSanitizer {
    * @return {@code true} if the key is an output index.
    */
   private static boolean isIndex(final String key) {
-    return key.matches("^\\d+$");
+    return key.matches("\\d+");
   }
 
   /**
