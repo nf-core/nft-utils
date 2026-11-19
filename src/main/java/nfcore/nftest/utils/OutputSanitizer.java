@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods to remove unecessary output from a snapshot.
@@ -232,12 +233,33 @@ public final class OutputSanitizer {
     Function<Object, Object> channelSanitizer =
       v -> sanitizeRecords(v, fieldSanitizers, patternSanitizer);
 
-    TreeMap<String, Object> named = new TreeMap<>(channel);
-    if (named.size() > 1) {
-      // nf-test lists named outputs twice, by index and by name
-      named.keySet().removeIf(key -> key.matches("^\\d+$"));
-    }
-    return sanitizeMap(named, keySanitizers, channelSanitizer);
+    // nf-test lists named outputs twice, by index and by name:
+    // drop one index entry per named output, keep unnamed outputs
+    // shortcut: equal values (e.g. two empty channels) may drop the wrong
+    // index; nf-test gives no name-to-index map, revisit if it exposes one
+    TreeMap<String, Object> outputs = new TreeMap<>(channel);
+    channel.forEach((name, value) -> {
+      if (!isIndex(name)) {
+        outputs.keySet().stream()
+          .filter(key -> isIndex(key) && value.equals(outputs.get(key)))
+          .findFirst()
+          .ifPresent(outputs::remove);
+      }
+    });
+    return sanitizeMap(outputs, keySanitizers, channelSanitizer);
+  }
+
+  /** Matches an output index channel key. */
+  private static final Pattern INDEX = Pattern.compile("\\d+");
+
+  /**
+   * Checks whether a channel key is an output index, such as {@code "0"}.
+   *
+   * @param key The channel key.
+   * @return {@code true} if the key is an output index.
+   */
+  private static boolean isIndex(final String key) {
+    return INDEX.matcher(key).matches();
   }
 
   /**

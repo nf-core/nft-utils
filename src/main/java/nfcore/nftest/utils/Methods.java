@@ -33,11 +33,13 @@ public final class Methods {
    * Reads a Version YAML file and returns its contents as a nested map.
    *
    * @param filePath The path to the YAML file to read.
-   * @return A nested map containing the YAML data, or {@code null} if the file
-   *     cannot be read.
+   * @return A nested map containing the YAML data, empty for an empty file.
+   * @throws IOException If the file cannot be read, or a top-level value is
+   *     not a map.
    */
   public static Map<String, Map<String, Object>> readYamlFile(
-      final String filePath) {
+      final String filePath)
+      throws IOException {
     return YamlUtils.readYamlFile(filePath);
   }
 
@@ -47,9 +49,12 @@ public final class Methods {
    *
    * @param versionFile The YAML file path or wildcard pattern to process.
    * @return A map containing the YAML data with the Nextflow version removed.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeNextflowVersion(
-      final CharSequence versionFile) {
+      final CharSequence versionFile)
+      throws IOException {
     return YamlUtils.removeFromYamlMap(versionFile, "Workflow", "Nextflow");
   }
 
@@ -62,11 +67,14 @@ public final class Methods {
    * @param key2 The nested key to remove, or {@code null} or empty to remove
    *     the entire {@code key1} entry.
    * @return A merged map containing the processed YAML data.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
       final String key1,
-      final String key2) {
+      final String key2)
+      throws IOException {
     return YamlUtils.removeFromYamlMap(versionFile, key1, key2);
   }
 
@@ -76,10 +84,13 @@ public final class Methods {
    * @param versionFile The YAML content containing the map to modify.
    * @param key1 The key to remove from the YAML map.
    * @return A map containing the updated YAML data.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
-      final String key1) {
+      final String key1)
+      throws IOException {
     return YamlUtils.removeFromYamlMap(versionFile, key1, null);
   }
 
@@ -259,8 +270,10 @@ public final class Methods {
    * Creates the modules directory and .nf-core.yml configuration file.
    *
    * @param libDir The directory path to initialise an nf-core library at
+   * @throws IOException if the library cannot be created
    */
-  public static void nfcoreInitialise(final String libDir) {
+  public static void nfcoreInitialise(final String libDir)
+      throws IOException {
     NfCoreUtils.nfcoreInitialise(libDir);
   }
 
@@ -269,8 +282,10 @@ public final class Methods {
    *
    * @param libDir  An nf-core library initialised by nfcoreInitialise()
    * @param modules List of module names (strings) or module maps
+   * @throws IOException if a module fails to install
    */
-  public static void nfcoreInstall(final String libDir, final List<?> modules) {
+  public static void nfcoreInstall(final String libDir, final List<?> modules)
+      throws IOException {
     NfCoreUtils.nfcoreInstall(libDir, modules);
   }
 
@@ -280,9 +295,12 @@ public final class Methods {
    *
    * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
+   * @throws IOException if either directory does not exist or a link cannot
+   *     be created
    */
-  public static void nfcoreLink(final String libDir, final String modulesDir) {
-    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "link");
+  public static void nfcoreLink(final String libDir, final String modulesDir)
+      throws IOException {
+    NfCoreUtils.nfcoreLink(libDir, modulesDir);
   }
 
   /**
@@ -290,19 +308,24 @@ public final class Methods {
    *
    * @param libDir     An nf-core library initialised by nfcoreSetup()
    * @param modulesDir Location to make the library available at
+   * @throws IOException if either directory does not exist or a link cannot
+   *     be read or removed
    */
   public static void nfcoreUnlink(
       final String libDir,
-      final String modulesDir) {
-    NfCoreUtils.nfcoreLibraryLinker(libDir, modulesDir, "unlink");
+      final String modulesDir)
+      throws IOException {
+    NfCoreUtils.nfcoreUnlink(libDir, modulesDir);
   }
 
   /**
    * Delete the temporary nf-core library.
    *
    * @param libDir The library directory path to delete
+   * @throws IOException if a file in the library cannot be deleted
    */
-  public static void nfcoreDeleteLibrary(final String libDir) {
+  public static void nfcoreDeleteLibrary(final String libDir)
+      throws IOException {
     NfCoreUtils.nfcoreDeleteLibrary(libDir);
   }
 
@@ -639,11 +662,10 @@ public final class Methods {
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
-   * @throws InterruptedException if the process is interrupted
    */
   public static Path downloadFromS3(
       final String cloudUri)
-      throws IOException, InterruptedException {
+      throws IOException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 
@@ -655,12 +677,11 @@ public final class Methods {
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
-   * @throws InterruptedException if the process is interrupted
    */
   public static Path downloadFromS3(
       final LinkedHashMap<String, Object> options,
       final String cloudUri)
-      throws IOException, InterruptedException {
+      throws IOException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 

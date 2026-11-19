@@ -44,27 +44,6 @@ public final class ArchiveExtractor {
   );
 
   /**
-   * Runs a process and throws if it exits with a non-zero code.
-   *
-   * @param pb      the process to run
-   * @param failure the message prefix of the exception
-   * @throws IOException if the process fails
-   * @throws InterruptedException if the process is interrupted
-   */
-  private static void runOrThrow(
-      final ProcessBuilder pb,
-      final String failure)
-      throws IOException, InterruptedException {
-    Utils.ProcessResult result = Utils.runProcess(pb);
-    if (result.getExitCode() != 0) {
-      throw new IOException(
-        failure + ": exit code " + result.getExitCode() + "\n"
-        + result.getStderr()
-      );
-    }
-  }
-
-  /**
    * Extract an archive in a directory. A local path or file:// URL is
    * extracted in place. Any other URL, such as http(s)://, ftp:// or s3://,
    * is downloaded with {@code nextflow fs cp} to a temporary file in the
@@ -112,7 +91,7 @@ public final class ArchiveExtractor {
         // handed to the extractor
         download = Files.createTempFile(extractDir, "download", ".tmp");
         archive = download;
-        runOrThrow(
+        Utils.runOrThrow(
           new ProcessBuilder(
             "nextflow", "fs", "cp", source, download.toString()
           ),
@@ -120,16 +99,11 @@ public final class ArchiveExtractor {
         );
       }
       command.add(archive.toString());
-      runOrThrow(
+      Utils.runOrThrow(
         new ProcessBuilder(command),
         "Failed to extract " + source
       );
       System.out.println("Successfully extracted: " + source);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IOException(
-        "Interrupted while extracting " + source, e
-      );
     } finally {
       if (download != null) {
         try {
@@ -156,7 +130,7 @@ public final class ArchiveExtractor {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       try {
         Utils.deleteDirectory(dir.toFile());
-      } catch (RuntimeException e) {
+      } catch (IOException e) {
         System.err.println(
           "Warning: failed to delete " + dir + ": " + e.getMessage()
         );
@@ -208,7 +182,7 @@ public final class ArchiveExtractor {
     }
     String lower = compression.toLowerCase(Locale.ROOT);
     if (lower.equals("zip")) {
-      return new ArrayList<>(List.of("unzip", "-o", "-d", destPath));
+      return new ArrayList<>(List.of("unzip", "-q", "-o", "-d", destPath));
     }
 
     List<String> command = new ArrayList<>(
@@ -240,11 +214,10 @@ public final class ArchiveExtractor {
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
-   * @throws InterruptedException if the process is interrupted
    */
   public static Path downloadFromS3(
       final String cloudUri)
-      throws IOException, InterruptedException {
+      throws IOException {
     if (cloudUri == null || cloudUri.isEmpty()) {
       throw new IllegalArgumentException(
         "The 'cloudUri' parameter is required."
@@ -278,7 +251,7 @@ public final class ArchiveExtractor {
       Files.createDirectories(destParent);
     }
 
-    runOrThrow(
+    Utils.runOrThrow(
       new ProcessBuilder(
         "nextflow", "fs", "cp", cloudUri, destFile.toString()
       ),
