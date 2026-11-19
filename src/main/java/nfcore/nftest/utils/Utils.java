@@ -12,7 +12,6 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Utility methods for process execution, shell escaping, and file path
@@ -120,28 +119,6 @@ public final class Utils {
       int exitCode = process.waitFor();
       return new ProcessResult(exitCode, stderr.toString());
     }
-  }
-
-  /**
-   * Extract a lower-cased file name portion from a URL string for extension
-   * checking.
-   *
-   * @param urlString The URL string
-   * @return The lower-cased file name portion of the URL
-   */
-  public static String getURLFileName(final String urlString) {
-    // Try to extract a path portion from the URL (strip query strings)
-    String pathPart = urlString;
-    try {
-      java.net.URI uri = new java.net.URI(urlString);
-      if (uri.getPath() != null && !uri.getPath().isEmpty()) {
-        pathPart = uri.getPath();
-      }
-    } catch (Exception e) {
-      // If parsing fails, fall back to raw urlString
-      pathPart = urlString;
-    }
-    return pathPart.toLowerCase(Locale.ROOT);
   }
 
   /**

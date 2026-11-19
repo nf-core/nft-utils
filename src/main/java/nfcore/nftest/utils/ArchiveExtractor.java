@@ -3,6 +3,7 @@ package nfcore.nftest.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -188,6 +189,26 @@ public final class ArchiveExtractor {
   }
 
   /**
+   * The file name of a local path or URL, in its own case, without the
+   * URL query or fragment.
+   *
+   * @param source the local path or URL
+   * @return the file name
+   */
+  private static String fileName(final String source) {
+    String path = source;
+    try {
+      String uriPath = new URI(source).getPath();
+      if (uriPath != null && !uriPath.isEmpty()) {
+        path = uriPath;
+      }
+    } catch (URISyntaxException e) {
+      // Not a URI, such as a local path with spaces: use it as is
+    }
+    return path.substring(path.lastIndexOf('/') + 1);
+  }
+
+  /**
    * Take the compression type from the file extension of an archive.
    *
    * @param source the local path or URL of the archive
@@ -195,8 +216,7 @@ public final class ArchiveExtractor {
    * @throws IllegalArgumentException if the name has no extension
    */
   private static String compressionFromName(final String source) {
-    String path = Utils.getURLFileName(source);
-    String name = path.substring(path.lastIndexOf('/') + 1);
+    String name = fileName(source).toLowerCase(Locale.ROOT);
     int dot = name.lastIndexOf('.');
     if (dot < 0) {
       throw new IllegalArgumentException(
@@ -238,8 +258,9 @@ public final class ArchiveExtractor {
     }
     List<String> command = extractCommand(compression, extractDir.toString());
     return archive -> {
-      command.add(archive.toString());
-      runOrThrow(new ProcessBuilder(command), "Failed to extract " + source);
+      List<String> run = new ArrayList<>(command);
+      run.add(archive.toString());
+      runOrThrow(new ProcessBuilder(run), "Failed to extract " + source);
     };
   }
 
@@ -252,12 +273,7 @@ public final class ArchiveExtractor {
    * @throws IllegalArgumentException if the source has no file name
    */
   private static String gunzippedName(final String source) {
-    String path = source;
-    if (source.contains("://")) {
-      path = URI.create(source).getPath();
-    }
-    String name = path.substring(path.lastIndexOf('/') + 1)
-      .replaceFirst("(?i)\\.gz(ip)?$", "");
+    String name = fileName(source).replaceFirst("(?i)\\.gz(ip)?$", "");
     if (name.isEmpty()) {
       throw new IllegalArgumentException("No file name in " + source);
     }
