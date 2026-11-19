@@ -558,6 +558,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#excludelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        excludeLines()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#filternextflowoutput" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -901,6 +912,17 @@
     <span class="md-ellipsis">
       
         listToMD5()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#excludelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        excludeLines()
       
     </span>
   </a>
@@ -1383,25 +1405,56 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span></code></pre></div>
 <h3 id="listtomd5"><code>listToMD5()</code></h3>
 <p>Converts a list of values to an MD5 hash. All values must be convertible to strings.</p>
-<p>A common use case: read a file, remove unstable lines, then regenerate the MD5 hash.</p>
+<p>A common use case: read a file, remove unstable lines with <a href="#excludelines"><code>excludeLines()</code></a>, then regenerate the MD5 hash.</p>
+<h3 id="excludelines"><code>excludeLines()</code></h3>
+<p>Reads a file and returns its lines, minus the excluded ones.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lines</code></td>
+<td><code>List&lt;Integer&gt;</code></td>
+<td><code>[]</code></td>
+<td>1-based numbers of the lines to remove; a range such as <code>2..4</code> works</td>
+</tr>
+<tr>
+<td><code>ignore</code></td>
+<td><code>List&lt;String&gt;</code></td>
+<td><code>[]</code></td>
+<td>Remove the lines containing any of these strings</td>
+</tr>
+</tbody>
+</table>
+<p>Unknown options, wrong option types, line numbers outside the file and empty <code>ignore</code> strings throw an error. Line numbers shift when the file gains or loses lines, so prefer <code>ignore</code> when the unstable lines have a recognisable content.</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">  </span><span class="n">listToMD5</span><span class="o">(</span><span class="n">excludeLines</span><span class="o">(</span><span class="s2">"$outputDir/report.txt"</span><span class="o">,</span><span class="w"> </span><span class="nl">lines:</span><span class="w"> </span><span class="o">[</span><span class="mi">1</span><span class="o">],</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s2">"run date:"</span><span class="o">]))</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+</span></code></pre></div>
 <h3 id="filternextflowoutput"><code>filterNextflowOutput()</code></h3>
 <p>Filters Nextflow stdout/stderr to remove variable content that makes snapshots unstable. Censors timestamps, process hashes, file paths, version messages, and empty lines.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1">// Basic usage</span>
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">)</span>
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_both</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="c1">// Preserve ANSI escape codes (stripped by default)</span>
-</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_ansi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">,</span><span class="w"> </span><span class="nl">keepAnsi:</span><span class="w"> </span><span class="kc">true</span><span class="o">)</span>
-</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>
-</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a><span class="c1">// Ignore lines containing specific strings</span>
-</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s2">"Submitted process"</span><span class="o">])</span>
-</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a>
-</span><span id="__span-35-12"><a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a><span class="c1">// Include only lines containing specific strings</span>
-</span><span id="__span-35-13"><a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s2">"Submitted process"</span><span class="o">])</span>
-</span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>
-</span><span id="__span-35-15"><a id="__codelineno-35-15" name="__codelineno-35-15" href="#__codelineno-35-15"></a><span class="c1">// Remove each regex match from every line; `.*foo.*` removes the whole line</span>
-</span><span id="__span-35-16"><a id="__codelineno-35-16" name="__codelineno-35-16" href="#__codelineno-35-16"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_patterns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">additionalPatterns:</span><span class="w"> </span><span class="o">[</span><span class="s">/\d+ ms/</span><span class="o">])</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="c1">// Basic usage</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">)</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_both</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>
+</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="c1">// Preserve ANSI escape codes (stripped by default)</span>
+</span><span id="__span-36-7"><a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_ansi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">,</span><span class="w"> </span><span class="nl">keepAnsi:</span><span class="w"> </span><span class="kc">true</span><span class="o">)</span>
+</span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a>
+</span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a><span class="c1">// Ignore lines containing specific strings</span>
+</span><span id="__span-36-10"><a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">ignore:</span><span class="w"> </span><span class="o">[</span><span class="s2">"Submitted process"</span><span class="o">])</span>
+</span><span id="__span-36-11"><a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a>
+</span><span id="__span-36-12"><a id="__codelineno-36-12" name="__codelineno-36-12" href="#__codelineno-36-12"></a><span class="c1">// Include only lines containing specific strings</span>
+</span><span id="__span-36-13"><a id="__codelineno-36-13" name="__codelineno-36-13" href="#__codelineno-36-13"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">include:</span><span class="w"> </span><span class="o">[</span><span class="s2">"Submitted process"</span><span class="o">])</span>
+</span><span id="__span-36-14"><a id="__codelineno-36-14" name="__codelineno-36-14" href="#__codelineno-36-14"></a>
+</span><span id="__span-36-15"><a id="__codelineno-36-15" name="__codelineno-36-15" href="#__codelineno-36-15"></a><span class="c1">// Remove each regex match from every line; `.*foo.*` removes the whole line</span>
+</span><span id="__span-36-16"><a id="__codelineno-36-16" name="__codelineno-36-16" href="#__codelineno-36-16"></a><span class="kt">def</span><span class="w"> </span><span class="n">filtered_with_patterns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="o">,</span><span class="w"> </span><span class="nl">additionalPatterns:</span><span class="w"> </span><span class="o">[</span><span class="s">/\d+ ms/</span><span class="o">])</span>
 </span></code></pre></div>
 <p>These line types are sorted alphabetically after censoring:</p>
 <ul>
@@ -1415,14 +1468,14 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 <p>Set <code>sorted: false</code> to disable sorting (not recommended; causes snapshot failures).</p>
 <p>All other lines keep their original order.</p>
 <p>Example: process submissions like</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="o">[</span><span class="m">57</span>/0d391c<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
-</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="o">[</span>6f/3be732<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
-</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="o">[</span>6d/0082ab<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="o">[</span><span class="m">57</span>/0d391c<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="o">[</span>6f/3be732<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="o">[</span>6d/0082ab<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
 </span></code></pre></div>
 <p>become:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
-</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="o">[</span>NXF_HASH<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_3<span class="o">)</span>
 </span></code></pre></div>
 <p>ANSI escape codes are stripped by default to prevent garbled text in snapshots. Set <code>keepAnsi: true</code> to preserve them.</p>
 <p>Filtered patterns:</p>
@@ -1437,92 +1490,67 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 <li>Lines printed only when a cache is empty: <code>Downloading plugin</code> messages and container <code>cache directory has not been defined</code> warnings (removed entirely)</li>
 </ul>
 <p>Example test:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">"my_pipeline_test"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>
-</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="w">        </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="w">            </span><span class="n">outdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"$outputDir"</span>
-</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="w">        </span><span class="o">}</span>
-</span><span id="__span-38-7"><a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a><span class="w">    </span><span class="o">}</span>
-</span><span id="__span-38-8"><a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a>
-</span><span id="__span-38-9"><a id="__codelineno-38-9" name="__codelineno-38-9" href="#__codelineno-38-9"></a><span class="w">    </span><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-38-10"><a id="__codelineno-38-10" name="__codelineno-38-10" href="#__codelineno-38-10"></a><span class="w">        </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
-</span><span id="__span-38-11"><a id="__codelineno-38-11" name="__codelineno-38-11" href="#__codelineno-38-11"></a><span class="w">            </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
-</span><span id="__span-38-12"><a id="__codelineno-38-12" name="__codelineno-38-12" href="#__codelineno-38-12"></a><span class="w">        </span><span class="o">).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-38-13"><a id="__codelineno-38-13" name="__codelineno-38-13" href="#__codelineno-38-13"></a><span class="w">    </span><span class="o">}</span>
-</span><span id="__span-38-14"><a id="__codelineno-38-14" name="__codelineno-38-14" href="#__codelineno-38-14"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">"my_pipeline_test"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="w">        </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="w">            </span><span class="n">outdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"$outputDir"</span>
+</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a><span class="w">        </span><span class="o">}</span>
+</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-39-8"><a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a>
+</span><span id="__span-39-9"><a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a><span class="w">    </span><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-39-10"><a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a><span class="w">        </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span>
+</span><span id="__span-39-11"><a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a><span class="w">            </span><span class="n">filterNextflowOutput</span><span class="o">(</span><span class="n">workflow</span><span class="o">.</span><span class="na">stdout</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">workflow</span><span class="o">.</span><span class="na">stderr</span><span class="o">)</span>
+</span><span id="__span-39-12"><a id="__codelineno-39-12" name="__codelineno-39-12" href="#__codelineno-39-12"></a><span class="w">        </span><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-39-13"><a id="__codelineno-39-13" name="__codelineno-39-13" href="#__codelineno-39-13"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-39-14"><a id="__codelineno-39-14" name="__codelineno-39-14" href="#__codelineno-39-14"></a><span class="o">}</span>
 </span></code></pre></div>
 <h2 id="dependency-management">Dependency management</h2>
 <p>Functions for managing test dependencies on nf-core components. Useful when writing tests for cross-organisational subworkflows in non-nf-core repositories.</p>
 <h3 id="nfcoreinitialise-set-up-a-temporary-nf-core-library"><code>nfcoreInitialise()</code> - set up a temporary nf-core library</h3>
 <p>Creates a temporary nf-core library for module installation. Pass the path to the library location. Use a location inside <code>.nf-test/</code> to keep it contained, or <code>${launchDir}</code> for a test-specific library.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
-</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="nfcoreinstall-install-modules-to-a-temporary-library"><code>nfcoreInstall()</code> - Install modules to a temporary library</h3>
 <p>Installs nf-core modules into a temporary library. Pass the library path and either a list of module names (<code>tool/subtool</code> format) or a list of maps with <code>name</code>, <code>sha</code>, and <code>remote</code> keys (<code>sha</code> and <code>remote</code> are optional).
 A module that fails to install fails the test, including when <code>nf-core</code> asks a question, such as whether to delete a corrupted modules cache.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
-</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">])</span>
-</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span>
-</span><span id="__span-40-5"><a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="w">      </span><span class="s2">"${launchDir}/library"</span><span class="o">,</span>
-</span><span id="__span-40-6"><a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a><span class="w">        </span><span class="o">[</span>
-</span><span id="__span-40-7"><a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a><span class="w">          </span><span class="o">[</span>
-</span><span id="__span-40-8"><a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">,</span>
-</span><span id="__span-40-9"><a id="__codelineno-40-9" name="__codelineno-40-9" href="#__codelineno-40-9"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">"5850432aab24a1924389b660adfee3809d3e60a9"</span>
-</span><span id="__span-40-10"><a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a><span class="w">          </span><span class="o">],</span>
-</span><span id="__span-40-11"><a id="__codelineno-40-11" name="__codelineno-40-11" href="#__codelineno-40-11"></a><span class="w">          </span><span class="o">[</span>
-</span><span id="__span-40-12"><a id="__codelineno-40-12" name="__codelineno-40-12" href="#__codelineno-40-12"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">"fastqc"</span><span class="o">,</span>
-</span><span id="__span-40-13"><a id="__codelineno-40-13" name="__codelineno-40-13" href="#__codelineno-40-13"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">"https://github.com/nf-core-test/modules.git"</span>
-</span><span id="__span-40-14"><a id="__codelineno-40-14" name="__codelineno-40-14" href="#__codelineno-40-14"></a><span class="w">          </span><span class="o">],</span>
-</span><span id="__span-40-15"><a id="__codelineno-40-15" name="__codelineno-40-15" href="#__codelineno-40-15"></a><span class="w">          </span><span class="o">[</span>
-</span><span id="__span-40-16"><a id="__codelineno-40-16" name="__codelineno-40-16" href="#__codelineno-40-16"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">"prokka"</span><span class="o">,</span>
-</span><span id="__span-40-17"><a id="__codelineno-40-17" name="__codelineno-40-17" href="#__codelineno-40-17"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">"9627f4367b11527194ef14473019d0e1a181b741"</span>
-</span><span id="__span-40-18"><a id="__codelineno-40-18" name="__codelineno-40-18" href="#__codelineno-40-18"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">"https://github.com/nf-core-test/modules.git"</span>
-</span><span id="__span-40-19"><a id="__codelineno-40-19" name="__codelineno-40-19" href="#__codelineno-40-19"></a><span class="w">          </span><span class="o">],</span>
-</span><span id="__span-40-20"><a id="__codelineno-40-20" name="__codelineno-40-20" href="#__codelineno-40-20"></a><span class="w">        </span><span class="o">]</span>
-</span><span id="__span-40-21"><a id="__codelineno-40-21" name="__codelineno-40-21" href="#__codelineno-40-21"></a><span class="w">    </span><span class="o">)</span>
-</span><span id="__span-40-22"><a id="__codelineno-40-22" name="__codelineno-40-22" href="#__codelineno-40-22"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
+</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">])</span>
+</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span>
+</span><span id="__span-41-5"><a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a><span class="w">      </span><span class="s2">"${launchDir}/library"</span><span class="o">,</span>
+</span><span id="__span-41-6"><a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a><span class="w">        </span><span class="o">[</span>
+</span><span id="__span-41-7"><a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="w">          </span><span class="o">[</span>
+</span><span id="__span-41-8"><a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">,</span>
+</span><span id="__span-41-9"><a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">"5850432aab24a1924389b660adfee3809d3e60a9"</span>
+</span><span id="__span-41-10"><a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a><span class="w">          </span><span class="o">],</span>
+</span><span id="__span-41-11"><a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="w">          </span><span class="o">[</span>
+</span><span id="__span-41-12"><a id="__codelineno-41-12" name="__codelineno-41-12" href="#__codelineno-41-12"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">"fastqc"</span><span class="o">,</span>
+</span><span id="__span-41-13"><a id="__codelineno-41-13" name="__codelineno-41-13" href="#__codelineno-41-13"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">"https://github.com/nf-core-test/modules.git"</span>
+</span><span id="__span-41-14"><a id="__codelineno-41-14" name="__codelineno-41-14" href="#__codelineno-41-14"></a><span class="w">          </span><span class="o">],</span>
+</span><span id="__span-41-15"><a id="__codelineno-41-15" name="__codelineno-41-15" href="#__codelineno-41-15"></a><span class="w">          </span><span class="o">[</span>
+</span><span id="__span-41-16"><a id="__codelineno-41-16" name="__codelineno-41-16" href="#__codelineno-41-16"></a><span class="w">            </span><span class="nl">name:</span><span class="w"> </span><span class="s2">"prokka"</span><span class="o">,</span>
+</span><span id="__span-41-17"><a id="__codelineno-41-17" name="__codelineno-41-17" href="#__codelineno-41-17"></a><span class="w">            </span><span class="nl">sha:</span><span class="w"> </span><span class="s2">"9627f4367b11527194ef14473019d0e1a181b741"</span>
+</span><span id="__span-41-18"><a id="__codelineno-41-18" name="__codelineno-41-18" href="#__codelineno-41-18"></a><span class="w">            </span><span class="nl">remote:</span><span class="w"> </span><span class="s2">"https://github.com/nf-core-test/modules.git"</span>
+</span><span id="__span-41-19"><a id="__codelineno-41-19" name="__codelineno-41-19" href="#__codelineno-41-19"></a><span class="w">          </span><span class="o">],</span>
+</span><span id="__span-41-20"><a id="__codelineno-41-20" name="__codelineno-41-20" href="#__codelineno-41-20"></a><span class="w">        </span><span class="o">]</span>
+</span><span id="__span-41-21"><a id="__codelineno-41-21" name="__codelineno-41-21" href="#__codelineno-41-21"></a><span class="w">    </span><span class="o">)</span>
+</span><span id="__span-41-22"><a id="__codelineno-41-22" name="__codelineno-41-22" href="#__codelineno-41-22"></a><span class="o">}</span>
 </span></code></pre></div>
 <p>A <code>state/</code> directory inside the library tracks which modules have been installed. If a state file exists for a module (matching name, sha, and remote), installation is skipped.</p>
 <h3 id="nfcorelink-link-a-temporary-library-to-your-modules-directory"><code>nfcoreLink()</code> - Link a temporary library to your modules directory</h3>
 <p>Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
-</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
-</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${baseDir}/modules/"</span><span class="o">)</span>
-</span><span id="__span-41-5"><a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a><span class="o">}</span>
-</span></code></pre></div>
-<p>This creates a symlink at <code>${baseDir}/modules/nf-core</code>. Reference nf-core modules from there as if they were installed normally.</p>
-<h3 id="nfcoreunlink-unlink-a-temporary-library-from-your-modules-directory"><code>nfcoreUnlink()</code> - Unlink a temporary library from your modules directory</h3>
-<p>Removes all symlinks pointing to the temporary library. Takes the same arguments as <code>nfcoreLink()</code>, and also fails the test on a missing library or modules directory.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-42-3"><a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
 </span><span id="__span-42-4"><a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${baseDir}/modules/"</span><span class="o">)</span>
-</span><span id="__span-42-5"><a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a>
-</span><span id="__span-42-6"><a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a><span class="w">    </span><span class="n">run</span><span class="o">(</span><span class="s2">"MINIMAP2_INDEX"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-42-7"><a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a><span class="w">        </span><span class="n">script</span><span class="w"> </span><span class="s2">"${baseDir}/modules/nf-core/minimap2/index/main.nf</span>
-</span><span id="__span-42-8"><a id="__codelineno-42-8" name="__codelineno-42-8" href="#__codelineno-42-8"></a><span class="s2">        ...</span>
-</span><span id="__span-42-9"><a id="__codelineno-42-9" name="__codelineno-42-9" href="#__codelineno-42-9"></a><span class="s2">    }</span>
-</span><span id="__span-42-10"><a id="__codelineno-42-10" name="__codelineno-42-10" href="#__codelineno-42-10"></a><span class="s2">}</span>
-</span><span id="__span-42-11"><a id="__codelineno-42-11" name="__codelineno-42-11" href="#__codelineno-42-11"></a>
-</span><span id="__span-42-12"><a id="__codelineno-42-12" name="__codelineno-42-12" href="#__codelineno-42-12"></a><span class="s2">when {</span>
-</span><span id="__span-42-13"><a id="__codelineno-42-13" name="__codelineno-42-13" href="#__codelineno-42-13"></a><span class="s2">    ...</span>
-</span><span id="__span-42-14"><a id="__codelineno-42-14" name="__codelineno-42-14" href="#__codelineno-42-14"></a><span class="s2">}</span>
-</span><span id="__span-42-15"><a id="__codelineno-42-15" name="__codelineno-42-15" href="#__codelineno-42-15"></a>
-</span><span id="__span-42-16"><a id="__codelineno-42-16" name="__codelineno-42-16" href="#__codelineno-42-16"></a><span class="s2">then {</span>
-</span><span id="__span-42-17"><a id="__codelineno-42-17" name="__codelineno-42-17" href="#__codelineno-42-17"></a><span class="s2">    ...</span>
-</span><span id="__span-42-18"><a id="__codelineno-42-18" name="__codelineno-42-18" href="#__codelineno-42-18"></a><span class="s2">}</span>
-</span><span id="__span-42-19"><a id="__codelineno-42-19" name="__codelineno-42-19" href="#__codelineno-42-19"></a>
-</span><span id="__span-42-20"><a id="__codelineno-42-20" name="__codelineno-42-20" href="#__codelineno-42-20"></a><span class="s2">cleanup {</span>
-</span><span id="__span-42-21"><a id="__codelineno-42-21" name="__codelineno-42-21" href="#__codelineno-42-21"></a><span class="s2">  nfcoreUnlink("</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}</span><span class="s">/library", "${baseDir}/</span><span class="n">modules</span><span class="o">/</span><span class="err">"</span><span class="o">)</span>
-</span><span id="__span-42-22"><a id="__codelineno-42-22" name="__codelineno-42-22" href="#__codelineno-42-22"></a><span class="o">}</span>
+</span><span id="__span-42-5"><a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a><span class="o">}</span>
 </span></code></pre></div>
-<h3 id="nfcoredeletelibrary-completely-delete-a-temporary-library"><code>nfcoreDeleteLibrary()</code> - Completely delete a temporary library</h3>
-<p>Deletes the temporary library and all its contents. A file that cannot be deleted fails the test; a missing library does not.</p>
+<p>This creates a symlink at <code>${baseDir}/modules/nf-core</code>. Reference nf-core modules from there as if they were installed normally.</p>
+<h3 id="nfcoreunlink-unlink-a-temporary-library-from-your-modules-directory"><code>nfcoreUnlink()</code> - Unlink a temporary library from your modules directory</h3>
+<p>Removes all symlinks pointing to the temporary library. Takes the same arguments as <code>nfcoreLink()</code>, and also fails the test on a missing library or modules directory.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-43-3"><a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
@@ -1543,60 +1571,85 @@ A module that fails to install fails the test, including when <code>nf-core</cod
 </span><span id="__span-43-18"><a id="__codelineno-43-18" name="__codelineno-43-18" href="#__codelineno-43-18"></a><span class="s2">}</span>
 </span><span id="__span-43-19"><a id="__codelineno-43-19" name="__codelineno-43-19" href="#__codelineno-43-19"></a>
 </span><span id="__span-43-20"><a id="__codelineno-43-20" name="__codelineno-43-20" href="#__codelineno-43-20"></a><span class="s2">cleanup {</span>
-</span><span id="__span-43-21"><a id="__codelineno-43-21" name="__codelineno-43-21" href="#__codelineno-43-21"></a><span class="s2">    nfcoreDeleteLibrary("</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}/</span><span class="n">library</span><span class="err">"</span><span class="o">)</span>
+</span><span id="__span-43-21"><a id="__codelineno-43-21" name="__codelineno-43-21" href="#__codelineno-43-21"></a><span class="s2">  nfcoreUnlink("</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}</span><span class="s">/library", "${baseDir}/</span><span class="n">modules</span><span class="o">/</span><span class="err">"</span><span class="o">)</span>
 </span><span id="__span-43-22"><a id="__codelineno-43-22" name="__codelineno-43-22" href="#__codelineno-43-22"></a><span class="o">}</span>
+</span></code></pre></div>
+<h3 id="nfcoredeletelibrary-completely-delete-a-temporary-library"><code>nfcoreDeleteLibrary()</code> - Completely delete a temporary library</h3>
+<p>Deletes the temporary library and all its contents. A file that cannot be deleted fails the test; a missing library does not.</p>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
+</span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
+</span><span id="__span-44-4"><a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a><span class="w">    </span><span class="n">nfcoreLink</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="s2">"${baseDir}/modules/"</span><span class="o">)</span>
+</span><span id="__span-44-5"><a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a>
+</span><span id="__span-44-6"><a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a><span class="w">    </span><span class="n">run</span><span class="o">(</span><span class="s2">"MINIMAP2_INDEX"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-44-7"><a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a><span class="w">        </span><span class="n">script</span><span class="w"> </span><span class="s2">"${baseDir}/modules/nf-core/minimap2/index/main.nf</span>
+</span><span id="__span-44-8"><a id="__codelineno-44-8" name="__codelineno-44-8" href="#__codelineno-44-8"></a><span class="s2">        ...</span>
+</span><span id="__span-44-9"><a id="__codelineno-44-9" name="__codelineno-44-9" href="#__codelineno-44-9"></a><span class="s2">    }</span>
+</span><span id="__span-44-10"><a id="__codelineno-44-10" name="__codelineno-44-10" href="#__codelineno-44-10"></a><span class="s2">}</span>
+</span><span id="__span-44-11"><a id="__codelineno-44-11" name="__codelineno-44-11" href="#__codelineno-44-11"></a>
+</span><span id="__span-44-12"><a id="__codelineno-44-12" name="__codelineno-44-12" href="#__codelineno-44-12"></a><span class="s2">when {</span>
+</span><span id="__span-44-13"><a id="__codelineno-44-13" name="__codelineno-44-13" href="#__codelineno-44-13"></a><span class="s2">    ...</span>
+</span><span id="__span-44-14"><a id="__codelineno-44-14" name="__codelineno-44-14" href="#__codelineno-44-14"></a><span class="s2">}</span>
+</span><span id="__span-44-15"><a id="__codelineno-44-15" name="__codelineno-44-15" href="#__codelineno-44-15"></a>
+</span><span id="__span-44-16"><a id="__codelineno-44-16" name="__codelineno-44-16" href="#__codelineno-44-16"></a><span class="s2">then {</span>
+</span><span id="__span-44-17"><a id="__codelineno-44-17" name="__codelineno-44-17" href="#__codelineno-44-17"></a><span class="s2">    ...</span>
+</span><span id="__span-44-18"><a id="__codelineno-44-18" name="__codelineno-44-18" href="#__codelineno-44-18"></a><span class="s2">}</span>
+</span><span id="__span-44-19"><a id="__codelineno-44-19" name="__codelineno-44-19" href="#__codelineno-44-19"></a>
+</span><span id="__span-44-20"><a id="__codelineno-44-20" name="__codelineno-44-20" href="#__codelineno-44-20"></a><span class="s2">cleanup {</span>
+</span><span id="__span-44-21"><a id="__codelineno-44-21" name="__codelineno-44-21" href="#__codelineno-44-21"></a><span class="s2">    nfcoreDeleteLibrary("</span><span class="n">$</span><span class="o">{</span><span class="n">launchDir</span><span class="o">}/</span><span class="n">library</span><span class="err">"</span><span class="o">)</span>
+</span><span id="__span-44-22"><a id="__codelineno-44-22" name="__codelineno-44-22" href="#__codelineno-44-22"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="sanitizeoutput-sanitize-process-output-to-create-clean-snapshots"><code>sanitizeOutput()</code> - Sanitize process output to create clean snapshots</h3>
 <p>Cleans process and workflow outputs by removing numbered keys, creating human-readable snapshots.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-45-2"><a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-45-3"><a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <p>Options:</p>
 <ul>
 <li><code>unstableKeys</code>: Snapshot only file names (no md5sum) for these keys. Use for files with unstable content.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-45-2"><a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstableKeys:</span><span class="o">[</span><span class="s2">"zip"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-45-3"><a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-46-2"><a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstableKeys:</span><span class="o">[</span><span class="s2">"zip"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-46-3"><a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
 <li><code>ignoreKeys</code>: Exclude these keys from the snapshot entirely. Use when file names vary between runs.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-46-2"><a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">ignoreKeys:</span><span class="o">[</span><span class="s2">"log"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-46-3"><a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">ignoreKeys:</span><span class="o">[</span><span class="s2">"log"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
 <li><code>readsMD5Keys</code>: Keys containing alignment files (<code>.bam</code>, <code>.sam</code>, <code>.cram</code>). MD5 is computed from reads only, using <a href="https://nvnieuwk.github.io/nft-bam/dev/"><code>nft-bam</code></a>. Add <code>nft-bam</code> to <code>plugins {}</code> before <code>nft-utils</code>. For <code>.cram</code> files, pass the reference genome <code>.fasta</code> (<code>.fai</code> is auto-detected).</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">readsMD5Keys:</span><span class="o">[</span><span class="s2">"bam"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">readsMD5Keys:</span><span class="o">[</span><span class="s2">"bam"</span><span class="o">],</span><span class="w"> </span><span class="nl">referenceFasta:</span><span class="w"> </span><span class="s2">"https://url/reference.fa"</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span><span class="w"> </span><span class="c1">// for cram files</span>
-</span><span id="__span-47-4"><a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">readsMD5Keys:</span><span class="o">[</span><span class="s2">"bam"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">readsMD5Keys:</span><span class="o">[</span><span class="s2">"bam"</span><span class="o">],</span><span class="w"> </span><span class="nl">referenceFasta:</span><span class="w"> </span><span class="s2">"https://url/reference.fa"</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span><span class="w"> </span><span class="c1">// for cram files</span>
+</span><span id="__span-48-4"><a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
 <li><code>variantsMD5Keys</code>: Keys containing variant files (<code>.vcf</code>, <code>.vcf.gz</code>). MD5 is computed from variants only, using <a href="https://github.com/seppinho/nft-vcf"><code>nft-vcf</code></a>. BCF not yet supported. Add <code>nft-vcf</code> to <code>plugins {}</code> before <code>nft-utils</code>.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">variantsMD5Keys:</span><span class="o">[</span><span class="s2">"vcf"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">variantsMD5Keys:</span><span class="o">[</span><span class="s2">"vcf"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
 <li><code>tableMD5Keys</code>: Keys containing flat text tables (<code>.txt</code>, <code>.tsv</code>, <code>.csv</code>, <code>.tbl</code>, <code>.dat</code>, <code>.out</code>). MD5 is computed from normalized table: rows and columns sorted, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to <code>\n</code>.
   Set precision with <code>tableDoubleDigits</code> (default: 6) and remove leading lines starting with <code>#</code> with <code>tableRemoveComments: true</code> (default: false).
   Use <code>normalizeTable(path(process.out.csv[0][1]), 6, true)</code> for debugging.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">tableMD5Keys:</span><span class="o">[</span><span class="s2">"csv"</span><span class="o">],</span><span class="w"> </span><span class="nl">tableDoubleDigits:</span><span class="w"> </span><span class="mi">4</span><span class="o">,</span><span class="w"> </span><span class="nl">tableRemoveComments:</span><span class="w"> </span><span class="kc">true</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">tableMD5Keys:</span><span class="o">[</span><span class="s2">"csv"</span><span class="o">],</span><span class="w"> </span><span class="nl">tableDoubleDigits:</span><span class="w"> </span><span class="mi">4</span><span class="o">,</span><span class="w"> </span><span class="nl">tableRemoveComments:</span><span class="w"> </span><span class="kc">true</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
 <li><code>unstablePatterns</code> and <code>ignorePatterns</code>: Glob patterns matched against each channel value. <code>unstablePatterns</code> removes md5sums; <code>ignorePatterns</code> excludes files entirely. These patterns should be mutually exclusive. Keys set by <code>unstableKeys</code>, <code>ignoreKeys</code>, <code>readsMD5Keys</code>, and <code>variantsMD5Keys</code> are not matched against these patterns.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstablePatterns:</span><span class="o">[</span><span class="s2">"**/*.log"</span><span class="o">],</span><span class="w"> </span><span class="nl">ignorePatterns:</span><span class="o">[</span><span class="s2">"**/VERSION_*"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstablePatterns:</span><span class="o">[</span><span class="s2">"**/*.log"</span><span class="o">],</span><span class="w"> </span><span class="nl">ignorePatterns:</span><span class="o">[</span><span class="s2">"**/VERSION_*"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <p>Records: a typed process (<code>nextflow.enable.types = true</code>) emits records, which reach the test as maps. The key options above also accept record field names: a key that is not a channel name applies to that field of every record, and the other fields are sanitized as usual. A key that is neither a channel name nor a record field fails the test.</p>
 <ul>
@@ -1604,10 +1657,10 @@ A module that fails to install fails the test, including when <code>nf-core</cod
 <li>A field key applies to that field in the records of every channel.</li>
 <li>A channel name takes precedence. If a key names a channel, a record field with the same name gets the default handling.</li>
 </ul>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">  </span><span class="c1">// process.out is [0: [[id: "test", meta: null, lc_extrap: "/path/to/test.lc_extrap.txt", log: "/path/to/test.command.log"]]]</span>
-</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstableKeys:</span><span class="o">[</span><span class="s2">"log"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
-</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-52-2"><a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a><span class="w">  </span><span class="c1">// process.out is [0: [[id: "test", meta: null, lc_extrap: "/path/to/test.lc_extrap.txt", log: "/path/to/test.command.log"]]]</span>
+</span><span id="__span-52-3"><a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstableKeys:</span><span class="o">[</span><span class="s2">"log"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-52-4"><a id="__codelineno-52-4" name="__codelineno-52-4" href="#__codelineno-52-4"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="extract-extract-an-archive"><code>extract()</code> - Extract an archive</h3>
 <p>Extracts an archive and returns the directory it was extracted into. The archive can be a local path or a <code>file://</code> URL, used in place, or any other URL Nextflow can read, such as <code>http(s)://</code>, <code>ftp://</code> or <code>s3://</code>, downloaded with <code>nextflow fs cp</code>. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.</p>
@@ -1617,34 +1670,34 @@ A module that fails to install fails the test, including when <code>nf-core</cod
 <li><code>compression</code>: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like <code>"tar.bz2"</code> or <code>"tbz2"</code>.</li>
 </ul>
 <p>Any other option fails the test.</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-52-2"><a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
-</span><span id="__span-52-3"><a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"s3://my-bucket/beautiful_database.tar.gz"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
-</span><span id="__span-52-4"><a id="__codelineno-52-4" name="__codelineno-52-4" href="#__codelineno-52-4"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"/data/secret/data"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">,</span><span class="w"> </span><span class="nl">compression:</span><span class="w"> </span><span class="s2">"tar.bz2"</span><span class="o">)</span>
-</span><span id="__span-52-5"><a id="__codelineno-52-5" name="__codelineno-52-5" href="#__codelineno-52-5"></a><span class="o">}</span>
-</span><span id="__span-52-6"><a id="__codelineno-52-6" name="__codelineno-52-6" href="#__codelineno-52-6"></a>
-</span><span id="__span-52-7"><a id="__codelineno-52-7" name="__codelineno-52-7" href="#__codelineno-52-7"></a><span class="n">when</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-52-8"><a id="__codelineno-52-8" name="__codelineno-52-8" href="#__codelineno-52-8"></a><span class="w">  </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-52-9"><a id="__codelineno-52-9" name="__codelineno-52-9" href="#__codelineno-52-9"></a><span class="w">    </span><span class="n">pretty_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/pretty_db"</span>
-</span><span id="__span-52-10"><a id="__codelineno-52-10" name="__codelineno-52-10" href="#__codelineno-52-10"></a><span class="w">    </span><span class="n">beautiful_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/beauty_db"</span>
-</span><span id="__span-52-11"><a id="__codelineno-52-11" name="__codelineno-52-11" href="#__codelineno-52-11"></a><span class="w">    </span><span class="n">secret_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/secret"</span>
-</span><span id="__span-52-12"><a id="__codelineno-52-12" name="__codelineno-52-12" href="#__codelineno-52-12"></a><span class="w">  </span><span class="o">}</span>
-</span><span id="__span-52-13"><a id="__codelineno-52-13" name="__codelineno-52-13" href="#__codelineno-52-13"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-53-1"><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-53-2"><a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
+</span><span id="__span-53-3"><a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"s3://my-bucket/beautiful_database.tar.gz"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">)</span>
+</span><span id="__span-53-4"><a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a><span class="w">    </span><span class="n">extract</span><span class="o">(</span><span class="s2">"/data/secret/data"</span><span class="o">,</span><span class="w"> </span><span class="nl">extractDir:</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir"</span><span class="o">,</span><span class="w"> </span><span class="nl">compression:</span><span class="w"> </span><span class="s2">"tar.bz2"</span><span class="o">)</span>
+</span><span id="__span-53-5"><a id="__codelineno-53-5" name="__codelineno-53-5" href="#__codelineno-53-5"></a><span class="o">}</span>
+</span><span id="__span-53-6"><a id="__codelineno-53-6" name="__codelineno-53-6" href="#__codelineno-53-6"></a>
+</span><span id="__span-53-7"><a id="__codelineno-53-7" name="__codelineno-53-7" href="#__codelineno-53-7"></a><span class="n">when</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-53-8"><a id="__codelineno-53-8" name="__codelineno-53-8" href="#__codelineno-53-8"></a><span class="w">  </span><span class="n">params</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-53-9"><a id="__codelineno-53-9" name="__codelineno-53-9" href="#__codelineno-53-9"></a><span class="w">    </span><span class="n">pretty_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/pretty_db"</span>
+</span><span id="__span-53-10"><a id="__codelineno-53-10" name="__codelineno-53-10" href="#__codelineno-53-10"></a><span class="w">    </span><span class="n">beautiful_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/beauty_db"</span>
+</span><span id="__span-53-11"><a id="__codelineno-53-11" name="__codelineno-53-11" href="#__codelineno-53-11"></a><span class="w">    </span><span class="n">secret_db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${launchDir}/data_dir/db/secret"</span>
+</span><span id="__span-53-12"><a id="__codelineno-53-12" name="__codelineno-53-12" href="#__codelineno-53-12"></a><span class="w">  </span><span class="o">}</span>
+</span><span id="__span-53-13"><a id="__codelineno-53-13" name="__codelineno-53-13" href="#__codelineno-53-13"></a><span class="o">}</span>
 </span></code></pre></div>
 <p>Without <code>extractDir</code>, keep the returned directory in a variable declared at test level, so <code>when</code> can read what <code>setup</code> set:</p>
-<div class="language-groovy highlight"><pre><span></span><code><span id="__span-53-1"><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">"pretty database"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-53-2"><a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="w">    </span><span class="kt">def</span><span class="w"> </span><span class="n">db</span>
-</span><span id="__span-53-3"><a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a><span class="w">    </span><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-53-4"><a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a><span class="w">        </span><span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">)</span>
-</span><span id="__span-53-5"><a id="__codelineno-53-5" name="__codelineno-53-5" href="#__codelineno-53-5"></a><span class="w">    </span><span class="o">}</span>
-</span><span id="__span-53-6"><a id="__codelineno-53-6" name="__codelineno-53-6" href="#__codelineno-53-6"></a><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-53-7"><a id="__codelineno-53-7" name="__codelineno-53-7" href="#__codelineno-53-7"></a><span class="w">        </span><span class="n">process</span><span class="w"> </span><span class="o">{</span>
-</span><span id="__span-53-8"><a id="__codelineno-53-8" name="__codelineno-53-8" href="#__codelineno-53-8"></a><span class="w">            </span><span class="s2">"""</span>
-</span><span id="__span-53-9"><a id="__codelineno-53-9" name="__codelineno-53-9" href="#__codelineno-53-9"></a><span class="s2">            input[0] = file('${db}/pretty_db')</span>
-</span><span id="__span-53-10"><a id="__codelineno-53-10" name="__codelineno-53-10" href="#__codelineno-53-10"></a><span class="s2">            """</span>
-</span><span id="__span-53-11"><a id="__codelineno-53-11" name="__codelineno-53-11" href="#__codelineno-53-11"></a><span class="w">        </span><span class="o">}</span>
-</span><span id="__span-53-12"><a id="__codelineno-53-12" name="__codelineno-53-12" href="#__codelineno-53-12"></a><span class="w">    </span><span class="o">}</span>
-</span><span id="__span-53-13"><a id="__codelineno-53-13" name="__codelineno-53-13" href="#__codelineno-53-13"></a><span class="o">}</span>
+<div class="language-groovy highlight"><pre><span></span><code><span id="__span-54-1"><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">"pretty database"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-54-2"><a id="__codelineno-54-2" name="__codelineno-54-2" href="#__codelineno-54-2"></a><span class="w">    </span><span class="kt">def</span><span class="w"> </span><span class="n">db</span>
+</span><span id="__span-54-3"><a id="__codelineno-54-3" name="__codelineno-54-3" href="#__codelineno-54-3"></a><span class="w">    </span><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-54-4"><a id="__codelineno-54-4" name="__codelineno-54-4" href="#__codelineno-54-4"></a><span class="w">        </span><span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extract</span><span class="o">(</span><span class="s2">"https://www.example.com/pretty_database.zip"</span><span class="o">)</span>
+</span><span id="__span-54-5"><a id="__codelineno-54-5" name="__codelineno-54-5" href="#__codelineno-54-5"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-54-6"><a id="__codelineno-54-6" name="__codelineno-54-6" href="#__codelineno-54-6"></a><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-54-7"><a id="__codelineno-54-7" name="__codelineno-54-7" href="#__codelineno-54-7"></a><span class="w">        </span><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-54-8"><a id="__codelineno-54-8" name="__codelineno-54-8" href="#__codelineno-54-8"></a><span class="w">            </span><span class="s2">"""</span>
+</span><span id="__span-54-9"><a id="__codelineno-54-9" name="__codelineno-54-9" href="#__codelineno-54-9"></a><span class="s2">            input[0] = file('${db}/pretty_db')</span>
+</span><span id="__span-54-10"><a id="__codelineno-54-10" name="__codelineno-54-10" href="#__codelineno-54-10"></a><span class="s2">            """</span>
+</span><span id="__span-54-11"><a id="__codelineno-54-11" name="__codelineno-54-11" href="#__codelineno-54-11"></a><span class="w">        </span><span class="o">}</span>
+</span><span id="__span-54-12"><a id="__codelineno-54-12" name="__codelineno-54-12" href="#__codelineno-54-12"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-54-13"><a id="__codelineno-54-13" name="__codelineno-54-13" href="#__codelineno-54-13"></a><span class="o">}</span>
 </span></code></pre></div>
 <p><code>curlAndExtract(url, dir)</code> and <code>curlAndExtract(url, dir, compression)</code> are deprecated: they work like <code>extract(url, extractDir: dir, compression: compression)</code> and print a warning.</p>
 
