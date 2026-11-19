@@ -197,13 +197,16 @@ public final class ArchiveExtractor {
    */
   private static String fileName(final String source) {
     String path = source;
-    try {
-      String uriPath = new URI(source).getPath();
-      if (uriPath != null && !uriPath.isEmpty()) {
-        path = uriPath;
+    // A local path is used as is, so '#' and '?' stay in its name
+    if (source.contains("://")) {
+      try {
+        String uriPath = new URI(source).getPath();
+        if (uriPath != null && !uriPath.isEmpty()) {
+          path = uriPath;
+        }
+      } catch (URISyntaxException e) {
+        // Not a valid URI: use it as is
       }
-    } catch (URISyntaxException e) {
-      // Not a URI, such as a local path with spaces: use it as is
     }
     return path.substring(path.lastIndexOf('/') + 1);
   }
@@ -244,8 +247,7 @@ public final class ArchiveExtractor {
       final String source,
       final String compression,
       final Path extractDir) {
-    if (compression != null
-        && GZIP.contains(compression.toLowerCase(Locale.ROOT))) {
+    if (GZIP.contains(compression.toLowerCase(Locale.ROOT))) {
       Path target = extractDir.resolve(gunzippedName(source));
       return archive -> {
         try (InputStream in = new GZIPInputStream(

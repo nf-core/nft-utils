@@ -318,4 +318,15 @@ class ArchiveExtractorTest {
 
     assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
+
+  @Test
+  void shouldKeepHashAndQuestionMarkInLocalNames() throws Exception {
+    Path gz = tempDir.resolve("sample#1?.fa.gz");
+    Files.write(gz, gzip("ACGT\n"));
+    Path dest = tempDir.resolve("dest");
+
+    ArchiveExtractor.extract(gz.toString(), dest.toString(), null);
+
+    assertEquals(List.of("sample#1?.fa"), Arrays.asList(dest.toFile().list()));
+  }
 }
