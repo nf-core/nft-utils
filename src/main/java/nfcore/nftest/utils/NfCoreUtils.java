@@ -116,6 +116,8 @@ public final class NfCoreUtils {
       return;
     }
 
+    // Arguments, not a shell line: paths and names with spaces or shell
+    // characters reach nf-core unchanged
     List<String> command = new ArrayList<>(
       List.of("nf-core", "--verbose", "modules")
     );
