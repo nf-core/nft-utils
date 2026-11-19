@@ -1,13 +1,12 @@
 package nfcore.nftest.utils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -26,38 +25,21 @@ public final class NfCoreUtils {
    * Sets up a temporary nf-core library directory structure.
    * @param libDir The directory path where the nf-core library should
    * be created
+   * @throws IOException if the library cannot be created
    */
-  public static void nfcoreInitialise(final String libDir) {
-    System.out.println("\n");
+  public static void nfcoreInitialise(final String libDir) throws IOException {
+    System.out.println();
     System.out.println("Creating a temporary nf-core library at " + libDir);
 
-    try {
-      // Create modules directory
-      Path modulesDir = Paths.get(libDir, "modules");
-      Files.createDirectories(modulesDir);
-
-      // Create conf directory
-      Path confDir = Paths.get(libDir, "conf");
-      Files.createDirectories(confDir);
-
-      // Create state directory for tracking installed modules
-      Path stateDir = Paths.get(libDir, "state");
-      Files.createDirectories(stateDir);
-
-      // Create .nf-core.yml file
-      Path nfcoreYml = Paths.get(libDir, ".nf-core.yml");
-      try (BufferedWriter writer = Files.newBufferedWriter(
-          nfcoreYml,
-          StandardCharsets.UTF_8
-      )) {
-        writer.write("repository_type: \"pipeline\"\n");
-        writer.write("template:\n");
-        writer.write("    name: test\n");
-      }
-    } catch (IOException e) {
-      System.err.println("Error setting up nf-core: " + e.getMessage());
-      throw new RuntimeException(e);
+    // state/ tracks the installed modules
+    for (String dir : List.of("modules", "conf", "state")) {
+      Files.createDirectories(Paths.get(libDir, dir));
     }
+
+    Files.writeString(
+      Paths.get(libDir, ".nf-core.yml"),
+      "repository_type: \"pipeline\"\ntemplate:\n    name: test\n"
+    );
   }
 
   /**
@@ -66,11 +48,13 @@ public final class NfCoreUtils {
    * @param libDir An nf-core library initialised by nfcoreSetup()
    * @param modules List of module names (strings) or module maps
    * with keys: name (required), sha (optional), remote (optional)
+   * @throws IOException if a module fails to install
    */
   @SuppressWarnings("unchecked")
   public static void nfcoreInstall(
       final String libDir,
-      final List<?> modules) {
+      final List<?> modules)
+      throws IOException {
     System.out.println("Installing nf-core modules...");
 
     if (modules == null || modules.isEmpty()) {
@@ -95,18 +79,14 @@ public final class NfCoreUtils {
           throw new IllegalArgumentException("Module name is required");
         }
       } else {
-        throw new RuntimeException(
+        throw new IllegalArgumentException(
           "Unsupported module type: "
           + moduleObj.getClass().getSimpleName()
           + ". Expected String or Map."
         );
       }
 
-      try {
-        installModule(libDir, name, sha, remote);
-      } catch (IOException e) {
-        System.err.println(e.getMessage());
-      }
+      installModule(libDir, name, sha, remote);
     }
   }
 
@@ -117,7 +97,8 @@ public final class NfCoreUtils {
    * @param name The module name (required)
    * @param sha The SHA hash (optional)
    * @param remote The remote repository (optional)
-   * @throws IOException if the install command fails or is interrupted
+   * @throws IOException if the install command fails or is interrupted, or
+   *     the state file cannot be written
    */
   private static void installModule(
       final String libDir,
@@ -135,43 +116,26 @@ public final class NfCoreUtils {
       return;
     }
 
-    StringBuilder command = new StringBuilder(
-      "cd " + libDir + " && nf-core --verbose modules"
+    // Arguments, not a shell line: paths and names with spaces or shell
+    // characters reach nf-core unchanged
+    List<String> command = new ArrayList<>(
+      List.of("nf-core", "--verbose", "modules")
     );
-
     if (remote != null && !remote.isEmpty()) {
-      command.append(" --git-remote ").append(remote);
+      command.addAll(List.of("--git-remote", remote));
     }
-
-    command.append(" install ").append(name);
-
+    command.addAll(List.of("install", name));
     if (sha != null && !sha.isEmpty()) {
-      command.append(" --sha ").append(sha);
+      command.addAll(List.of("--sha", sha));
     }
 
-    ProcessBuilder processBuilder = new ProcessBuilder(
-      "bash", "-c", command.toString()
+    Utils.runOrThrow(
+      new ProcessBuilder(command).directory(new File(libDir)),
+      "Failed to install module " + name
+      + " with: " + String.join(" ", command)
     );
-    Utils.ProcessResult result;
-    try {
-      result = Utils.runProcess(processBuilder);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IOException(
-        "Interrupted installing module " + name, e
-      );
-    }
-
-    if (result.getExitCode() != 0) {
-      throw new IOException(
-        "Failed to install module " + name
-        + ": exit code " + result.getExitCode() + "\n"
-        + "Installation command: " + command + "\n"
-        + result.getStderr()
-      );
-    }
     System.out.println("Successfully installed module: " + name);
-    writeModuleStateFile(stateFile);
+    Files.write(stateFile.toPath(), new byte[0], StandardOpenOption.CREATE);
   }
 
   /**
@@ -198,89 +162,76 @@ public final class NfCoreUtils {
   }
 
   /**
-   * Write a state file to mark a module as installed.
-   *
-   * @param stateFile The state file to create
-   */
-  private static void writeModuleStateFile(final File stateFile) {
-    try {
-      Files.write(
-        stateFile.toPath(),
-        new byte[0],
-        StandardOpenOption.CREATE
-      );
-    } catch (IOException e) {
-      throw new RuntimeException("Could not write module state file", e);
-    }
-  }
-
-  /**
-   * Traverse through a modules directory and link modules at the lowest
-   * possible position.
+   * Link a library's modules into a modules directory at the lowest possible
+   * position.
    *
    * e.g. if `modules/nf-core` doesn't exist, link it
    * but if it does, link the tool directory inside it.
    *
-   * @param libDir An nf-core library initialised by nfcoreSetup()
+   * @param libDir An nf-core library initialised by nfcoreInitialise()
    * @param modulesDir Location to make the library available at
-   * @param mode Operation to perform: {@code "link"} to create symlinks or
-   * {@code "unlink"} to remove them.
+   * @throws IOException if either directory does not exist or a link cannot
+   *     be created
    */
-  public static void nfcoreLibraryLinker(
+  public static void nfcoreLink(
       final String libDir,
-      final String modulesDir,
-      final String mode) {
-    try {
-      File libModulesDir = new File(libDir + "/modules");
-      File destModulesDir = new File(modulesDir);
-
-      // Capitalise mode string for error messages
-      String capMode = mode.substring(0, 1).toUpperCase() + mode.substring(1);
-
-      if (!libModulesDir.exists() || !libModulesDir.isDirectory()) {
-        System.err.println(
-          "Warning: Library modules directory does not exist: "
-          + libModulesDir.getAbsolutePath()
-        );
-        System.err.println(capMode + "ing halted!");
-        return;
-      }
-
-      if (!destModulesDir.exists()) {
-        System.err.println(
-          "Warning: Modules directory does not exist: "
-          + destModulesDir.getAbsolutePath()
-        );
-        System.err.println(capMode + "ing halted!");
-        return;
-      }
-
-      // Starting at the organisation-dir (e.g. nf-core) - link it if it
-      // doesn't exist, otherwise go a step deeper and link everything inside it
-      File[] orgDirs = libModulesDir.listFiles();
-      if (orgDirs == null) {
-        throw new IOException(
-          "Unable to list library modules directory: "
-          + libModulesDir.getAbsolutePath()
-        );
-      }
-      for (File orgDir : orgDirs) {
-        if (orgDir.isDirectory()) {
-          if ("link".equals(mode)) {
-            recurseLink(orgDir, destModulesDir);
-          } else if ("unlink".equals(mode)) {
-            recurseUnlink(orgDir, destModulesDir);
-          } else {
-            throw new RuntimeException(
-              "Error: mode is not 'link' or 'unlink'!"
-            );
-          }
-        }
-      }
-    } catch (IOException e) {
-      System.err.println("Error creating symlinks: " + e.getMessage());
-      throw new RuntimeException(e);
+      final String modulesDir) throws IOException {
+    File destModulesDir = new File(modulesDir);
+    for (File orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+      recurseLink(orgDir, destModulesDir);
     }
+  }
+
+  /**
+   * Remove the links to a library from a modules directory.
+   *
+   * @param libDir An nf-core library initialised by nfcoreInitialise()
+   * @param modulesDir Location the library was made available at
+   * @throws IOException if either directory does not exist or a link cannot
+   *     be read or removed
+   */
+  public static void nfcoreUnlink(
+      final String libDir,
+      final String modulesDir) throws IOException {
+    File destModulesDir = new File(modulesDir);
+    for (File orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+      recurseUnlink(orgDir, destModulesDir);
+    }
+  }
+
+  /**
+   * List the organisation directories (e.g. nf-core) of a library, after
+   * checking that the library and the modules directory exist.
+   *
+   * @param libDir An nf-core library initialised by nfcoreInitialise()
+   * @param modulesDir Location to make the library available at
+   * @return The organisation directories of the library
+   * @throws IOException if either directory does not exist or cannot be listed
+   */
+  private static List<File> libraryOrgDirs(
+      final String libDir,
+      final File modulesDir) throws IOException {
+    File libModulesDir = new File(libDir, "modules");
+    if (!libModulesDir.isDirectory()) {
+      throw new IOException(
+        "Library modules directory does not exist: "
+        + libModulesDir.getAbsolutePath()
+      );
+    }
+    if (!modulesDir.exists()) {
+      throw new IOException(
+        "Modules directory does not exist: "
+        + modulesDir.getAbsolutePath()
+      );
+    }
+    File[] entries = libModulesDir.listFiles();
+    if (entries == null) {
+      throw new IOException(
+        "Unable to list library modules directory: "
+        + libModulesDir.getAbsolutePath()
+      );
+    }
+    return Arrays.stream(entries).filter(File::isDirectory).toList();
   }
 
   /**
@@ -336,21 +287,15 @@ public final class NfCoreUtils {
 
     for (File file : files) {
       if (Files.isSymbolicLink(file.toPath())) {
-        try {
-          File linkTarget = Files.readSymbolicLink(file.toPath()).toFile();
-          if (!linkTarget.isAbsolute()) {
-            linkTarget = new File(file.getParentFile(), linkTarget.getPath())
-              .getCanonicalFile();
-          }
+        File linkTarget = Files.readSymbolicLink(file.toPath()).toFile();
+        if (!linkTarget.isAbsolute()) {
+          linkTarget = new File(file.getParentFile(), linkTarget.getPath())
+            .getCanonicalFile();
+        }
 
-          if (isWithinDirectory(linkTarget, libDir)) {
-            Files.delete(file.toPath());
-            System.out.println("Removed symlink: " + file.getAbsolutePath());
-          }
-        } catch (IOException e) {
-          System.err.println(
-            "Warning: Could not read symlink target for "
-            + file.getAbsolutePath());
+        if (isWithinDirectory(linkTarget, libDir)) {
+          Files.delete(file.toPath());
+          System.out.println("Removed symlink: " + file.getAbsolutePath());
         }
       } else if (file.isDirectory()) {
         recurseUnlink(libDir, file);
@@ -382,17 +327,12 @@ public final class NfCoreUtils {
    * Delete the temporary nf-core library.
    *
    * @param libDir The library directory path to delete
+   * @throws IOException if a file in the library cannot be deleted
    */
-  public static void nfcoreDeleteLibrary(final String libDir) {
+  public static void nfcoreDeleteLibrary(final String libDir)
+      throws IOException {
     System.out.println("Deleting temporary nf-core library: " + libDir);
-
-    try {
-      // Delete modules directory
-      File modulesLibDir = new File(libDir);
-      Utils.deleteDirectory(modulesLibDir);
-    } catch (Exception e) {
-      System.err.println("Error during cleanup: " + e.getMessage());
-    }
+    Utils.deleteDirectory(new File(libDir));
   }
 
 }
