@@ -67,7 +67,7 @@ class ArchiveExtractorTest {
       String url = serve(server, 200, tar.length, tar);
       Path dest = tempDir.resolve("dest");
 
-      ArchiveExtractor.extract(url, dest.toString(), null);
+      ArchiveExtractor.extract(url, dest.toString(), null, null);
 
       assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     } finally {
@@ -81,7 +81,7 @@ class ArchiveExtractorTest {
     Files.write(archive, tarOf("first"));
     Path dest = tempDir.resolve("dest");
 
-    ArchiveExtractor.extract(archive.toString(), dest.toString(), null);
+    ArchiveExtractor.extract(archive.toString(), dest.toString(), null, null);
 
     assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     assertTrue(Files.exists(archive));
@@ -94,7 +94,7 @@ class ArchiveExtractorTest {
     Path dest = tempDir.resolve("dest");
 
     ArchiveExtractor.extract(
-      archive.toUri().toString(), dest.toString(), null);
+      archive.toUri().toString(), dest.toString(), null, null);
 
     assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
   }
@@ -104,7 +104,7 @@ class ArchiveExtractorTest {
     Path archive = tempDir.resolve("local.tar");
     Files.write(archive, tarOf("first"));
 
-    Path dest = ArchiveExtractor.extract(archive.toString(), null, null);
+    Path dest = ArchiveExtractor.extract(archive.toString(), null, null, null);
 
     assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
   }
@@ -139,7 +139,7 @@ class ArchiveExtractorTest {
 
     IOException e = assertThrows(
       IOException.class,
-      () -> ArchiveExtractor.extract(archive, dest, null));
+      () -> ArchiveExtractor.extract(archive, dest, null, null));
 
     assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
@@ -156,7 +156,7 @@ class ArchiveExtractorTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveExtractor.extract(url, dest, null));
+        () -> ArchiveExtractor.extract(url, dest, null, null));
 
       assertTrue(e.getMessage().startsWith("Failed to download http"));
     } finally {
@@ -174,7 +174,7 @@ class ArchiveExtractorTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveExtractor.extract(url, dest.toString(), null));
+        () -> ArchiveExtractor.extract(url, dest.toString(), null, null));
 
       assertTrue(e.getMessage().startsWith("Failed to download http"));
       assertEquals(0, dest.toFile().list().length);
@@ -194,7 +194,7 @@ class ArchiveExtractorTest {
 
       IOException e = assertThrows(
         IOException.class,
-        () -> ArchiveExtractor.extract(url, dest, null));
+        () -> ArchiveExtractor.extract(url, dest, null, null));
 
       assertTrue(e.getMessage().startsWith("Failed to extract"));
     } finally {
@@ -215,7 +215,7 @@ class ArchiveExtractorTest {
       String url = serve(server, 200, body.length, body);
       Path dest = tempDir.resolve("dest");
 
-      ArchiveExtractor.extract(url, dest.toString(), "TGZ");
+      ArchiveExtractor.extract(url, dest.toString(), "TGZ", null);
 
       assertEquals(List.of("first"), Arrays.asList(dest.toFile().list()));
     } finally {
@@ -229,7 +229,7 @@ class ArchiveExtractorTest {
     for (String compression : List.of("rar", "tar.rar", "t")) {
       assertThrows(
         IllegalArgumentException.class,
-        () -> ArchiveExtractor.extract("http://x", dest, compression));
+        () -> ArchiveExtractor.extract("http://x", dest, compression, null));
     }
     assertFalse(Files.exists(Path.of(dest)));
   }
@@ -241,7 +241,7 @@ class ArchiveExtractorTest {
         "http://x/data", "http://x/v1.2/notes.txt")) {
       assertThrows(
         IllegalArgumentException.class,
-        () -> ArchiveExtractor.extract(url, dest, null));
+        () -> ArchiveExtractor.extract(url, dest, null, null));
     }
   }
 
@@ -263,7 +263,7 @@ class ArchiveExtractorTest {
     Files.write(gz, members.toByteArray());
     Path dest = tempDir.resolve("dest");
 
-    ArchiveExtractor.extract(gz.toString(), dest.toString(), null);
+    ArchiveExtractor.extract(gz.toString(), dest.toString(), null, null);
 
     assertEquals(
       ">chr1\nACGT\n", Files.readString(dest.resolve("genome.fa")));
@@ -286,7 +286,7 @@ class ArchiveExtractorTest {
         + "/ref/Genome.FA.GZ";
       Path dest = tempDir.resolve("dest");
 
-      ArchiveExtractor.extract(url, dest.toString(), null);
+      ArchiveExtractor.extract(url, dest.toString(), null, null);
 
       assertEquals(List.of("Genome.FA"), Arrays.asList(dest.toFile().list()));
     } finally {
@@ -301,7 +301,7 @@ class ArchiveExtractorTest {
     Files.write(gz, gzip("ACGT\n"));
     Path dest = tempDir.resolve("dest");
 
-    ArchiveExtractor.extract(gz.toString(), dest.toString(), "GZIP");
+    ArchiveExtractor.extract(gz.toString(), dest.toString(), "GZIP", null);
 
     assertEquals("ACGT\n", Files.readString(dest.resolve("reference")));
   }
@@ -314,7 +314,7 @@ class ArchiveExtractorTest {
 
     IOException e = assertThrows(
       IOException.class,
-      () -> ArchiveExtractor.extract(gz.toString(), dest, null));
+      () -> ArchiveExtractor.extract(gz.toString(), dest, null, null));
 
     assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
@@ -325,7 +325,7 @@ class ArchiveExtractorTest {
     for (String url : List.of("http://x/a/%2E%2E%2Egz", "http://x/a/..gz")) {
       assertThrows(
         IllegalArgumentException.class,
-        () -> ArchiveExtractor.extract(url, dest, null));
+        () -> ArchiveExtractor.extract(url, dest, null, null));
     }
   }
 
@@ -335,7 +335,7 @@ class ArchiveExtractorTest {
     Files.write(gz, gzip("ACGT\n"));
     Path dest = tempDir.resolve("dest");
 
-    ArchiveExtractor.extract(gz.toString(), dest.toString(), null);
+    ArchiveExtractor.extract(gz.toString(), dest.toString(), null, null);
 
     assertEquals(List.of("sample#1?.fa"), Arrays.asList(dest.toFile().list()));
   }

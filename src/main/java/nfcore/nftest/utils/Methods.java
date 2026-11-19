@@ -589,7 +589,7 @@ public final class Methods {
    * @throws IOException on failure or if archive type is unsupported
    */
   public static Path extract(final String source) throws IOException {
-    return ArchiveExtractor.extract(source, null, null);
+    return ArchiveExtractor.extract(source, null, null, null);
   }
 
   /**
@@ -603,8 +603,10 @@ public final class Methods {
    * @param source  the local path or URL of the archive
    * @return the directory the archive was extracted into, or {@code path}
    *     inside it
-   * @throws IOException on failure or if archive type is unsupported
-   * @throws IllegalArgumentException on an unknown option
+   * @throws IOException on failure, if archive type is unsupported or if
+   *     {@code path} is not in the archive
+   * @throws IllegalArgumentException on an unknown option, or a
+   *     {@code path} outside the extract directory
    */
   public static Path extract(
       final LinkedHashMap<String, Object> options,
@@ -635,7 +637,7 @@ public final class Methods {
     System.err.println(
       "Warning: curlAndExtract() is deprecated, use extract() instead"
     );
-    ArchiveExtractor.extract(urlString, destPath, null);
+    ArchiveExtractor.extract(urlString, destPath, null, null);
   }
 
   /**
@@ -656,7 +658,7 @@ public final class Methods {
     System.err.println(
       "Warning: curlAndExtract() is deprecated, use extract() instead"
     );
-    ArchiveExtractor.extract(urlString, destPath, compression);
+    ArchiveExtractor.extract(urlString, destPath, compression, null);
   }
 
   /**

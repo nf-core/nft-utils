@@ -68,26 +68,6 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Extract an archive in a directory and return that directory.
-   *
-   * @param source      the local path or URL of the archive
-   * @param destPath    directory to extract the archive into, or
-   *                    {@code null} for a new temporary directory
-   * @param compression compression type, or {@code null} to take it from the
-   *                    file extension
-   * @return the directory the archive was extracted into
-   * @throws IOException on failure or if archive type is unsupported
-   * @see #extract(String, String, String, String)
-   */
-  public static Path extract(
-      final String source,
-      final String destPath,
-      final String compression)
-      throws IOException {
-    return extract(source, destPath, compression, null);
-  }
-
-  /**
    * Extract an archive in a directory. A local path or file:// URL is
    * extracted in place. Any other URL, such as http(s)://, ftp:// or s3://,
    * is downloaded with {@code nextflow fs cp} to a temporary file in the
@@ -271,7 +251,7 @@ public final class ArchiveExtractor {
    *
    * @param source      the local path or URL of the archive
    * @param compression compression type, see
-   *                    {@link #extract(String, String, String)}
+   *                    {@link #extract(String, String, String, String)}
    * @param extractDir  directory to extract the archive into
    * @param target      where to write a single gzipped file, or {@code null}
    *                    for its name without the .gz suffix
@@ -328,7 +308,7 @@ public final class ArchiveExtractor {
    * archive path, which the caller appends last.
    *
    * @param compression compression type, see
-   *                    {@link #extract(String, String, String)}
+   *                    {@link #extract(String, String, String, String)}
    * @param destPath    directory to extract the archive into
    * @return the command, ending with the option that takes the archive path
    * @throws IllegalArgumentException if the compression type is unsupported
