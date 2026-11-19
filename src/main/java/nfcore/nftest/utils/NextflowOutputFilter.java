@@ -185,7 +185,7 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Applies the ignore and include lists to a line and drops the lines
+   * Applies the ignore and include lists to a line and rejects lines
    * matching {@link #DROPPED_LINES}.
    *
    * @param line    The line to check
@@ -199,7 +199,7 @@ public final class NextflowOutputFilter {
       final List<String> ignore,
       final List<String> include) {
     if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())
-        || ignore != null && ignore.stream().anyMatch(line::contains)) {
+        || (ignore != null && ignore.stream().anyMatch(line::contains))) {
       return false;
     }
     return include == null
