@@ -288,7 +288,8 @@ public final class NextflowOutputFilter {
    * @param line The output line to sanitize.
    * @param capturedRunName The run name captured from the Nextflow launching
    *     line, or {@code null} if no run name was captured.
-   * @return The sanitized output line.
+   * @return The sanitized output line, or an empty string if the line is
+   *     dropped.
    */
   public static String filterLinePattern(
       final String line,
