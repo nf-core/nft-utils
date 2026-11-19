@@ -15,9 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `removeNextflowVersion()`, `removeFromYamlMap()` and `readYamlFile()` throw on missing files (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` throws when a module fails to install (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
+- [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
 
 ### Fixed
 
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` removes `Downloading plugin` lines and container cache warnings (@maxulysse)
+- [#110](https://github.com/nf-core/nft-utils/pull/110) Docs: `relative: true` paths are strings, so `*.name` does not apply (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` no longer hangs when `nf-core` asks a question (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` supports library paths with spaces (@maxulysse)
 
