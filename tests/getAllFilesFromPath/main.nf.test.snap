@@ -1,4 +1,19 @@
 {
+    "getAllFilesFromPath - local path - relative: false": {
+        "content": [
+            [
+                "stable_content.txt:md5,f6d73f703cda1c725ea78369a6c3a48d"
+            ],
+            [
+                "stable_content.txt"
+            ]
+        ],
+        "timestamp": "2026-11-19T11:06:26.628730796",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.9"
+        }
+    },
     "getAllFilesFromPath - local path": {
         "content": [
             [

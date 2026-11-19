@@ -349,21 +349,32 @@ public final class FileTraversalUtils {
    * @param ignoreFilePath Path to a file of additional ignore globs, or
    *                       {@code null}
    * @param noSignRequest  Whether to list S3 with {@code --no-sign-request}
-   * @return A sorted list of relative file paths under {@code path}
+   * @param relative       Whether to return paths relative to {@code path}
+   *                       instead of files; only local paths can return files
+   * @return A sorted list of relative file paths under {@code path}, or of
+   *     files when {@code relative} is disabled
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
+   * @throws IllegalArgumentException if {@code path} is empty, or is an S3
+   *     path and {@code relative} is disabled
    */
-  public static List<String> getAllFilesFromPath(
+  public static List<?> getAllFilesFromPath(
       final String path,
       final List<String> ignoreGlobs,
       final List<String> includeGlobs,
       final boolean includeDir,
       final String ignoreFilePath,
-      final boolean noSignRequest)
+      final boolean noSignRequest,
+      final boolean relative)
       throws IOException, InterruptedException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException(
         "The 'path' parameter is required."
+      );
+    }
+    if (!relative && path.startsWith("s3://")) {
+      throw new IllegalArgumentException(
+        "relative: false needs a local path, not " + path
       );
     }
 
@@ -384,11 +395,17 @@ public final class FileTraversalUtils {
     }
 
     Path root = Paths.get(path);
-    return walk(root, filter, dir -> includeDir && !dir.equals(root))
+    List<Path> matches = walk(
+        root, filter, dir -> includeDir && !dir.equals(root))
       .stream()
+      .filter(match -> !match.equals(root))
+      .sorted(Comparator.comparing(match -> root.relativize(match).toString()))
+      .collect(Collectors.toList());
+    if (!relative) {
+      return matches.stream().map(Path::toFile).collect(Collectors.toList());
+    }
+    return matches.stream()
       .map(match -> root.relativize(match).toString())
-      .filter(relative -> !relative.isEmpty())
-      .sorted()
       .collect(Collectors.toList());
   }
 
