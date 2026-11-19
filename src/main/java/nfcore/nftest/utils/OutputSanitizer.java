@@ -249,7 +249,7 @@ public final class OutputSanitizer {
     return sanitizeMap(outputs, keySanitizers, channelSanitizer);
   }
 
-  /** Matches an output index channel key, such as {@code "0"}. */
+  /** Matches an output index channel key. */
   private static final Pattern INDEX = Pattern.compile("\\d+");
 
   /**
