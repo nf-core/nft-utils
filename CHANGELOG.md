@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#106](https://github.com/nf-core/nft-utils/pull/106) `sanitizeOutput()` accepts record field names in `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, `variantsMD5Keys` and `tableMD5Keys`, for the record outputs of typed processes (@pinin4fjords)
 - [#111](https://github.com/nf-core/nft-utils/pull/111) Add `excludeLines()` to read a file without given line numbers or content (@maxulysse)
 - [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` decompresses plain gzip files, such as `genome.fa.gz` (@maxulysse)
-- [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` option `file` returns a file from the extracted archive (@maxulysse)
+- [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` option `path` returns a file or folder from the extracted archive (@maxulysse)
 - [#115](https://github.com/nf-core/nft-utils/pull/115) `getAllFilesFromPath()` option `relative: false` returns local files (@maxulysse)
 
 ### Changed

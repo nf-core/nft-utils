@@ -104,22 +104,21 @@ public final class ArchiveExtractor {
    *                    or gz or gzip for a single gzipped file, written to
    *                    the directory without its .gz suffix;
    *                    or {@code null} to take it from the file extension
-   * @param file        path, relative to the extract directory, of the file
-   *                    to return instead of the directory; for a single
-   *                    gzipped file, also the name it is written to;
-   *                    or {@code null}
-   * @return the directory the archive was extracted into, or {@code file}
+   * @param path        file or folder to return instead of the directory,
+   *                    relative to it; for a single gzipped file, also the
+   *                    name it is written to; or {@code null}
+   * @return the directory the archive was extracted into, or {@code path}
    *     inside it
    * @throws IOException on failure, if archive type is unsupported or if
-   *     {@code file} is not in the archive
-   * @throws IllegalArgumentException if {@code file} is not a path inside
-   *     the extract directory
+   *     {@code path} is not in the archive
+   * @throws IllegalArgumentException if {@code path} is not inside the
+   *     extract directory
    */
   public static Path extract(
       final String source,
       final String destPath,
       final String compression,
-      final String file)
+      final String path)
       throws IOException {
     String type = compression;
     if (type == null) {
@@ -131,7 +130,7 @@ public final class ArchiveExtractor {
     } else {
       extractDir = Paths.get(destPath);
     }
-    Path target = fileIn(extractDir, file);
+    Path target = pathIn(extractDir, path);
     Extraction extraction = extraction(source, type, extractDir, target);
     Files.createDirectories(extractDir);
 
@@ -172,7 +171,7 @@ public final class ArchiveExtractor {
       return extractDir;
     }
     if (!Files.exists(target)) {
-      throw new IOException(file + " not found in " + source);
+      throw new IOException(path + " not found in " + source);
     }
     return target;
   }
@@ -181,21 +180,21 @@ public final class ArchiveExtractor {
    * Resolve a path inside the extract directory.
    *
    * @param extractDir the extract directory
-   * @param file       the relative path, or {@code null}
-   * @return the resolved path, or {@code null} without {@code file}
-   * @throws IllegalArgumentException if {@code file} is absolute, empty or
+   * @param path       the relative path, or {@code null}
+   * @return the resolved path, or {@code null} without {@code path}
+   * @throws IllegalArgumentException if {@code path} is absolute, empty or
    *     leaves the extract directory
    */
-  private static Path fileIn(final Path extractDir, final String file) {
-    if (file == null) {
+  private static Path pathIn(final Path extractDir, final String path) {
+    if (path == null) {
       return null;
     }
     Path dir = extractDir.normalize();
-    Path target = dir.resolve(file).normalize();
-    if (Paths.get(file).isAbsolute()
+    Path target = dir.resolve(path).normalize();
+    if (Paths.get(path).isAbsolute()
         || !target.startsWith(dir) || target.equals(dir)) {
       throw new IllegalArgumentException(
-        "file must be a path inside the extract directory: " + file
+        "path must be inside the extract directory: " + path
       );
     }
     return target;

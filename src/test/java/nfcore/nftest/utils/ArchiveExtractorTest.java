@@ -353,7 +353,25 @@ class ArchiveExtractorTest {
   }
 
   @Test
-  void shouldWriteGunzippedFileToFile() throws Exception {
+  void shouldReturnFolderFromTar() throws Exception {
+    Path source = Files.createDirectories(tempDir.resolve("source/db"));
+    Files.writeString(source.resolve("index.txt"), "x");
+    Path archive = tempDir.resolve("db.tar");
+    assertEquals(0, new ProcessBuilder(
+      "tar", "cf", archive.toString(),
+      "-C", tempDir.resolve("source").toString(), "db"
+    ).start().waitFor());
+    Path dest = tempDir.resolve("dest");
+
+    Path db = ArchiveExtractor.extract(
+      archive.toString(), dest.toString(), null, "db");
+
+    assertEquals(dest.resolve("db"), db);
+    assertTrue(Files.exists(db.resolve("index.txt")));
+  }
+
+  @Test
+  void shouldWriteGunzippedFileToPath() throws Exception {
     Path gz = Files.write(tempDir.resolve("genome.fa.gz"), gzip("ACGT\n"));
     Path dest = tempDir.resolve("dest");
 
@@ -365,7 +383,7 @@ class ArchiveExtractorTest {
   }
 
   @Test
-  void shouldFailWhenFileIsNotInArchive() throws Exception {
+  void shouldFailWhenPathIsNotInArchive() throws Exception {
     Path archive = tempDir.resolve("data.tar");
     Files.write(archive, tarOf("a.txt"));
     String dest = tempDir.resolve("dest").toString();
@@ -375,11 +393,11 @@ class ArchiveExtractorTest {
   }
 
   @Test
-  void shouldRejectFileOutsideExtractDirectory() {
+  void shouldRejectPathOutsideExtractDirectory() {
     String dest = tempDir.resolve("dest").toString();
-    for (String file : List.of("../x", "/etc/passwd", "", ".")) {
+    for (String path : List.of("../x", "/etc/passwd", "", ".")) {
       assertThrows(IllegalArgumentException.class,
-        () -> ArchiveExtractor.extract("data.tar", dest, null, file));
+        () -> ArchiveExtractor.extract("data.tar", dest, null, path));
     }
   }
 }
