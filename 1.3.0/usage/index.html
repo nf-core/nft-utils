@@ -1420,11 +1420,12 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 <ul>
 <li>Empty lines (removed entirely)</li>
 <li>Timestamps (replaced with <code>[TIMESTAMP]</code>)</li>
-<li>Process hashes (replaced with <code>[NXF_HASH]</code>) and 30 to 32 character hex hashes (replaced with <code>[NFT_HASH]</code>)</li>
+<li>Process hashes (replaced with <code>[NXF_HASH]</code>), work directory hashes such as <code>7b/b7421f…</code> and 30 to 32 character hex hashes (replaced with <code>[NFT_HASH]</code>)</li>
 <li>The run name (replaced with <code>[RUN_NAME]</code>), the user name in <code>userName :</code> lines (<code>[USER]</code>) and the revision (<code>[REVISION]</code>)</li>
 <li>Container engine names (replaced with <code>[CONTAINER]</code>)</li>
 <li>File paths (replaced with <code>[PATH]</code>), including common ENV variables: <code>HOME</code>, <code>NFT_WORKDIR</code>, <code>NXF_CACHE_DIR</code>, <code>NXF_CONDA_CACHEDIR</code>, <code>NXF_HOME</code>, <code>NXF_SINGULARITY_CACHEDIR</code>, <code>NXF_SINGULARITY_LIBRARYDIR</code>, <code>NXF_TEMP</code>, <code>NXF_WORK</code></li>
 <li>Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with <code>[VERSION]</code></li>
+<li>Lines printed only when a cache is empty: <code>Downloading plugin</code> messages and container <code>cache directory has not been defined</code> warnings (removed entirely)</li>
 </ul>
 <p>Example test:</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">test</span><span class="o">(</span><span class="s2">"my_pipeline_test"</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
