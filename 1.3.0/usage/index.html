@@ -1141,7 +1141,7 @@ See <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir"
 </span></code></pre></div>
 <p>:::</p>
 <p>Works for <strong>local paths and S3 paths</strong> (<code>s3://</code>). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (<code>aws s3 ls --recursive</code>).</p>
-<p>Returns a <strong>sorted list of relative <code>String</code> paths</strong> (relative to the given root).</p>
+<p>Returns a <strong>sorted list of relative <code>String</code> paths</strong> (relative to the given root), or of <code>File</code>s with <code>relative: false</code>.</p>
 <p>Supported named parameters:</p>
 <table>
 <thead>
@@ -1183,6 +1183,12 @@ See <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir"
 <td><code>false</code></td>
 <td>Pass <code>--no-sign-request</code> to the AWS CLI when listing a public S3 bucket without credentials</td>
 </tr>
+<tr>
+<td><code>relative</code></td>
+<td><code>Boolean</code></td>
+<td><code>true</code></td>
+<td>Return relative paths; <code>false</code> returns <code>File</code>s, so snapshots record their md5 (local, no <code>includeDir</code>)</td>
+</tr>
 </tbody>
 </table>
 <h4 id="local-usage">Local usage</h4>
@@ -1199,7 +1205,10 @@ See <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir"
 </span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span><span class="nl">ignoreFile:</span><span class="w"> </span><span class="s1">'tests/mytest/.nftignore'</span>
 </span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="o">)</span>
 </span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
-</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="k">assert</span><span class="w"> </span><span class="nf">snapshot</span><span class="o">(</span><span class="n">stable_files</span><span class="o">,</span><span class="w"> </span><span class="n">with_dirs</span><span class="o">,</span><span class="w"> </span><span class="n">stable_content</span><span class="o">).</span><span class="na">match</span><span class="o">()</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1">// Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="kt">def</span><span class="w"> </span><span class="n">stable_md5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAllFilesFromPath</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">outdir</span><span class="o">,</span><span class="w"> </span><span class="nl">relative:</span><span class="w"> </span><span class="kc">false</span><span class="o">,</span><span class="w"> </span><span class="nl">ignoreFile:</span><span class="w"> </span><span class="s1">'tests/mytest/.nftignore'</span><span class="o">)</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="k">assert</span><span class="w"> </span><span class="nf">snapshot</span><span class="o">(</span><span class="n">stable_files</span><span class="o">,</span><span class="w"> </span><span class="n">with_dirs</span><span class="o">,</span><span class="w"> </span><span class="n">stable_content</span><span class="o">,</span><span class="w"> </span><span class="n">stable_md5</span><span class="o">).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
 <h4 id="s3-usage">S3 usage</h4>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// Requires the AWS CLI to be available on the path</span>
@@ -1226,7 +1235,7 @@ Support for GCS (<code>gs://</code>) and Azure Blob (<code>az://</code>) paths i
 </span></code></pre></div>
 <h3 id="getallfilesfromdir"><code>getAllFilesFromDir()</code></h3>
 <p>:::caution
-<strong>Deprecated.</strong> Use <a href="#getallfilesfrompath"><code>getAllFilesFromPath()</code></a> instead. It provides the same functionality with S3 support.
+<strong>Deprecated.</strong> Use <a href="#getallfilesfrompath"><code>getAllFilesFromPath()</code></a> instead. It provides the same functionality with S3 support; its paths are relative by default, use <code>relative: false</code> for files.
 :::</p>
 <p>:::warning
 This function requires absolute paths and does not support relative paths to <code>params.outdir</code>.
