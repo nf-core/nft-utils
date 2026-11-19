@@ -30,20 +30,34 @@ public final class YamlUtils {
    * Reads a Version YAML file and returns its contents as a nested map.
    *
    * @param filePath The path to the YAML file to read.
-   * @return A nested map containing the YAML data, or {@code null} if the file
-   *     cannot be read.
+   * @return A nested map containing the YAML data, empty for an empty file.
+   * @throws IOException If the file cannot be read, or a top-level value is
+   *     not a map.
    */
   public static Map<String, Map<String, Object>> readYamlFile(
-      final String filePath) {
-    Yaml yaml = new Yaml();
+      final String filePath)
+      throws IOException {
     try (BufferedReader reader = Files.newBufferedReader(
         Paths.get(filePath),
         StandardCharsets.UTF_8)) {
-      Map<String, Map<String, Object>> data = yaml.load(reader);
-      return data;
-    } catch (IOException e) {
-      System.err.println("Error reading YAML file: " + e.getMessage());
-      return null;
+      Object data = new Yaml().load(reader);
+      if (data == null) {
+        return new TreeMap<>();
+      }
+      if (!(data instanceof Map<?, ?> map)) {
+        throw new IOException(filePath + ": expected a map");
+      }
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        if (!(entry.getValue() instanceof Map)) {
+          throw new IOException(
+            filePath + ": expected a map under '" + entry.getKey() + "'"
+          );
+        }
+      }
+      @SuppressWarnings("unchecked")
+      Map<String, Map<String, Object>> versions =
+          (Map<String, Map<String, Object>>) map;
+      return versions;
     }
   }
 
@@ -110,39 +124,29 @@ public final class YamlUtils {
    * @param key2 The nested key to remove, or {@code null} or empty to remove
    *     the entire {@code key1} entry.
    * @return A merged map containing the processed YAML data.
+   * @throws IOException If no file matches, a file cannot be read, or a
+   *     top-level value is not a map.
    */
   public static Map<String, Map<String, Object>> removeFromYamlMap(
       final CharSequence versionFile,
       final String key1,
-      final String key2) {
-    String yamlFilePattern = versionFile.toString();
+      final String key2)
+      throws IOException {
     Map<String, Map<String, Object>> mergedResult = new TreeMap<>();
 
-    try {
-      List<String> yamlFilePaths = resolveWildcardPaths(yamlFilePattern);
-
-      for (String yamlFilePath : yamlFilePaths) {
-        Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
-
-        if (yamlData != null) {
-          if (yamlData.containsKey(key1)) {
-            if (key2 == null || key2.isEmpty()) {
-              yamlData.remove(key1);
-            } else {
-              yamlData.get(key1).remove(key2);
-            }
-          }
-
-          yamlData.forEach((key, value) -> mergedResult
-              .computeIfAbsent(key, k -> new TreeMap<>())
-              .putAll(value));
+    for (String yamlFilePath : resolveWildcardPaths(versionFile.toString())) {
+      Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
+      if (yamlData.containsKey(key1)) {
+        if (key2 == null || key2.isEmpty()) {
+          yamlData.remove(key1);
+        } else {
+          yamlData.get(key1).remove(key2);
         }
       }
-    } catch (IOException e) {
-      System.err.println(
-        "Error resolving file path pattern: " + e.getMessage()
-      );
-      return null;
+
+      yamlData.forEach((key, value) -> mergedResult
+          .computeIfAbsent(key, k -> new TreeMap<>())
+          .putAll(value));
     }
 
     return mergedResult;
