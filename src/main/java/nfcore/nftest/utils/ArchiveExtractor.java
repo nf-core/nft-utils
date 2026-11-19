@@ -68,6 +68,26 @@ public final class ArchiveExtractor {
   }
 
   /**
+   * Extract an archive in a directory and return that directory.
+   *
+   * @param source      the local path or URL of the archive
+   * @param destPath    directory to extract the archive into, or
+   *                    {@code null} for a new temporary directory
+   * @param compression compression type, or {@code null} to take it from the
+   *                    file extension
+   * @return the directory the archive was extracted into
+   * @throws IOException on failure or if archive type is unsupported
+   * @see #extract(String, String, String, String)
+   */
+  public static Path extract(
+      final String source,
+      final String destPath,
+      final String compression)
+      throws IOException {
+    return extract(source, destPath, compression, null);
+  }
+
+  /**
    * Extract an archive in a directory. A local path or file:// URL is
    * extracted in place. Any other URL, such as http(s)://, ftp:// or s3://,
    * is downloaded with {@code nextflow fs cp} to a temporary file in the
@@ -84,13 +104,22 @@ public final class ArchiveExtractor {
    *                    or gz or gzip for a single gzipped file, written to
    *                    the directory without its .gz suffix;
    *                    or {@code null} to take it from the file extension
-   * @return the directory the archive was extracted into
-   * @throws IOException on failure or if archive type is unsupported
+   * @param file        path, relative to the extract directory, of the file
+   *                    to return instead of the directory; for a single
+   *                    gzipped file, also the name it is written to;
+   *                    or {@code null}
+   * @return the directory the archive was extracted into, or {@code file}
+   *     inside it
+   * @throws IOException on failure, if archive type is unsupported or if
+   *     {@code file} is not in the archive
+   * @throws IllegalArgumentException if {@code file} is not a path inside
+   *     the extract directory
    */
   public static Path extract(
       final String source,
       final String destPath,
-      final String compression)
+      final String compression,
+      final String file)
       throws IOException {
     String type = compression;
     if (type == null) {
@@ -102,7 +131,8 @@ public final class ArchiveExtractor {
     } else {
       extractDir = Paths.get(destPath);
     }
-    Extraction extraction = extraction(source, type, extractDir);
+    Path target = fileIn(extractDir, file);
+    Extraction extraction = extraction(source, type, extractDir, target);
     Files.createDirectories(extractDir);
 
     Path download = null;
@@ -138,7 +168,37 @@ public final class ArchiveExtractor {
         }
       }
     }
-    return extractDir;
+    if (target == null) {
+      return extractDir;
+    }
+    if (!Files.exists(target)) {
+      throw new IOException(file + " not found in " + source);
+    }
+    return target;
+  }
+
+  /**
+   * Resolve a path inside the extract directory.
+   *
+   * @param extractDir the extract directory
+   * @param file       the relative path, or {@code null}
+   * @return the resolved path, or {@code null} without {@code file}
+   * @throws IllegalArgumentException if {@code file} is absolute, empty or
+   *     leaves the extract directory
+   */
+  private static Path fileIn(final Path extractDir, final String file) {
+    if (file == null) {
+      return null;
+    }
+    Path dir = extractDir.normalize();
+    Path target = dir.resolve(file).normalize();
+    if (Paths.get(file).isAbsolute()
+        || !target.startsWith(dir) || target.equals(dir)) {
+      throw new IllegalArgumentException(
+        "file must be a path inside the extract directory: " + file
+      );
+    }
+    return target;
   }
 
   /**
@@ -214,19 +274,25 @@ public final class ArchiveExtractor {
    * @param compression compression type, see
    *                    {@link #extract(String, String, String)}
    * @param extractDir  directory to extract the archive into
+   * @param target      where to write a single gzipped file, or {@code null}
+   *                    for its name without the .gz suffix
    * @return the extraction
    * @throws IllegalArgumentException if the compression type is unsupported
    */
   private static Extraction extraction(
       final String source,
       final String compression,
-      final Path extractDir) {
+      final Path extractDir,
+      final Path target) {
     if (GZIP.contains(compression.toLowerCase(Locale.ROOT))) {
-      Path target = extractDir.resolve(gunzippedName(source));
+      Path output = target != null
+        ? target
+        : extractDir.resolve(gunzippedName(source));
       return archive -> {
         try (InputStream in = new GZIPInputStream(
             Files.newInputStream(archive))) {
-          Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+          Files.createDirectories(output.getParent());
+          Files.copy(in, output, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
           throw new IOException("Failed to extract " + source, e);
         }

@@ -339,4 +339,47 @@ class ArchiveExtractorTest {
 
     assertEquals(List.of("sample#1?.fa"), Arrays.asList(dest.toFile().list()));
   }
+
+  @Test
+  void shouldReturnFileFromTar() throws Exception {
+    Path archive = tempDir.resolve("data.tar");
+    Files.write(archive, tarOf("a.txt", "b.txt"));
+    Path dest = tempDir.resolve("dest");
+
+    assertEquals(
+      dest.resolve("b.txt"),
+      ArchiveExtractor.extract(archive.toString(), dest.toString(), null,
+        "b.txt"));
+  }
+
+  @Test
+  void shouldWriteGunzippedFileToFile() throws Exception {
+    Path gz = Files.write(tempDir.resolve("genome.fa.gz"), gzip("ACGT\n"));
+    Path dest = tempDir.resolve("dest");
+
+    Path fasta = ArchiveExtractor.extract(
+      gz.toString(), dest.toString(), null, "ref/ref.fa");
+
+    assertEquals(dest.resolve("ref/ref.fa"), fasta);
+    assertEquals("ACGT\n", Files.readString(fasta));
+  }
+
+  @Test
+  void shouldFailWhenFileIsNotInArchive() throws Exception {
+    Path archive = tempDir.resolve("data.tar");
+    Files.write(archive, tarOf("a.txt"));
+    String dest = tempDir.resolve("dest").toString();
+
+    assertThrows(IOException.class, () -> ArchiveExtractor.extract(
+      archive.toString(), dest, null, "missing.txt"));
+  }
+
+  @Test
+  void shouldRejectFileOutsideExtractDirectory() {
+    String dest = tempDir.resolve("dest").toString();
+    for (String file : List.of("../x", "/etc/passwd", "", ".")) {
+      assertThrows(IllegalArgumentException.class,
+        () -> ArchiveExtractor.extract("data.tar", dest, null, file));
+    }
+  }
 }

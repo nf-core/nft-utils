@@ -578,7 +578,7 @@ public final class Methods {
    * Named options accepted by {@link #extract(LinkedHashMap, String)}.
    */
   private static final Set<String> EXTRACT_OPTIONS =
-    Set.of("extractDir", "compression");
+    Set.of("extractDir", "compression", "file");
 
   /**
    * Extract an archive in a new temporary directory, deleted when the JVM
@@ -597,9 +597,12 @@ public final class Methods {
    *
    * @param options {@code extractDir}: directory to extract the archive into,
    *                instead of a new temporary directory; {@code compression}:
-   *                archive type, instead of the file extension
+   *                archive type, instead of the file extension;
+   *                {@code file}: path of the file to return, relative to
+   *                the extract directory
    * @param source  the local path or URL of the archive
-   * @return the directory the archive was extracted into
+   * @return the directory the archive was extracted into, or {@code file}
+   *     inside it
    * @throws IOException on failure or if archive type is unsupported
    * @throws IllegalArgumentException on an unknown option
    */
@@ -611,7 +614,8 @@ public final class Methods {
     return ArchiveExtractor.extract(
       source,
       Objects.toString(options.get("extractDir"), null),
-      Objects.toString(options.get("compression"), null)
+      Objects.toString(options.get("compression"), null),
+      Objects.toString(options.get("file"), null)
     );
   }
 
