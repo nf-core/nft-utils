@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods to remove unecessary output from a snapshot.
@@ -235,7 +236,7 @@ public final class OutputSanitizer {
     // nf-test lists named outputs twice, by index and by name:
     // drop one index entry per named output, keep unnamed outputs
     // shortcut: equal values (e.g. two empty channels) may drop the wrong
-    // index; nf-test gives no name-to-index map
+    // index; nf-test gives no name-to-index map, revisit if it exposes one
     TreeMap<String, Object> outputs = new TreeMap<>(channel);
     channel.forEach((name, value) -> {
       if (!isIndex(name)) {
@@ -248,6 +249,9 @@ public final class OutputSanitizer {
     return sanitizeMap(outputs, keySanitizers, channelSanitizer);
   }
 
+  /** Matches an output index channel key, such as {@code "0"}. */
+  private static final Pattern INDEX = Pattern.compile("\\d+");
+
   /**
    * Checks whether a channel key is an output index, such as {@code "0"}.
    *
@@ -255,7 +259,7 @@ public final class OutputSanitizer {
    * @return {@code true} if the key is an output index.
    */
   private static boolean isIndex(final String key) {
-    return key.matches("\\d+");
+    return INDEX.matcher(key).matches();
   }
 
   /**
