@@ -445,12 +445,12 @@ A common use case: read a file, remove unstable lines with [`excludeLines()`](#e
 
 Reads a file and returns its lines, minus the excluded ones.
 
-| Option   | Type            | Default | Description                                      |
-| -------- | --------------- | ------- | ------------------------------------------------ |
-| `lines`  | `List<Integer>` | `[]`    | 1-based numbers of the lines to remove           |
-| `ignore` | `List<String>`  | `[]`    | Remove the lines containing any of these strings |
+| Option   | Type            | Default | Description                                                          |
+| -------- | --------------- | ------- | -------------------------------------------------------------------- |
+| `lines`  | `List<Integer>` | `[]`    | 1-based numbers of the lines to remove; a range such as `2..4` works |
+| `ignore` | `List<String>`  | `[]`    | Remove the lines containing any of these strings                     |
 
-Unknown options, wrong option types and line numbers outside the file throw an error. Line numbers shift when the file gains or loses lines, so prefer `ignore` when the unstable lines have a recognisable content.
+Unknown options, wrong option types, line numbers outside the file and empty `ignore` strings throw an error. Line numbers shift when the file gains or loses lines, so prefer `ignore` when the unstable lines have a recognisable content.
 
 ```groovy
 assert snapshot(

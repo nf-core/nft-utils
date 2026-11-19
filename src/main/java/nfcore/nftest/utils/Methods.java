@@ -249,7 +249,7 @@ public final class Methods {
    * @return The remaining lines, in order.
    * @throws IOException If the file cannot be read.
    * @throws IllegalArgumentException on an unknown option, a wrong option
-   *     type or a line number out of range
+   *     type, a line number out of range or an empty ignore string
    */
   public static List<String> excludeLines(
       final LinkedHashMap<String, Object> options,

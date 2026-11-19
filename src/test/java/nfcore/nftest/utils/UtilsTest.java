@@ -154,6 +154,16 @@ class UtilsTest {
   }
 
   @Test
+  void shouldRejectEmptyIgnoreString(@TempDir final Path dir)
+      throws IOException {
+    Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b"));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Utils.excludeLines(file.toString(), List.of(), List.of(""))
+    );
+  }
+
+  @Test
   void shouldReadInvalidUtf8(@TempDir final Path dir) throws IOException {
     Path file = Files.write(
       dir.resolve("in.txt"), new byte[] {'a', '\n', (byte) 0xE9, '\n'}

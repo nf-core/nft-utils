@@ -186,7 +186,8 @@ public final class Utils {
    * @param ignore Strings whose lines are removed.
    * @return The remaining lines, in order.
    * @throws IOException If the file cannot be read.
-   * @throws IllegalArgumentException If a line number is out of range.
+   * @throws IllegalArgumentException If a line number is out of range or
+   *     an ignore string is empty.
    */
   public static List<String> excludeLines(
       final String path,
@@ -196,6 +197,11 @@ public final class Utils {
     List<String> lines = new String(
       Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8
     ).lines().toList();
+    if (ignore.contains("")) {
+      throw new IllegalArgumentException(
+        "An empty ignore string would remove every line of " + path
+      );
+    }
     for (int number : lineNumbers) {
       if (number < 1 || number > lines.size()) {
         throw new IllegalArgumentException(
