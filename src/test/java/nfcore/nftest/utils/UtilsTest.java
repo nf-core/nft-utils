@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -78,6 +79,21 @@ class UtilsTest {
 
     assertFalse(Files.exists(inside));
     assertTrue(Files.exists(outside.resolve("keep.txt")));
+  }
+
+  @Test
+  void shouldThrowIOExceptionWhenDirectoryCannotBeListed(
+      @TempDir final Path dir) throws IOException {
+    Assumptions.assumeFalse("root".equals(System.getProperty("user.name")));
+    Path locked = Files.createDirectories(dir.resolve("inside/locked"));
+    Files.writeString(locked.resolve("file.txt"), "x");
+    locked.toFile().setReadable(false);
+    try {
+      assertThrows(IOException.class,
+        () -> Utils.deleteDirectory(dir.resolve("inside").toFile()));
+    } finally {
+      locked.toFile().setReadable(true);
+    }
   }
 
   @Test

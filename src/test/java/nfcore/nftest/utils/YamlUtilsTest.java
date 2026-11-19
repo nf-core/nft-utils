@@ -49,4 +49,12 @@ class YamlUtilsTest {
       () -> Methods.removeNextflowVersion(file.toString()));
     assertEquals(file + ": expected a map under 'Workflow'", e.getMessage());
   }
+
+  @Test
+  void shouldThrowForListAtTopLevel() throws IOException {
+    Path file = Files.writeString(dir.resolve("versions.yml"), "- a\n");
+    IOException e = assertThrows(IOException.class,
+      () -> Methods.readYamlFile(file.toString()));
+    assertEquals(file + ": expected a map", e.getMessage());
+  }
 }

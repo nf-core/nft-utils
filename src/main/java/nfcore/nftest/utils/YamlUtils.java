@@ -40,18 +40,24 @@ public final class YamlUtils {
     try (BufferedReader reader = Files.newBufferedReader(
         Paths.get(filePath),
         StandardCharsets.UTF_8)) {
-      Map<String, Map<String, Object>> data = new Yaml().load(reader);
+      Object data = new Yaml().load(reader);
       if (data == null) {
         return new TreeMap<>();
       }
-      for (Map.Entry<String, ?> entry : data.entrySet()) {
+      if (!(data instanceof Map<?, ?> map)) {
+        throw new IOException(filePath + ": expected a map");
+      }
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
         if (!(entry.getValue() instanceof Map)) {
           throw new IOException(
             filePath + ": expected a map under '" + entry.getKey() + "'"
           );
         }
       }
-      return data;
+      @SuppressWarnings("unchecked")
+      Map<String, Map<String, Object>> versions =
+          (Map<String, Map<String, Object>>) map;
+      return versions;
     }
   }
 

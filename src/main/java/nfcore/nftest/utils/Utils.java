@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -132,6 +133,8 @@ public final class Utils {
     List<Path> paths;
     try (Stream<Path> walk = Files.walk(root)) {
       paths = walk.sorted(Comparator.reverseOrder()).toList();
+    } catch (UncheckedIOException e) {
+      throw e.getCause();
     }
     for (Path path : paths) {
       Files.delete(path);
