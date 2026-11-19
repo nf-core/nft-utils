@@ -350,13 +350,14 @@ public final class FileTraversalUtils {
    *                       {@code null}
    * @param noSignRequest  Whether to list S3 with {@code --no-sign-request}
    * @param relative       Whether to return paths relative to {@code path}
-   *                       instead of files; only local paths can return files
+   *                       instead of files; files need a local path and
+   *                       {@code includeDir} disabled
    * @return A sorted list of relative file paths under {@code path}, or of
    *     files when {@code relative} is disabled
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
-   * @throws IllegalArgumentException if {@code path} is empty, or is an S3
-   *     path and {@code relative} is disabled
+   * @throws IllegalArgumentException if {@code path} is empty, or if
+   *     {@code relative} is disabled with an S3 path or {@code includeDir}
    */
   public static List<?> getAllFilesFromPath(
       final String path,
@@ -372,9 +373,10 @@ public final class FileTraversalUtils {
         "The 'path' parameter is required."
       );
     }
-    if (!relative && path.startsWith("s3://")) {
+    // nf-test would hash a whole directory, ignored files included
+    if (!relative && (includeDir || path.startsWith("s3://"))) {
       throw new IllegalArgumentException(
-        "relative: false needs a local path, not " + path
+        "relative: false needs a local path and includeDir: false"
       );
     }
 
@@ -399,7 +401,7 @@ public final class FileTraversalUtils {
         root, filter, dir -> includeDir && !dir.equals(root))
       .stream()
       .filter(match -> !match.equals(root))
-      .sorted(Comparator.comparing(match -> root.relativize(match).toString()))
+      .sorted()
       .collect(Collectors.toList());
     if (!relative) {
       return matches.stream().map(Path::toFile).collect(Collectors.toList());

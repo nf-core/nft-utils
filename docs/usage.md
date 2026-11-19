@@ -158,14 +158,14 @@ Returns a **sorted list of relative `String` paths** (relative to the given root
 
 Supported named parameters:
 
-| Option          | Type           | Default       | Description                                                                                 |
-| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                    |
-| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                    |
-| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                 |
-| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                      |
-| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials |
-| `relative`      | `Boolean`      | `true`        | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local only)  |
+| Option          | Type           | Default       | Description                                                                                            |
+| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
+| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                               |
+| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                               |
+| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                            |
+| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                                 |
+| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials            |
+| `relative`      | `Boolean`      | `true`        | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local, no `includeDir`) |
 
 #### Local usage
 
