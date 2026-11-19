@@ -250,7 +250,6 @@ Arguments:
 3. List of glob patterns to exclude
 4. File containing additional glob patterns to exclude
 5. List of glob patterns to include
-6. Boolean: output relative paths
 
 Example pipeline output:
 
@@ -274,7 +273,7 @@ def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/exe
 def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 ```
 
-Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums:
+Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums. With `relative: true`, `stable_name` already holds `String` paths: pass it as is, since `*.name` fails with `No such property: name for class: java.lang.String`.
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
@@ -496,11 +495,12 @@ Filtered patterns:
 
 - Empty lines (removed entirely)
 - Timestamps (replaced with `[TIMESTAMP]`)
-- Process hashes (replaced with `[NXF_HASH]`) and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
+- Process hashes (replaced with `[NXF_HASH]`), work directory hashes such as `7b/b7421f…` and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
 - The run name (replaced with `[RUN_NAME]`), the user name in `userName :` lines (`[USER]`) and the revision (`[REVISION]`)
 - Container engine names (replaced with `[CONTAINER]`)
 - File paths (replaced with `[PATH]`), including common ENV variables: `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
 - Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with `[VERSION]`
+- Lines printed only when a cache is empty: `Downloading plugin` messages and container `cache directory has not been defined` warnings (removed entirely)
 
 Example test:
 
