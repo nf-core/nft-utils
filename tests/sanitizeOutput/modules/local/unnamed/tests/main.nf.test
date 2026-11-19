@@ -1,0 +1,16 @@
+nextflow_process {
+
+    name "Test sanitizeOutput with unnamed outputs"
+    script "../main.nf"
+    process "UNNAMED"
+    tag "sanitizeOutput"
+
+    test("Unnamed outputs are kept") {
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(process.out)).match() }
+            )
+        }
+    }
+}
