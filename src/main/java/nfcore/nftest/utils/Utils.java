@@ -15,11 +15,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Utility methods for process execution, shell escaping, and file path
- * manipulation.
+ * Utility methods for process execution, shell escaping, file path
+ * manipulation, and line filtering.
  */
 public final class Utils {
 
@@ -151,5 +152,45 @@ public final class Utils {
       );
     }
     return extension;
+  }
+
+  /**
+   * Reads a file and returns its lines, minus the lines with the given
+   * numbers and the lines containing any of the given strings.
+   *
+   * @param path The file to read.
+   * @param lineNumbers The 1-based numbers of the lines to remove.
+   * @param ignore Strings whose lines are removed.
+   * @return The remaining lines, in order.
+   * @throws IOException If the file cannot be read.
+   * @throws IllegalArgumentException If a line number is out of range or
+   *     an ignore string is empty.
+   */
+  public static List<String> excludeLines(
+      final String path,
+      final List<Integer> lineNumbers,
+      final List<String> ignore) throws IOException {
+    if (ignore.contains("")) {
+      throw new IllegalArgumentException(
+        "An empty ignore string would remove every line of " + path
+      );
+    }
+    // Invalid UTF-8 bytes become U+FFFD instead of failing the read
+    List<String> lines = new String(
+      Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8
+    ).lines().toList();
+    for (int number : lineNumbers) {
+      if (number < 1 || number > lines.size()) {
+        throw new IllegalArgumentException(
+          "Line " + number + " is out of range: "
+          + path + " has " + lines.size() + " lines"
+        );
+      }
+    }
+    return IntStream.rangeClosed(1, lines.size())
+      .filter(n -> !lineNumbers.contains(n))
+      .mapToObj(n -> lines.get(n - 1))
+      .filter(line -> ignore.stream().noneMatch(line::contains))
+      .toList();
   }
 }

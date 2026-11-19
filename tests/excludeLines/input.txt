@@ -1,0 +1,4 @@
+header
+run date: 2026-11-18
+result: 42
+run time: 3s
