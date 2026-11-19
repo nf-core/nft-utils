@@ -132,6 +132,14 @@ nextflow_process {
             new File("${launchDir}/dbs").deleteDir()
         }
     }
+    test("test extract - gzip file") {
+
+        then {
+            def fasta = extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/genome.fasta.gz").resolve("genome.fasta")
+            assert snapshot(fasta.toFile()).match()
+        }
+    }
+
     test("test extract - default temporary directory") {
 
         then {

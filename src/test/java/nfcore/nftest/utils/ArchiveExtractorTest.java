@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -237,10 +238,84 @@ class ArchiveExtractorTest {
   void shouldRejectUnsupportedUrlExtension() {
     String dest = tempDir.resolve("dest").toString();
     for (String url : List.of(
-        "http://x/data", "http://x/data.gz", "http://x/v1.2/notes.txt")) {
+        "http://x/data", "http://x/v1.2/notes.txt")) {
       assertThrows(
         IllegalArgumentException.class,
         () -> ArchiveExtractor.extract(url, dest, null));
     }
+  }
+
+  private static byte[] gzip(final String content) throws IOException {
+    ByteArrayOutputStream gzipped = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzip = new GZIPOutputStream(gzipped)) {
+      gzip.write(content.getBytes(StandardCharsets.UTF_8));
+    }
+    return gzipped.toByteArray();
+  }
+
+  @Test
+  void shouldGunzipPlainGzipFile() throws Exception {
+    Path gz = tempDir.resolve("genome.fa.gz");
+    // Two gzip members, like a bgzip file
+    ByteArrayOutputStream members = new ByteArrayOutputStream();
+    members.write(gzip(">chr1\n"));
+    members.write(gzip("ACGT\n"));
+    Files.write(gz, members.toByteArray());
+    Path dest = tempDir.resolve("dest");
+
+    ArchiveExtractor.extract(gz.toString(), dest.toString(), null);
+
+    assertEquals(
+      ">chr1\nACGT\n", Files.readString(dest.resolve("genome.fa")));
+    assertTrue(Files.exists(gz));
+  }
+
+  @Test
+  void shouldNameGunzippedDownloadAfterUrlPath() throws Exception {
+    HttpServer server = HttpServer.create(
+      new InetSocketAddress("127.0.0.1", 0), 0);
+    try {
+      byte[] body = gzip("ACGT\n");
+      server.createContext("/", exchange -> {
+        exchange.sendResponseHeaders(200, body.length);
+        exchange.getResponseBody().write(body);
+        exchange.close();
+      });
+      server.start();
+      String url = "http://127.0.0.1:" + server.getAddress().getPort()
+        + "/ref/Genome.FA.GZ";
+      Path dest = tempDir.resolve("dest");
+
+      ArchiveExtractor.extract(url, dest.toString(), null);
+
+      assertEquals(List.of("Genome.FA"), Arrays.asList(dest.toFile().list()));
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void shouldGunzipWithCompressionAndKeepNameWithoutSuffix()
+      throws Exception {
+    Path gz = tempDir.resolve("reference");
+    Files.write(gz, gzip("ACGT\n"));
+    Path dest = tempDir.resolve("dest");
+
+    ArchiveExtractor.extract(gz.toString(), dest.toString(), "GZIP");
+
+    assertEquals("ACGT\n", Files.readString(dest.resolve("reference")));
+  }
+
+  @Test
+  void shouldFailToGunzipNonGzipFile() throws Exception {
+    Path gz = tempDir.resolve("genome.fa.gz");
+    Files.writeString(gz, "not gzipped");
+    String dest = tempDir.resolve("dest").toString();
+
+    IOException e = assertThrows(
+      IOException.class,
+      () -> ArchiveExtractor.extract(gz.toString(), dest, null));
+
+    assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
 }

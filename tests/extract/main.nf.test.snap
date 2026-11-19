@@ -445,6 +445,16 @@
             "nextflow": "26.04.6"
         }
     },
+    "test extract - gzip file": {
+        "content": [
+            "genome.fasta:md5,6e9fe4042a72f2345f644f239272b7e6"
+        ],
+        "timestamp": "2026-11-19T10:19:14.140578155",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.0"
+        }
+    },
     "test extract with type - zip file": {
         "content": [
             [
