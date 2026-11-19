@@ -34,7 +34,8 @@ public final class Methods {
    *
    * @param filePath The path to the YAML file to read.
    * @return A nested map containing the YAML data, empty for an empty file.
-   * @throws IOException If the file cannot be read.
+   * @throws IOException If the file cannot be read, or a top-level value is
+   *     not a map.
    */
   public static Map<String, Map<String, Object>> readYamlFile(
       final String filePath)
@@ -290,8 +291,10 @@ public final class Methods {
    * Delete the temporary nf-core library.
    *
    * @param libDir The library directory path to delete
+   * @throws IOException if a file in the library cannot be deleted
    */
-  public static void nfcoreDeleteLibrary(final String libDir) {
+  public static void nfcoreDeleteLibrary(final String libDir)
+      throws IOException {
     NfCoreUtils.nfcoreDeleteLibrary(libDir);
   }
 

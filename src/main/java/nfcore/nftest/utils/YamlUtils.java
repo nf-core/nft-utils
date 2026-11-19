@@ -31,7 +31,8 @@ public final class YamlUtils {
    *
    * @param filePath The path to the YAML file to read.
    * @return A nested map containing the YAML data, empty for an empty file.
-   * @throws IOException If the file cannot be read.
+   * @throws IOException If the file cannot be read, or a top-level value is
+   *     not a map.
    */
   public static Map<String, Map<String, Object>> readYamlFile(
       final String filePath)
@@ -42,6 +43,13 @@ public final class YamlUtils {
       Map<String, Map<String, Object>> data = new Yaml().load(reader);
       if (data == null) {
         return new TreeMap<>();
+      }
+      for (Map.Entry<String, ?> entry : data.entrySet()) {
+        if (!(entry.getValue() instanceof Map)) {
+          throw new IOException(
+            filePath + ": expected a map under '" + entry.getKey() + "'"
+          );
+        }
       }
       return data;
     }
@@ -122,14 +130,6 @@ public final class YamlUtils {
 
     for (String yamlFilePath : resolveWildcardPaths(versionFile.toString())) {
       Map<String, Map<String, Object>> yamlData = readYamlFile(yamlFilePath);
-      for (Map.Entry<String, ?> entry : yamlData.entrySet()) {
-        if (!(entry.getValue() instanceof Map)) {
-          throw new IOException(
-            yamlFilePath + ": expected a map under '" + entry.getKey() + "'"
-          );
-        }
-      }
-
       if (yamlData.containsKey(key1)) {
         if (key2 == null || key2.isEmpty()) {
           yamlData.remove(key1);

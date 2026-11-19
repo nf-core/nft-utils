@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#110](https://github.com/nf-core/nft-utils/pull/110) Docs: `relative: true` paths are strings, so `*.name` does not apply (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` no longer hangs when `nf-core` asks a question (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` supports library paths with spaces (@maxulysse)
+- [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreDeleteLibrary()` and `extract()` cleanup no longer delete through symlinks (@maxulysse)
 
 ## [1.3.0]
 

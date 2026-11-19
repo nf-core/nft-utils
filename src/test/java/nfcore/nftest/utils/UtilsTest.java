@@ -1,6 +1,7 @@
 package nfcore.nftest.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
@@ -12,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class UtilsTest {
 
@@ -62,6 +64,20 @@ class UtilsTest {
     Path path = Paths.get("/tmp/some.directory/example.vcf.gz");
     assertEquals("vcf", Utils.getExtension(path, false));
     assertEquals("gz", Utils.getExtension(path, true));
+  }
+
+  @Test
+  void shouldNotFollowSymlinksWhenDeletingDirectory(@TempDir final Path dir)
+      throws IOException {
+    Path outside = Files.createDirectories(dir.resolve("outside"));
+    Files.writeString(outside.resolve("keep.txt"), "keep");
+    Path inside = Files.createDirectories(dir.resolve("inside"));
+    Files.createSymbolicLink(inside.resolve("link"), outside);
+
+    Utils.deleteDirectory(inside.toFile());
+
+    assertFalse(Files.exists(inside));
+    assertTrue(Files.exists(outside.resolve("keep.txt")));
   }
 
   @Test

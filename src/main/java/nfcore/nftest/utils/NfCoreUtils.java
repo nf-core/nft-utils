@@ -190,8 +190,9 @@ public final class NfCoreUtils {
   public static void nfcoreLink(
       final String libDir,
       final String modulesDir) throws IOException {
-    for (File orgDir : libraryOrgDirs(libDir, modulesDir)) {
-      recurseLink(orgDir, new File(modulesDir));
+    File destModulesDir = new File(modulesDir);
+    for (File orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+      recurseLink(orgDir, destModulesDir);
     }
   }
 
@@ -206,8 +207,9 @@ public final class NfCoreUtils {
   public static void nfcoreUnlink(
       final String libDir,
       final String modulesDir) throws IOException {
-    for (File orgDir : libraryOrgDirs(libDir, modulesDir)) {
-      recurseUnlink(orgDir, new File(modulesDir));
+    File destModulesDir = new File(modulesDir);
+    for (File orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+      recurseUnlink(orgDir, destModulesDir);
     }
   }
 
@@ -222,7 +224,7 @@ public final class NfCoreUtils {
    */
   private static List<File> libraryOrgDirs(
       final String libDir,
-      final String modulesDir) throws IOException {
+      final File modulesDir) throws IOException {
     File libModulesDir = new File(libDir, "modules");
     if (!libModulesDir.isDirectory()) {
       throw new IOException(
@@ -230,10 +232,10 @@ public final class NfCoreUtils {
         + libModulesDir.getAbsolutePath()
       );
     }
-    if (!new File(modulesDir).exists()) {
+    if (!modulesDir.exists()) {
       throw new IOException(
         "Modules directory does not exist: "
-        + new File(modulesDir).getAbsolutePath()
+        + modulesDir.getAbsolutePath()
       );
     }
     File[] entries = libModulesDir.listFiles();
@@ -339,8 +341,10 @@ public final class NfCoreUtils {
    * Delete the temporary nf-core library.
    *
    * @param libDir The library directory path to delete
+   * @throws IOException if a file in the library cannot be deleted
    */
-  public static void nfcoreDeleteLibrary(final String libDir) {
+  public static void nfcoreDeleteLibrary(final String libDir)
+      throws IOException {
     System.out.println("Deleting temporary nf-core library: " + libDir);
     Utils.deleteDirectory(new File(libDir));
   }

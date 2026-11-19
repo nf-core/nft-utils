@@ -7,12 +7,15 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for process execution, shell escaping, and file path
@@ -115,36 +118,23 @@ public final class Utils {
   }
 
   /**
-   * Recursively delete a directory and all its contents.
+   * Recursively delete a directory and all its contents, without following
+   * symbolic links.
    *
    * @param directory The directory to delete
+   * @throws IOException if a file or directory cannot be deleted
    */
-  static void deleteDirectory(final File directory) {
-    if (directory.exists()) {
-      File[] files = directory.listFiles();
-      if (files != null) {
-        for (File file : files) {
-          if (file.isDirectory()) {
-            deleteDirectory(file);
-          } else {
-            try {
-              Files.deleteIfExists(file.toPath());
-            } catch (IOException e) {
-              throw new RuntimeException(
-                "Failed to delete file: " + file, e
-              );
-            }
-          }
-        }
-      }
-
-      try {
-        Files.deleteIfExists(directory.toPath());
-      } catch (IOException e) {
-        throw new RuntimeException(
-          "Failed to delete directory: " + directory, e
-        );
-      }
+  static void deleteDirectory(final File directory) throws IOException {
+    Path root = directory.toPath();
+    if (!Files.exists(root, LinkOption.NOFOLLOW_LINKS)) {
+      return;
+    }
+    List<Path> paths;
+    try (Stream<Path> walk = Files.walk(root)) {
+      paths = walk.sorted(Comparator.reverseOrder()).toList();
+    }
+    for (Path path : paths) {
+      Files.delete(path);
     }
   }
 

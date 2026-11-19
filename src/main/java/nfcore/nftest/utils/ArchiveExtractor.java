@@ -130,7 +130,7 @@ public final class ArchiveExtractor {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       try {
         Utils.deleteDirectory(dir.toFile());
-      } catch (RuntimeException e) {
+      } catch (IOException e) {
         System.err.println(
           "Warning: failed to delete " + dir + ": " + e.getMessage()
         );
