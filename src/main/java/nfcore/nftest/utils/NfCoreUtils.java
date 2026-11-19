@@ -1,12 +1,9 @@
 package nfcore.nftest.utils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,15 +36,10 @@ public final class NfCoreUtils {
       Files.createDirectories(Paths.get(libDir, dir));
     }
 
-    Path nfcoreYml = Paths.get(libDir, ".nf-core.yml");
-    try (BufferedWriter writer = Files.newBufferedWriter(
-        nfcoreYml,
-        StandardCharsets.UTF_8
-    )) {
-      writer.write("repository_type: \"pipeline\"\n");
-      writer.write("template:\n");
-      writer.write("    name: test\n");
-    }
+    Files.writeString(
+      Paths.get(libDir, ".nf-core.yml"),
+      "repository_type: \"pipeline\"\ntemplate:\n    name: test\n"
+    );
   }
 
   /**
