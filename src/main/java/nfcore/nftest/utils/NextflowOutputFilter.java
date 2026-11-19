@@ -32,16 +32,24 @@ public final class NextflowOutputFilter {
       "[TIMESTAMP]"),
     rule("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]"),
     rule("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]"),
-    rule("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
-    rule("revision: [0-9a-f]{10}", "revision: [REVISION]"),
-    rule(".*Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available.*", ""),
-    rule(".*Please consider updating your version.*", "")
+    // Optional prefix covers Nextflow work directories, e.g. 7b/b7421f…
+    rule("\\b(?:[0-9a-f]{2}/)?[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
+    rule("revision: [0-9a-f]{10}", "revision: [REVISION]")
+  );
+
+  /** Matches lines that are removed entirely. */
+  private static final List<Pattern> DROPPED_LINES = List.of(
+    Pattern.compile("Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available"),
+    Pattern.compile("Please consider updating your version"),
+    Pattern.compile("containerEngine"),
+    // Printed only when the plugin or container cache is cold
+    Pattern.compile("Downloading plugin "),
+    Pattern.compile("cache directory has not been defined -- Remote image")
   );
 
   /** Rules applied to a line after paths and the run name are replaced. */
   private static final List<UnaryOperator<String>> RULES_AFTER_RUN_NAME =
     List.of(
-      rule(".*containerEngine.*", ""),
       rule(
         "apptainer|charliecloud|conda|docker|mamba|podman|shifter"
         + "|singularity|wave",
@@ -202,6 +210,16 @@ public final class NextflowOutputFilter {
   }
 
   /**
+   * Checks whether a line is removed entirely.
+   *
+   * @param line The line to check
+   * @return {@code true} if the line matches one of {@link #DROPPED_LINES}
+   */
+  private static boolean isDropped(final String line) {
+    return DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find());
+  }
+
+  /**
    * Extracts the run name from the Nextflow launching line.
    *
    * @param line The line to inspect
@@ -275,6 +293,9 @@ public final class NextflowOutputFilter {
   public static String filterLinePattern(
       final String line,
       final String capturedRunName) {
+    if (isDropped(line)) {
+      return "";
+    }
     String filtered = line;
 
     if (!USER_NAME.isEmpty()) {
