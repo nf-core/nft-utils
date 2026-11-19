@@ -126,9 +126,6 @@ public final class NextflowOutputFilter {
       if (!keepAnsi) {
         filtered = ANSI.matcher(filtered).replaceAll("");
       }
-      if (isDropped(filtered)) {
-        continue;
-      }
 
       if (capturedRunName == null) {
         capturedRunName = captureRunName(filtered);
@@ -296,6 +293,9 @@ public final class NextflowOutputFilter {
   public static String filterLinePattern(
       final String line,
       final String capturedRunName) {
+    if (isDropped(line)) {
+      return "";
+    }
     String filtered = line;
 
     if (!USER_NAME.isEmpty()) {

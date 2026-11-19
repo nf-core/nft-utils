@@ -44,6 +44,8 @@ class NextflowOutputFilterTest {
       + "Remote image will be stored in the path: /data/work/apptainer\n"
       + "keep me");
     assertEquals(List.of("keep me"), result);
+    assertEquals("",
+      Methods.filterLinePattern("Downloading plugin nf-schema@2.5.1", null));
   }
 
   @Test
