@@ -206,6 +206,7 @@ public final class ArchiveExtractor {
         }
       } catch (URISyntaxException e) {
         // Not a valid URI: use it as is
+        path = source;
       }
     }
     return path.substring(path.lastIndexOf('/') + 1);
