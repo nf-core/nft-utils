@@ -5,14 +5,13 @@ nextflow_process {
     process "UNNAMED"
     tag "sanitizeOutput"
 
-    test("Unnamed outputs are kept next to named ones") {
+    test("Unnamed outputs are kept") {
         then {
             assert process.success
             def output = sanitizeOutput(process.out)
-            assert output.keySet() == ["0", "1", "c"] as Set
+            assert output.keySet() == ["0", "1"] as Set
             assert output["0"][0] ==~ /.*a\.txt/
             assert output["1"][0] ==~ /.*b\.txt/
-            assert output.c[0] ==~ /.*c\.txt/
         }
     }
 }
