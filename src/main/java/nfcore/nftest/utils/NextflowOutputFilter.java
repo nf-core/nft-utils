@@ -198,8 +198,10 @@ public final class NextflowOutputFilter {
       final String line,
       final List<String> ignore,
       final List<String> include) {
-    if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())
-        || (ignore != null && ignore.stream().anyMatch(line::contains))) {
+    if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())) {
+      return false;
+    }
+    if (ignore != null && ignore.stream().anyMatch(line::contains)) {
       return false;
     }
     return include == null

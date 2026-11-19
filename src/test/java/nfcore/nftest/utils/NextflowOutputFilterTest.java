@@ -54,7 +54,7 @@ class NextflowOutputFilterTest {
   }
 
   @Test
-  void shouldKeepDroppedLineInFilterLinePattern() {
+  void filterLinePatternDoesNotDropLines() {
     assertEquals("Downloading plugin nf-schema@2.5.1",
       Methods.filterLinePattern("Downloading plugin nf-schema@2.5.1", null));
   }
