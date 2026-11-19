@@ -84,11 +84,12 @@ class UtilsTest {
   @Test
   void shouldThrowIOExceptionWhenDirectoryCannotBeListed(
       @TempDir final Path dir) throws IOException {
-    Assumptions.assumeFalse("root".equals(System.getProperty("user.name")));
     Path locked = Files.createDirectories(dir.resolve("inside/locked"));
     Files.writeString(locked.resolve("file.txt"), "x");
     locked.toFile().setReadable(false);
     try {
+      // Root, or a filesystem without permissions, can still read it
+      Assumptions.assumeFalse(Files.isReadable(locked));
       assertThrows(IOException.class,
         () -> Utils.deleteDirectory(dir.resolve("inside").toFile()));
     } finally {
