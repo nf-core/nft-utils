@@ -274,7 +274,7 @@ def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/exe
 def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 ```
 
-Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums:
+Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums. With relative paths (`relative: true` or the 6th argument), `stable_name` already holds `String` paths: pass it as is, since `*.name` fails with `No such property: name for class: java.lang.String`.
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
@@ -378,8 +378,6 @@ The `relative` named parameter on `getAllFilesFromDir()` combines both operation
 def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
 def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
 ```
-
-With `relative: true`, the list holds `String` paths, not files: snapshot it as is, since `stable_name*.name` fails with `MissingPropertyException`.
 
 ### `getAllFilesFromChannel()`
 
