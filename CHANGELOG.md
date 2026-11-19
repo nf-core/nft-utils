@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - [#106](https://github.com/nf-core/nft-utils/pull/106) `sanitizeOutput()` accepts record field names in `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, `variantsMD5Keys` and `tableMD5Keys`, for the record outputs of typed processes (@pinin4fjords)
-- [#112](https://github.com/nf-core/nft-utils/pull/112) `extract()` decompresses plain gzip files, such as `genome.fa.gz` (@maxulysse)
+- [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` decompresses plain gzip files, such as `genome.fa.gz` (@maxulysse)
 
 ### Changed
 
