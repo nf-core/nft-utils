@@ -32,9 +32,8 @@ public final class NextflowOutputFilter {
       "[TIMESTAMP]"),
     rule("\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}", "[TIMESTAMP]"),
     rule("\\[[0-9a-f]{2}/[0-9a-f]{6}\\]", "[NXF_HASH]"),
-    // Nextflow work directory, e.g. 7b/b7421f…; before the bare hash rule
-    rule("\\b[0-9a-f]{2}/[0-9a-f]{30}\\b", "[NFT_HASH]"),
-    rule("\\b[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
+    // Optional prefix covers Nextflow work directories, e.g. 7b/b7421f…
+    rule("\\b(?:[0-9a-f]{2}/)?[0-9a-f]{30,32}\\b", "[NFT_HASH]"),
     rule("revision: [0-9a-f]{10}", "revision: [REVISION]")
   );
 
@@ -42,6 +41,7 @@ public final class NextflowOutputFilter {
   private static final List<Pattern> DROPPED_LINES = List.of(
     Pattern.compile("Nextflow\\s+\\d+\\.\\d+\\.\\d+.*is available"),
     Pattern.compile("Please consider updating your version"),
+    Pattern.compile("containerEngine"),
     // Printed only when the plugin or container cache is cold
     Pattern.compile("Downloading plugin "),
     Pattern.compile("cache directory has not been defined -- Remote image")
@@ -50,7 +50,6 @@ public final class NextflowOutputFilter {
   /** Rules applied to a line after paths and the run name are replaced. */
   private static final List<UnaryOperator<String>> RULES_AFTER_RUN_NAME =
     List.of(
-      rule(".*containerEngine.*", ""),
       rule(
         "apptainer|charliecloud|conda|docker|mamba|podman|shifter"
         + "|singularity|wave",

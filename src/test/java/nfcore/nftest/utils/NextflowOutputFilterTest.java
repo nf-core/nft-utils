@@ -32,9 +32,12 @@ class NextflowOutputFilterTest {
   }
 
   @Test
-  void shouldRemoveColdCacheLines() {
+  void shouldDropUnstableLines() {
     List<String> result = Methods.filterNextflowOutput(
-      "Downloading plugin nf-schema@2.5.1\n"
+      "Nextflow 25.10.0 is available\n"
+      + "Please consider updating your version\n"
+      + "  containerEngine : docker\n"
+      + "Downloading plugin nf-schema@2.5.1\n"
       + "WARN: Singularity cache directory has not been defined -- "
       + "Remote image will be stored in the path: /data/work/singularity\n"
       + "WARN: Apptainer cache directory has not been defined -- "
