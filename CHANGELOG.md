@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - [#107](https://github.com/nf-core/nft-utils/pull/107) Simplify `sanitizeOutput()` internals; output is unchanged (@maxulysse)
+- [#114](https://github.com/nf-core/nft-utils/pull/114) Remove unused `Utils.getURLFileName()` (@maxulysse)
 
 ## [1.3.0]
 

@@ -261,9 +261,8 @@ public final class ArchiveExtractor {
     }
     List<String> command = extractCommand(compression, extractDir.toString());
     return archive -> {
-      List<String> run = new ArrayList<>(command);
-      run.add(archive.toString());
-      runOrThrow(new ProcessBuilder(run), "Failed to extract " + source);
+      command.add(archive.toString());
+      runOrThrow(new ProcessBuilder(command), "Failed to extract " + source);
     };
   }
 
@@ -273,11 +272,12 @@ public final class ArchiveExtractor {
    *
    * @param source the local path or URL of the gzipped file
    * @return the decompressed file name
-   * @throws IllegalArgumentException if the source has no file name
+   * @throws IllegalArgumentException if the source has no file name, or
+   *     one that would resolve to a directory ({@code .} or {@code ..})
    */
   private static String gunzippedName(final String source) {
     String name = fileName(source).replaceFirst("(?i)\\.gz(ip)?$", "");
-    if (name.isEmpty()) {
+    if (name.isEmpty() || name.equals(".") || name.equals("..")) {
       throw new IllegalArgumentException("No file name in " + source);
     }
     return name;

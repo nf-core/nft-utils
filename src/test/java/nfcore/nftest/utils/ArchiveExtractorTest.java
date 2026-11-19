@@ -320,6 +320,16 @@ class ArchiveExtractorTest {
   }
 
   @Test
+  void shouldRejectGunzippedNameResolvingToDirectory() {
+    String dest = tempDir.resolve("dest").toString();
+    for (String url : List.of("http://x/a/%2E%2E%2Egz", "http://x/a/..gz")) {
+      assertThrows(
+        IllegalArgumentException.class,
+        () -> ArchiveExtractor.extract(url, dest, null));
+    }
+  }
+
+  @Test
   void shouldKeepHashAndQuestionMarkInLocalNames() throws Exception {
     Path gz = tempDir.resolve("sample#1?.fa.gz");
     Files.write(gz, gzip("ACGT\n"));
