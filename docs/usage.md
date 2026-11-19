@@ -250,7 +250,6 @@ Arguments:
 3. List of glob patterns to exclude
 4. File containing additional glob patterns to exclude
 5. List of glob patterns to include
-6. Boolean: output relative paths
 
 Example pipeline output:
 
@@ -274,7 +273,7 @@ def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/exe
 def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 ```
 
-Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums:
+Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums. With `relative: true`, `stable_name` already holds `String` paths: pass it as is, since `*.name` fails with `No such property: name for class: java.lang.String`.
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
