@@ -74,10 +74,7 @@ nextflow_pipeline {
             // Files instead of relative paths, so the snapshot records their md5
             def stable_files = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromPath/.nftignore')
 
-            assert snapshot(
-                stable_files,
-                stable_files*.name
-            ).match()
+            assert snapshot(stable_files).match()
         }
     }
 }

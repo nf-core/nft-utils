@@ -373,8 +373,9 @@ public final class FileTraversalUtils {
         "The 'path' parameter is required."
       );
     }
+    boolean s3 = path.startsWith("s3://");
     // nf-test would hash a whole directory, ignored files included
-    if (!relative && (includeDir || path.startsWith("s3://"))) {
+    if (!relative && (includeDir || s3)) {
       throw new IllegalArgumentException(
         "relative: false needs a local path and includeDir: false"
       );
@@ -390,7 +391,7 @@ public final class FileTraversalUtils {
       buildExcludeMatchers(ignoreGlobs, ignoreFilePath)
     );
 
-    if (path.startsWith("s3://")) {
+    if (s3) {
       return getAllFilesFromS3ViaCli(
         path, filter, includeDir, noSignRequest
       );

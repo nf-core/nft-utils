@@ -16,17 +16,20 @@ class FileTraversalUtilsTest {
   @TempDir
   Path dir;
 
-  private List<?> listFiles(
-      final String path,
-      final boolean includeDir,
-      final boolean relative)
+  private List<?> relativePaths(final String path)
       throws IOException, InterruptedException {
     return FileTraversalUtils.getAllFilesFromPath(
-      path, List.of("*.log"), List.of(), includeDir, null, false, relative);
+      path, List.of("*.log"), List.of(), false, null, false, true);
+  }
+
+  private List<?> files(final String path, final boolean includeDir)
+      throws IOException, InterruptedException {
+    return FileTraversalUtils.getAllFilesFromPath(
+      path, List.of("*.log"), List.of(), includeDir, null, false, false);
   }
 
   @Test
-  void shouldReturnSortedFilesWhenNotRelative() throws Exception {
+  void shouldReturnSortedPathsOrFiles() throws Exception {
     Files.createDirectories(dir.resolve("sub"));
     Files.writeString(dir.resolve("sub/b.txt"), "b");
     Files.writeString(dir.resolve("a.txt"), "a");
@@ -34,19 +37,19 @@ class FileTraversalUtilsTest {
 
     assertEquals(
       List.of("a.txt", "sub/b.txt"),
-      listFiles(dir.toString(), false, true));
+      relativePaths(dir.toString()));
     assertEquals(
       List.of(dir.resolve("a.txt").toFile(), dir.resolve("sub/b.txt").toFile()),
-      listFiles(dir.toString(), false, false));
+      files(dir.toString(), false));
   }
 
   @Test
   void shouldRejectFilesWithIncludeDirOrS3() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> listFiles(dir.toString(), true, false));
+      () -> files(dir.toString(), true));
     assertThrows(
       IllegalArgumentException.class,
-      () -> listFiles("s3://bucket/prefix/", false, false));
+      () -> files("s3://bucket/prefix/", false));
   }
 }

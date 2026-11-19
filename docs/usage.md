@@ -186,7 +186,7 @@ def stable_content = getAllFilesFromPath(
 // Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())
 def stable_md5 = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
 
-assert snapshot(stable_files, with_dirs, stable_content, stable_md5*.name, stable_md5).match()
+assert snapshot(stable_files, with_dirs, stable_content, stable_md5).match()
 ```
 
 #### S3 usage
