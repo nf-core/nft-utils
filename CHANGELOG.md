@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - [#107](https://github.com/nf-core/nft-utils/pull/107) Simplify `sanitizeOutput()` internals; output is unchanged (@maxulysse)
+- [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
 
 ### Fixed
 

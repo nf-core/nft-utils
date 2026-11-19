@@ -44,14 +44,26 @@ class NextflowOutputFilterTest {
       + "Remote image will be stored in the path: /data/work/apptainer\n"
       + "keep me");
     assertEquals(List.of("keep me"), result);
-    assertEquals("",
-      Methods.filterLinePattern("Downloading plugin nf-schema@2.5.1", null));
   }
 
   @Test
   void shouldAcceptOptionsMapAfterOutput() {
     List<String> result = Methods.filterNextflowOutput(
       "b line\na line", Map.<String, Object>of("ignore", List.of("b ")));
+    assertEquals(List.of("a line"), result);
+  }
+
+  @Test
+  void shouldNotDropLinesInFilterLinePattern() {
+    assertEquals("Downloading plugin nf-schema@2.5.1",
+      Methods.filterLinePattern("Downloading plugin nf-schema@2.5.1", null));
+  }
+
+  @Test
+  void shouldMatchIgnoreAgainstLineWithoutAnsi() {
+    List<String> result = Methods.filterNextflowOutput(
+      "\u001B[1mb\u001B[0m line\na line",
+      Map.<String, Object>of("ignore", List.of("b line")));
     assertEquals(List.of("a line"), result);
   }
 }

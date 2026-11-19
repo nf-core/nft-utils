@@ -118,13 +118,9 @@ public final class NextflowOutputFilter {
     String capturedRunName = null;
 
     for (String line : toLines(output)) {
-      if (!keepLine(line, ignore, include)) {
+      String filtered = keepAnsi ? line : ANSI.matcher(line).replaceAll("");
+      if (!keepLine(filtered, ignore, include)) {
         continue;
-      }
-
-      String filtered = line;
-      if (!keepAnsi) {
-        filtered = ANSI.matcher(filtered).replaceAll("");
       }
 
       if (capturedRunName == null) {
@@ -189,7 +185,8 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Applies the ignore and include lists to a line.
+   * Applies the ignore and include lists to a line and rejects lines
+   * matching {@link #DROPPED_LINES}.
    *
    * @param line    The line to check
    * @param ignore  Strings rejecting the line, or {@code null}
@@ -201,22 +198,15 @@ public final class NextflowOutputFilter {
       final String line,
       final List<String> ignore,
       final List<String> include) {
+    if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())) {
+      return false;
+    }
     if (ignore != null && ignore.stream().anyMatch(line::contains)) {
       return false;
     }
     return include == null
       || include.isEmpty()
       || include.stream().anyMatch(line::contains);
-  }
-
-  /**
-   * Checks whether a line is removed entirely.
-   *
-   * @param line The line to check
-   * @return {@code true} if the line matches one of {@link #DROPPED_LINES}
-   */
-  private static boolean isDropped(final String line) {
-    return DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find());
   }
 
   /**
@@ -293,9 +283,6 @@ public final class NextflowOutputFilter {
   public static String filterLinePattern(
       final String line,
       final String capturedRunName) {
-    if (isDropped(line)) {
-      return "";
-    }
     String filtered = line;
 
     if (!USER_NAME.isEmpty()) {
