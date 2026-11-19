@@ -9,10 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#106](https://github.com/nf-core/nft-utils/pull/106) `sanitizeOutput()` accepts record field names in `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, `variantsMD5Keys` and `tableMD5Keys`, for the record outputs of typed processes (@pinin4fjords)
 - [#111](https://github.com/nf-core/nft-utils/pull/111) Add `excludeLines()` to read a file without given line numbers or content (@maxulysse)
+- [#115](https://github.com/nf-core/nft-utils/pull/115) `getAllFilesFromPath()` option `relative: false` returns local files (@maxulysse)
 
 ### Changed
 
 - [#107](https://github.com/nf-core/nft-utils/pull/107) Simplify `sanitizeOutput()` internals; output is unchanged (@maxulysse)
+- [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
+
+### Fixed
+
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` removes `Downloading plugin` lines and container cache warnings (@maxulysse)
+- [#110](https://github.com/nf-core/nft-utils/pull/110) Docs: `relative: true` paths are strings, so `*.name` does not apply (@maxulysse)
 
 ## [1.3.0]
 

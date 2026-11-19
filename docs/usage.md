@@ -154,17 +154,18 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 
 Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
 
-Returns a **sorted list of relative `String` paths** (relative to the given root).
+Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
 
 Supported named parameters:
 
-| Option          | Type           | Default       | Description                                                                                 |
-| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                    |
-| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                    |
-| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                 |
-| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                      |
-| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials |
+| Option          | Type           | Default       | Description                                                                                            |
+| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
+| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                               |
+| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                               |
+| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                            |
+| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                                 |
+| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials            |
+| `relative`      | `Boolean`      | `true`        | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local, no `includeDir`) |
 
 #### Local usage
 
@@ -182,7 +183,10 @@ def stable_content = getAllFilesFromPath(
     ignoreFile: 'tests/mytest/.nftignore'
 )
 
-assert snapshot(stable_files, with_dirs, stable_content).match()
+// Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())
+def stable_md5 = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
+
+assert snapshot(stable_files, with_dirs, stable_content, stable_md5).match()
 ```
 
 #### S3 usage
@@ -223,7 +227,7 @@ assert snapshot(
 ### `getAllFilesFromDir()`
 
 :::caution
-**Deprecated.** Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead. It provides the same functionality with S3 support.
+**Deprecated.** Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead. It provides the same functionality with S3 support; its paths are relative by default, use `relative: false` for files.
 :::
 
 :::warning
@@ -250,7 +254,6 @@ Arguments:
 3. List of glob patterns to exclude
 4. File containing additional glob patterns to exclude
 5. List of glob patterns to include
-6. Boolean: output relative paths
 
 Example pipeline output:
 
@@ -274,7 +277,7 @@ def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/exe
 def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
 ```
 
-Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums:
+Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums. With `relative: true`, `stable_name` already holds `String` paths: pass it as is, since `*.name` fails with `No such property: name for class: java.lang.String`.
 
 ```groovy
 def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
@@ -513,11 +516,12 @@ Filtered patterns:
 
 - Empty lines (removed entirely)
 - Timestamps (replaced with `[TIMESTAMP]`)
-- Process hashes (replaced with `[NXF_HASH]`) and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
+- Process hashes (replaced with `[NXF_HASH]`), work directory hashes such as `7b/b7421f…` and 30 to 32 character hex hashes (replaced with `[NFT_HASH]`)
 - The run name (replaced with `[RUN_NAME]`), the user name in `userName :` lines (`[USER]`) and the revision (`[REVISION]`)
 - Container engine names (replaced with `[CONTAINER]`)
 - File paths (replaced with `[PATH]`), including common ENV variables: `HOME`, `NFT_WORKDIR`, `NXF_CACHE_DIR`, `NXF_CONDA_CACHEDIR`, `NXF_HOME`, `NXF_SINGULARITY_CACHEDIR`, `NXF_SINGULARITY_LIBRARYDIR`, `NXF_TEMP`, `NXF_WORK`
 - Version information: "Nextflow X.Y.Z is available" messages removed, version strings replaced with `[VERSION]`
+- Lines printed only when a cache is empty: `Downloading plugin` messages and container `cache directory has not been defined` warnings (removed entirely)
 
 Example test:
 
