@@ -349,21 +349,35 @@ public final class FileTraversalUtils {
    * @param ignoreFilePath Path to a file of additional ignore globs, or
    *                       {@code null}
    * @param noSignRequest  Whether to list S3 with {@code --no-sign-request}
-   * @return A sorted list of relative file paths under {@code path}
+   * @param relative       Whether to return paths relative to {@code path}
+   *                       instead of files; files need a local path and
+   *                       {@code includeDir} disabled
+   * @return A sorted list of relative file paths under {@code path}, or of
+   *     files when {@code relative} is disabled
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
+   * @throws IllegalArgumentException if {@code path} is empty, or if
+   *     {@code relative} is disabled with an S3 path or {@code includeDir}
    */
-  public static List<String> getAllFilesFromPath(
+  public static List<?> getAllFilesFromPath(
       final String path,
       final List<String> ignoreGlobs,
       final List<String> includeGlobs,
       final boolean includeDir,
       final String ignoreFilePath,
-      final boolean noSignRequest)
+      final boolean noSignRequest,
+      final boolean relative)
       throws IOException, InterruptedException {
     if (path == null || path.isEmpty()) {
       throw new IllegalArgumentException(
         "The 'path' parameter is required."
+      );
+    }
+    boolean s3 = path.startsWith("s3://");
+    // nf-test would hash a whole directory, ignored files included
+    if (!relative && (includeDir || s3)) {
+      throw new IllegalArgumentException(
+        "relative: false needs a local path and includeDir: false"
       );
     }
 
@@ -377,18 +391,24 @@ public final class FileTraversalUtils {
       buildExcludeMatchers(ignoreGlobs, ignoreFilePath)
     );
 
-    if (path.startsWith("s3://")) {
+    if (s3) {
       return getAllFilesFromS3ViaCli(
         path, filter, includeDir, noSignRequest
       );
     }
 
     Path root = Paths.get(path);
-    return walk(root, filter, dir -> includeDir && !dir.equals(root))
+    List<Path> matches = walk(
+        root, filter, dir -> includeDir && !dir.equals(root))
       .stream()
-      .map(match -> root.relativize(match).toString())
-      .filter(relative -> !relative.isEmpty())
+      .filter(match -> !match.equals(root))
       .sorted()
+      .collect(Collectors.toList());
+    if (!relative) {
+      return matches.stream().map(Path::toFile).collect(Collectors.toList());
+    }
+    return matches.stream()
+      .map(match -> root.relativize(match).toString())
       .collect(Collectors.toList());
   }
 
