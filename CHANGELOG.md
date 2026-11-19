@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - [#106](https://github.com/nf-core/nft-utils/pull/106) `sanitizeOutput()` accepts record field names in `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, `variantsMD5Keys` and `tableMD5Keys`, for the record outputs of typed processes (@pinin4fjords)
+- [#115](https://github.com/nf-core/nft-utils/pull/115) `getAllFilesFromPath()` option `relative: false` returns local files (@maxulysse)
 
 ### Changed
 
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
 - [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` removes `Downloading plugin` lines and container cache warnings (@maxulysse)
+- [#109](https://github.com/nf-core/nft-utils/pull/109) `sanitizeOutput()` keeps unnamed outputs instead of dropping them (@maxulysse)
 - [#110](https://github.com/nf-core/nft-utils/pull/110) Docs: `relative: true` paths are strings, so `*.name` does not apply (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` no longer hangs when `nf-core` asks a question (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` supports library paths with spaces (@maxulysse)

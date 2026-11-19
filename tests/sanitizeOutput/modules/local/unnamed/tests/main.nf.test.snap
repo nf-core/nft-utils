@@ -1,0 +1,19 @@
+{
+    "Unnamed outputs are kept": {
+        "content": [
+            {
+                "0": [
+                    "a.txt:md5,60b725f10c9c85c70d97880dfe8191b3"
+                ],
+                "1": [
+                    "b.txt:md5,3b5d5c3712955042212316173ccf37be"
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T16:08:57.910078084",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.9"
+        }
+    }
+}

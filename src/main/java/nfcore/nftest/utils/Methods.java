@@ -187,7 +187,7 @@ public final class Methods {
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
-  public static List<String> getAllFilesFromPath(
+  public static List<?> getAllFilesFromPath(
       final String path)
       throws IOException, InterruptedException {
     return getAllFilesFromPath(new LinkedHashMap<String, Object>(), path);
@@ -199,12 +199,13 @@ public final class Methods {
    *
    * @param options Named options map (Groovy named params)
    * @param path    The path to list
-   * @return A sorted list of relative file paths
+   * @return A sorted list of relative file paths, or of files with
+   *     {@code relative: false}
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
   @SuppressWarnings("unchecked")
-  public static List<String> getAllFilesFromPath(
+  public static List<?> getAllFilesFromPath(
       final LinkedHashMap<String, Object> options,
       final String path)
       throws IOException, InterruptedException {
@@ -214,7 +215,8 @@ public final class Methods {
       (List<String>) options.getOrDefault("include", List.of("**", "*")),
       (Boolean) options.getOrDefault("includeDir", false),
       (String) options.get("ignoreFile"),
-      (Boolean) options.getOrDefault("noSignRequest", false));
+      (Boolean) options.getOrDefault("noSignRequest", false),
+      (Boolean) options.getOrDefault("relative", true));
   }
 
   // ── HASHING ───────────────────────────────────────────────────────────
