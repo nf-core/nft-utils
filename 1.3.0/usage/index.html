@@ -1061,10 +1061,10 @@
 <p>Supports wildcard patterns when the filename varies:</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeNextflowVersion</span><span class="o">(</span><span class="s2">"$outputDir/pipeline_info/*_versions.yml"</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
-<p>The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files.</p>
+<p>The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.</p>
 <p><strong>Note:</strong> Returned YAML has keys sorted alphabetically at all levels for consistent output.</p>
 <h3 id="removefromyamlmap"><code>removeFromYamlMap()</code></h3>
-<p>Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths.</p>
+<p>Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.</p>
 <h4 id="remove-a-specific-subkey-3-arguments">Remove a specific subkey (3 arguments)</h4>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">removeFromYamlMap</span><span class="o">(</span><span class="s2">"file.yml"</span><span class="o">,</span><span class="w"> </span><span class="s2">"Workflow"</span><span class="o">,</span><span class="w"> </span><span class="s2">"Nextflow"</span><span class="o">)</span>
 </span></code></pre></div>
@@ -1461,7 +1461,8 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="nfcoreinstall-install-modules-to-a-temporary-library"><code>nfcoreInstall()</code> - Install modules to a temporary library</h3>
-<p>Installs nf-core modules into a temporary library. Pass the library path and either a list of module names (<code>tool/subtool</code> format) or a list of maps with <code>name</code>, <code>sha</code>, and <code>remote</code> keys (<code>sha</code> and <code>remote</code> are optional).</p>
+<p>Installs nf-core modules into a temporary library. Pass the library path and either a list of module names (<code>tool/subtool</code> format) or a list of maps with <code>name</code>, <code>sha</code>, and <code>remote</code> keys (<code>sha</code> and <code>remote</code> are optional).
+A module that fails to install fails the test, including when <code>nf-core</code> asks a question, such as whether to delete a corrupted modules cache.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">])</span>
@@ -1487,7 +1488,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span></code></pre></div>
 <p>A <code>state/</code> directory inside the library tracks which modules have been installed. If a state file exists for a module (matching name, sha, and remote), installation is skipped.</p>
 <h3 id="nfcorelink-link-a-temporary-library-to-your-modules-directory"><code>nfcoreLink()</code> - Link a temporary library to your modules directory</h3>
-<p>Symlinks modules from the temporary library into your project's modules directory.</p>
+<p>Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
@@ -1496,7 +1497,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span></code></pre></div>
 <p>This creates a symlink at <code>${baseDir}/modules/nf-core</code>. Reference nf-core modules from there as if they were installed normally.</p>
 <h3 id="nfcoreunlink-unlink-a-temporary-library-from-your-modules-directory"><code>nfcoreUnlink()</code> - Unlink a temporary library from your modules directory</h3>
-<p>Removes all symlinks pointing to the temporary library. Takes the same arguments as <code>nfcoreLink()</code>.</p>
+<p>Removes all symlinks pointing to the temporary library. Takes the same arguments as <code>nfcoreLink()</code>, and also fails the test on a missing library or modules directory.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-42-3"><a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
@@ -1521,7 +1522,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-42-22"><a id="__codelineno-42-22" name="__codelineno-42-22" href="#__codelineno-42-22"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="nfcoredeletelibrary-completely-delete-a-temporary-library"><code>nfcoreDeleteLibrary()</code> - Completely delete a temporary library</h3>
-<p>Deletes the temporary library and all its contents.</p>
+<p>Deletes the temporary library and all its contents. A file that cannot be deleted fails the test; a missing library does not.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-43-3"><a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
