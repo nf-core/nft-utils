@@ -34,19 +34,11 @@ public final class NfCoreUtils {
     System.out.println("\n");
     System.out.println("Creating a temporary nf-core library at " + libDir);
 
-    // Create modules directory
-    Path modulesDir = Paths.get(libDir, "modules");
-    Files.createDirectories(modulesDir);
+    // state/ tracks the installed modules
+    for (String dir : List.of("modules", "conf", "state")) {
+      Files.createDirectories(Paths.get(libDir, dir));
+    }
 
-    // Create conf directory
-    Path confDir = Paths.get(libDir, "conf");
-    Files.createDirectories(confDir);
-
-    // Create state directory for tracking installed modules
-    Path stateDir = Paths.get(libDir, "state");
-    Files.createDirectories(stateDir);
-
-    // Create .nf-core.yml file
     Path nfcoreYml = Paths.get(libDir, ".nf-core.yml");
     try (BufferedWriter writer = Files.newBufferedWriter(
         nfcoreYml,
