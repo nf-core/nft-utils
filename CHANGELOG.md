@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - [#107](https://github.com/nf-core/nft-utils/pull/107) Simplify `sanitizeOutput()` internals; output is unchanged (@maxulysse)
+- [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
+
+### Fixed
+
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
+- [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` removes `Downloading plugin` lines and container cache warnings (@maxulysse)
+- [#110](https://github.com/nf-core/nft-utils/pull/110) Docs: `relative: true` paths are strings, so `*.name` does not apply (@maxulysse)
 
 ## [1.3.0]
 
