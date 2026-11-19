@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -119,5 +120,57 @@ class UtilsTest {
     Path path = Paths.get("/tmp/some.directory/example.vcf.gz.gz");
     assertEquals("vcf", Utils.getExtension(path, false));
     assertEquals("gz", Utils.getExtension(path, true));
+  }
+
+  @Test
+  void shouldExcludeLinesByNumber(@TempDir final Path dir) throws IOException {
+    Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b", "c", "d"));
+    assertEquals(
+      List.of("b", "d"),
+      Utils.excludeLines(file.toString(), List.of(3, 1), List.of())
+    );
+    assertEquals(
+      List.of("a", "b", "c", "d"),
+      Utils.excludeLines(file.toString(), List.of(), List.of())
+    );
+    assertEquals(
+      List.of("a"),
+      Utils.excludeLines(file.toString(), List.of(4), List.of("b", "c"))
+    );
+  }
+
+  @Test
+  void shouldRejectOutOfRangeLineNumbers(@TempDir final Path dir)
+      throws IOException {
+    Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b"));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Utils.excludeLines(file.toString(), List.of(0), List.of())
+    );
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Utils.excludeLines(file.toString(), List.of(3), List.of())
+    );
+  }
+
+  @Test
+  void shouldRejectEmptyIgnoreString(@TempDir final Path dir)
+      throws IOException {
+    Path file = Files.write(dir.resolve("in.txt"), List.of("a", "b"));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> Utils.excludeLines(file.toString(), List.of(), List.of(""))
+    );
+  }
+
+  @Test
+  void shouldReadInvalidUtf8(@TempDir final Path dir) throws IOException {
+    Path file = Files.write(
+      dir.resolve("in.txt"), new byte[] {'a', '\n', (byte) 0xE9, '\n'}
+    );
+    assertEquals(
+      List.of("a", "\uFFFD"),
+      Utils.excludeLines(file.toString(), List.of(), List.of())
+    );
   }
 }

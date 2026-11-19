@@ -233,6 +233,37 @@ public final class Methods {
     return HashUtils.listToMD5(input);
   }
 
+  /**
+   * Named options accepted by {@link #excludeLines(LinkedHashMap, String)}.
+   */
+  private static final Set<String> EXCLUDE_LINES_OPTIONS =
+    Set.of("lines", "ignore");
+
+  /**
+   * Reads a file and returns its lines, minus the excluded ones, for example
+   * to hash a file with {@code listToMD5()} without its unstable lines.
+   *
+   * @param options {@code lines}: 1-based numbers of the lines to remove;
+   *                {@code ignore}: strings whose lines are removed
+   * @param path    The file to read.
+   * @return The remaining lines, in order.
+   * @throws IOException If the file cannot be read.
+   * @throws IllegalArgumentException on an unknown option, a wrong option
+   *     type, a line number out of range or an empty ignore string
+   */
+  public static List<String> excludeLines(
+      final LinkedHashMap<String, Object> options,
+      final String path) throws IOException {
+    rejectUnknownOptions("excludeLines", options, EXCLUDE_LINES_OPTIONS);
+    List<Integer> lines =
+      listOption("excludeLines", options, "lines", Integer.class);
+    // toString() turns Groovy GStrings into Strings
+    List<String> ignore =
+      listOption("excludeLines", options, "ignore", CharSequence.class)
+        .stream().map(Object::toString).toList();
+    return Utils.excludeLines(path, lines, ignore);
+  }
+
   // ── nf-core MODULE MANAGEMENT ─────────────────────────────────────────
 
   /**
@@ -576,14 +607,7 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String source)
       throws IOException {
-    Set<String> unknown = new HashSet<>(options.keySet());
-    unknown.removeAll(EXTRACT_OPTIONS);
-    if (!unknown.isEmpty()) {
-      throw new IllegalArgumentException(
-        "Unknown extract() options: " + unknown
-        + "; valid options: " + EXTRACT_OPTIONS
-      );
-    }
+    rejectUnknownOptions("extract", options, EXTRACT_OPTIONS);
     return ArchiveExtractor.extract(
       source,
       Objects.toString(options.get("extractDir"), null),
@@ -659,5 +683,56 @@ public final class Methods {
       final String cloudUri)
       throws IOException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
+  }
+
+  /**
+   * Reads a named option that must be a list of the given type, defaulting
+   * to an empty list.
+   *
+   * @param <T>      The item type.
+   * @param function The function name, for the error message.
+   * @param options  The named options passed.
+   * @param name     The option name.
+   * @param type     The item type.
+   * @return The option value.
+   * @throws IllegalArgumentException if the option is not a list of
+   *     {@code type}
+   */
+  private static <T> List<T> listOption(
+      final String function,
+      final Map<String, Object> options,
+      final String name,
+      final Class<T> type) {
+    Object value = options.getOrDefault(name, List.of());
+    if (!(value instanceof List<?> list)
+        || !list.stream().allMatch(type::isInstance)) {
+      throw new IllegalArgumentException(
+        function + "() option '" + name + "' must be a list of "
+        + type.getSimpleName() + ", got: " + value
+      );
+    }
+    return list.stream().map(type::cast).toList();
+  }
+
+  /**
+   * Rejects named options that a function does not accept.
+   *
+   * @param function The function name, for the error message.
+   * @param options  The named options passed.
+   * @param valid    The options the function accepts.
+   * @throws IllegalArgumentException on an unknown option
+   */
+  private static void rejectUnknownOptions(
+      final String function,
+      final Map<String, Object> options,
+      final Set<String> valid) {
+    Set<String> unknown = new HashSet<>(options.keySet());
+    unknown.removeAll(valid);
+    if (!unknown.isEmpty()) {
+      throw new IllegalArgumentException(
+        "Unknown " + function + "() options: " + unknown
+        + "; valid options: " + valid
+      );
+    }
   }
 }
