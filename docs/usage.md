@@ -155,6 +155,7 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
 
 Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
+Snapshot relative paths as they are: `*.name` fails on them with `No such property: name for class: java.lang.String`.
 
 Supported named parameters:
 
