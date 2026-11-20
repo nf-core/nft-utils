@@ -344,7 +344,7 @@ public final class OutputSanitizer {
    * Recursively parses a value and applies the provided function
    * to string values.
    *
-   * Directories are traversed recursively, lists are parsed element
+   * Absolute directories are traversed recursively, lists are parsed element
    * by element, and maps are parsed value by value.
    * Values that resolve to the {@code IGNORE} marker are excluded
    * from the resulting collections.
@@ -358,11 +358,10 @@ public final class OutputSanitizer {
       final Function<String, Object> applyFct) {
     if (value instanceof String) {
       String strValue = (String) value;
-      if (strValue.isEmpty()) {
-        return IGNORE;
-      }
       java.nio.file.Path path = Paths.get(strValue);
-      if (Files.isDirectory(path)) {
+      // Output folders are absolute; a relative value such as "" or "src"
+      // is a val, env or stdout output, not a folder to list
+      if (path.isAbsolute() && Files.isDirectory(path)) {
         try (var children = Files.list(path)) {
           return sanitizeList(
             children.sorted().map(java.nio.file.Path::toString).toList(),
