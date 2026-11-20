@@ -4,11 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -97,6 +95,21 @@ public final class Methods {
   // ── FILE TRAVERSAL ────────────────────────────────────────────────────
 
   /**
+   * Named options accepted by
+   * {@link #getAllFilesFromDir(LinkedHashMap, String)}.
+   */
+  private static final Set<String> GET_ALL_FILES_FROM_DIR_OPTIONS =
+    Set.of("ignore", "include", "includeDir", "ignoreFile", "relative");
+
+  /**
+   * Named options accepted by
+   * {@link #getAllFilesFromPath(LinkedHashMap, String)}.
+   */
+  private static final Set<String> GET_ALL_FILES_FROM_PATH_OPTIONS = Set.of(
+    "ignore", "include", "includeDir", "ignoreFile", "noSignRequest",
+    "relative");
+
+  /**
    * Retrieves all files from the specified directory using default options.
    *
    * @param path The path to the directory to traverse.
@@ -122,18 +135,19 @@ public final class Methods {
    * @deprecated use {@link #getAllFilesFromPath(LinkedHashMap, String)}
    */
   @Deprecated
-  @SuppressWarnings("unchecked")
   public static List<?> getAllFilesFromDir(
       final LinkedHashMap<String, Object> options,
       final String outdir)
       throws IOException {
+    Options opts = new Options(
+      "getAllFilesFromDir", options, GET_ALL_FILES_FROM_DIR_OPTIONS);
     return FileTraversalUtils.getAllFilesFromDir(
       outdir,
-      (Boolean) options.getOrDefault("includeDir", false),
-      (List<String>) options.getOrDefault("ignore", List.of()),
-      (String) options.get("ignoreFile"),
-      (List<String>) options.getOrDefault("include", List.of("*", "**/*")),
-      (Boolean) options.getOrDefault("relative", false));
+      opts.bool("includeDir", false),
+      opts.strings("ignore", List.of()),
+      opts.string("ignoreFile", null),
+      opts.strings("include", List.of("*", "**/*")),
+      opts.bool("relative", false));
   }
 
   /**
@@ -211,19 +225,20 @@ public final class Methods {
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    */
-  @SuppressWarnings("unchecked")
   public static List<?> getAllFilesFromPath(
       final LinkedHashMap<String, Object> options,
       final String path)
       throws IOException, InterruptedException {
+    Options opts = new Options(
+      "getAllFilesFromPath", options, GET_ALL_FILES_FROM_PATH_OPTIONS);
     return FileTraversalUtils.getAllFilesFromPath(
       path,
-      (List<String>) options.getOrDefault("ignore", List.of()),
-      (List<String>) options.getOrDefault("include", List.of("**", "*")),
-      (Boolean) options.getOrDefault("includeDir", false),
-      (String) options.get("ignoreFile"),
-      (Boolean) options.getOrDefault("noSignRequest", false),
-      (Boolean) options.getOrDefault("relative", true));
+      opts.strings("ignore", List.of()),
+      opts.strings("include", List.of("**", "*")),
+      opts.bool("includeDir", false),
+      opts.string("ignoreFile", null),
+      opts.bool("noSignRequest", false),
+      opts.bool("relative", true));
   }
 
   // ── HASHING ───────────────────────────────────────────────────────────
@@ -260,14 +275,11 @@ public final class Methods {
   public static List<String> excludeLines(
       final LinkedHashMap<String, Object> options,
       final String path) throws IOException {
-    rejectUnknownOptions("excludeLines", options, EXCLUDE_LINES_OPTIONS);
-    List<Integer> lines =
-      listOption("excludeLines", options, "lines", Integer.class);
-    // toString() turns Groovy GStrings into Strings
-    List<String> ignore =
-      listOption("excludeLines", options, "ignore", CharSequence.class)
-        .stream().map(Object::toString).toList();
-    return Utils.excludeLines(path, lines, ignore);
+    Options opts = new Options("excludeLines", options, EXCLUDE_LINES_OPTIONS);
+    return Utils.excludeLines(
+      path,
+      opts.list("lines", Integer.class),
+      opts.strings("ignore", List.of()));
   }
 
   // ── nf-core MODULE MANAGEMENT ─────────────────────────────────────────
@@ -457,27 +469,31 @@ public final class Methods {
   }
 
   /**
+   * Named options accepted by the {@code filterNextflowOutput()} map
+   * overloads.
+   */
+  private static final Set<String> FILTER_NEXTFLOW_OUTPUT_OPTIONS = Set.of(
+    "additionalPatterns", "sorted", "keepAnsi", "ignore", "include");
+
+  /**
    * Filters Nextflow output with the options of either map overload.
    *
    * @param options The filtering options, or {@code null} to use defaults
    * @param output  The output to filter
    * @return The filtered output as a List&lt;String&gt;
    */
-  @SuppressWarnings("unchecked")
   private static List<String> filterNextflowOutputWithOptions(
       final Map<String, Object> options,
       final Object output) {
-    Map<String, Object> opts = Map.of();
-    if (options != null) {
-      opts = options;
-    }
+    Options opts = new Options(
+      "filterNextflowOutput", options, FILTER_NEXTFLOW_OUTPUT_OPTIONS);
     return filterNextflowOutput(
       output,
-      (List<String>) opts.get("additionalPatterns"),
-      !Boolean.FALSE.equals(opts.get("sorted")),
-      Boolean.TRUE.equals(opts.get("keepAnsi")),
-      (List<String>) opts.get("ignore"),
-      (List<String>) opts.get("include"));
+      opts.strings("additionalPatterns", List.of()),
+      opts.bool("sorted", true),
+      opts.bool("keepAnsi", false),
+      opts.strings("ignore", List.of()),
+      opts.strings("include", List.of()));
   }
 
   // ── OUTPUT SANITIZATION ───────────────────────────────────────────────
@@ -618,16 +634,14 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String source)
       throws IOException {
-    rejectUnknownOptions("extract", options, EXTRACT_OPTIONS);
-    String extractDir = Objects.toString(options.get("extractDir"), null);
-    String compression = Objects.toString(options.get("compression"), null);
-    Object path = options.get("path");
+    Options opts = new Options("extract", options, EXTRACT_OPTIONS);
+    String extractDir = opts.string("extractDir", null);
+    String compression = opts.string("compression", null);
+    String path = opts.string("path", null);
     if (path == null) {
       return ArchiveExtractor.extract(source, extractDir, compression);
     }
-    return ArchiveExtractor.extractPath(
-      source, extractDir, compression, path.toString()
-    );
+    return ArchiveExtractor.extractPath(source, extractDir, compression, path);
   }
 
   /**
@@ -682,72 +696,5 @@ public final class Methods {
       final String cloudUri)
       throws IOException {
     return ArchiveExtractor.downloadFromS3(cloudUri);
-  }
-
-  /**
-   * Downloads a single file from a cloud URI to a temporary local directory
-   * and returns the local {@link Path}.
-   *
-   * @param options Reserved for future use (currently unused)
-   * @param cloudUri The cloud URI of the file to download
-   * @return A {@link Path} pointing to the downloaded local file
-   * @throws IOException if {@code nextflow fs cp} fails
-   */
-  public static Path downloadFromS3(
-      final LinkedHashMap<String, Object> options,
-      final String cloudUri)
-      throws IOException {
-    return ArchiveExtractor.downloadFromS3(cloudUri);
-  }
-
-  /**
-   * Reads a named option that must be a list of the given type, defaulting
-   * to an empty list.
-   *
-   * @param <T>      The item type.
-   * @param function The function name, for the error message.
-   * @param options  The named options passed.
-   * @param name     The option name.
-   * @param type     The item type.
-   * @return The option value.
-   * @throws IllegalArgumentException if the option is not a list of
-   *     {@code type}
-   */
-  private static <T> List<T> listOption(
-      final String function,
-      final Map<String, Object> options,
-      final String name,
-      final Class<T> type) {
-    Object value = options.getOrDefault(name, List.of());
-    if (!(value instanceof List<?> list)
-        || !list.stream().allMatch(type::isInstance)) {
-      throw new IllegalArgumentException(
-        function + "() option '" + name + "' must be a list of "
-        + type.getSimpleName() + ", got: " + value
-      );
-    }
-    return list.stream().map(type::cast).toList();
-  }
-
-  /**
-   * Rejects named options that a function does not accept.
-   *
-   * @param function The function name, for the error message.
-   * @param options  The named options passed.
-   * @param valid    The options the function accepts.
-   * @throws IllegalArgumentException on an unknown option
-   */
-  private static void rejectUnknownOptions(
-      final String function,
-      final Map<String, Object> options,
-      final Set<String> valid) {
-    Set<String> unknown = new HashSet<>(options.keySet());
-    unknown.removeAll(valid);
-    if (!unknown.isEmpty()) {
-      throw new IllegalArgumentException(
-        "Unknown " + function + "() options: " + unknown
-        + "; valid options: " + valid
-      );
-    }
   }
 }
