@@ -117,12 +117,7 @@ public final class ArchiveExtractor {
         // handed to the extractor
         download = Files.createTempFile(extractDir, "download", ".tmp");
         archive = download;
-        Utils.runOrThrow(
-          new ProcessBuilder(
-            "nextflow", "fs", "cp", source, download.toString()
-          ),
-          "Failed to download " + source
-        );
+        copy(source, download);
       }
       extraction.from(archive);
       System.out.println("Successfully extracted: " + source);
@@ -391,13 +386,24 @@ public final class ArchiveExtractor {
       Files.createDirectories(destParent);
     }
 
-    Utils.runOrThrow(
-      new ProcessBuilder(
-        "nextflow", "fs", "cp", cloudUri, destFile.toString()
-      ),
-      "Failed to download " + cloudUri
-    );
-
+    copy(cloudUri, destFile);
     return destFile;
+  }
+
+  /**
+   * Download a URL with {@code nextflow fs cp}.
+   *
+   * @param uri    the URL to download
+   * @param target the file to write
+   * @throws IOException if the download fails
+   */
+  private static void copy(final String uri, final Path target)
+      throws IOException {
+    // nextflow fs cp reads ? and * as glob wildcards unless escaped
+    String escaped = uri.replaceAll("[?*]", "\\\\$0");
+    Utils.runOrThrow(
+      new ProcessBuilder("nextflow", "fs", "cp", escaped, target.toString()),
+      "Failed to download " + uri
+    );
   }
 }
