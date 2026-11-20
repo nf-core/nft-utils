@@ -174,9 +174,9 @@ Supported named parameters:
 def stable_name = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
 
 // Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())
-def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
+def stable_path = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
 
-assert snapshot(stable_name, stable_content).match()
+assert snapshot(stable_name, stable_path).match()
 ```
 
 ![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
@@ -260,29 +260,16 @@ results/
 ```
 
 ```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
+def stable_path = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
 ```
 
 ```groovy
 assert snapshot(
-  getRelativePath(stable_name, outputDir)
+  getRelativePath(stable_path, outputDir)
 ).match()
 ```
 
 Output:
-
-```text
-"content": [
-    [
-        "pipeline_info",
-        "stable",
-        "stable/stable_content.txt",
-        "stable/stable_name.txt"
-    ]
-]
-```
-
-Without folders:
 
 ```text
 "content": [
@@ -298,19 +285,27 @@ Without `getRelativePath()` (using `*.name`), you get a flat structure:
 ```text
 "content": [
     [
-        "pipeline_info",
-        "stable",
         "stable_content.txt",
         "stable_name.txt"
     ]
 ]
 ```
 
-[`getAllFilesFromPath()`](#getallfilesfrompath) returns relative paths directly:
+[`getAllFilesFromPath()`](#getallfilesfrompath) returns relative paths directly, folders included with `includeDir: true`:
 
 ```groovy
-def stable_name       = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
-def stable_name_again = getAllFilesFromPath(params.outdir, include: ['stable/*'])
+def stable_name = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+```
+
+```text
+"content": [
+    [
+        "pipeline_info",
+        "stable",
+        "stable/stable_content.txt",
+        "stable/stable_name.txt"
+    ]
+]
 ```
 
 ### `getAllFilesFromChannel()`
