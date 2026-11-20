@@ -227,7 +227,7 @@ assert snapshot(
 ### `getAllFilesFromDir()`
 
 :::caution
-**Deprecated.** Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead. It provides the same functionality with S3 support; its paths are relative by default, use `relative: false` for files.
+**Deprecated.** Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead. It provides the same functionality with S3 support; its paths are relative by default, use `relative: false` for files. It prints a warning. With `includeDir: true`, its directory entries make nf-test snapshot every file in them, ignored ones included.
 :::
 
 :::warning

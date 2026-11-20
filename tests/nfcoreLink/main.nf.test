@@ -15,7 +15,7 @@ nextflow_process {
         }
 
         then {
-            def minimap2_index_files = getAllFilesFromDir("${baseDir}/nf-core/minimap2/index", relative: true)
+            def minimap2_index_files = getAllFilesFromPath("${baseDir}/nf-core/minimap2/index")
             assertAll(
                 { assert snapshot(minimap2_index_files).match() }
             )
