@@ -739,12 +739,13 @@ then {
 
 ### `extract()` - Extract an archive
 
-Extracts an archive and returns the directory it was extracted into. The archive can be a local path or a `file://` URL, used in place, or any other URL Nextflow can read, such as `http(s)://`, `ftp://` or `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A failed download or extraction throws, failing the test.
+Extracts an archive and returns the directory it was extracted into, or with `path`, a file or folder in it. The archive can be a local path or a `file://` URL, used in place, or any other URL Nextflow can read, such as `http(s)://`, `ftp://` or `s3://`, downloaded with `nextflow fs cp`. Downloads are deleted once extracted. Supports Zip and Tar archives. Tar compression formats: gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd. A plain gzip file (`.gz` or `.gzip`, but not `.tar.gz`) is decompressed into the directory, without that suffix. A failed download or extraction throws, failing the test.
 
 Options:
 
 - `extractDir`: directory to extract into. Without it, the archive is extracted into a new temporary directory, deleted when nf-test exits. Use `"${launchDir}/..."` rather than `outputDir`, so the files are never picked up as outputs.
-- `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`.
+- `compression`: archive type, in any case, for names without a usable extension. Without it, the type is taken from the file extension. For compressed Tar, use formats like `"tar.bz2"` or `"tbz2"`. For a plain gzip file, use `"gz"` or `"gzip"`.
+- `path`: file or folder to return instead of the directory, relative to it. A path not inside the directory, or missing from the archive, fails the test.
 
 Any other option fails the test.
 
@@ -762,6 +763,13 @@ when {
     secret_db_path = "${launchDir}/data_dir/db/secret"
   }
 }
+```
+
+Use `path` to get a file or folder instead of the directory:
+
+```groovy
+def fasta = extract("https://www.example.com/genome.fa.gz", path: "genome.fa")
+def bam   = extract("https://www.example.com/data.tar.gz", path: "data/sample.bam")
 ```
 
 Without `extractDir`, keep the returned directory in a variable declared at test level, so `when` can read what `setup` set:

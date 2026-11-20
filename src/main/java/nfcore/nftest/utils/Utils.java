@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -95,28 +94,6 @@ public final class Utils {
         failure + ": exit code " + exitCode + "\n" + output
       );
     }
-  }
-
-  /**
-   * Extract a lower-cased file name portion from a URL string for extension
-   * checking.
-   *
-   * @param urlString The URL string
-   * @return The lower-cased file name portion of the URL
-   */
-  public static String getURLFileName(final String urlString) {
-    // Try to extract a path portion from the URL (strip query strings)
-    String pathPart = urlString;
-    try {
-      java.net.URI uri = new java.net.URI(urlString);
-      if (uri.getPath() != null && !uri.getPath().isEmpty()) {
-        pathPart = uri.getPath();
-      }
-    } catch (Exception e) {
-      // If parsing fails, fall back to raw urlString
-      pathPart = urlString;
-    }
-    return pathPart.toLowerCase(Locale.ROOT);
   }
 
   /**

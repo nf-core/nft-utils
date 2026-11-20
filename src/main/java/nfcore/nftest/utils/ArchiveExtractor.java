@@ -1,14 +1,19 @@
 package nfcore.nftest.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Utility methods for extracting archive files from local paths, URLs
@@ -44,6 +49,25 @@ public final class ArchiveExtractor {
   );
 
   /**
+   * Compression types of a plain gzip file, not a tar archive.
+   */
+  private static final Set<String> GZIP = Set.of("gz", "gzip");
+
+  /**
+   * Extracts a local archive.
+   */
+  @FunctionalInterface
+  private interface Extraction {
+    /**
+     * Extracts the archive.
+     *
+     * @param archive the local archive
+     * @throws IOException if the extraction fails
+     */
+    void from(Path archive) throws IOException;
+  }
+
+  /**
    * Extract an archive in a directory. A local path or file:// URL is
    * extracted in place. Any other URL, such as http(s)://, ftp:// or s3://,
    * is downloaded with {@code nextflow fs cp} to a temporary file in the
@@ -57,6 +81,8 @@ public final class ArchiveExtractor {
    * @param compression compression type, in any case: zip, tar, or any of
    *                    the following prefixed with "tar." or "t":
    *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd;
+   *                    or gz or gzip for a single gzipped file, written to
+   *                    the directory without its .gz suffix;
    *                    or {@code null} to take it from the file extension
    * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
@@ -76,7 +102,7 @@ public final class ArchiveExtractor {
     } else {
       extractDir = Paths.get(destPath);
     }
-    List<String> command = extractCommand(type, extractDir.toString());
+    Extraction extraction = extraction(source, type, extractDir);
     Files.createDirectories(extractDir);
 
     Path download = null;
@@ -98,11 +124,7 @@ public final class ArchiveExtractor {
           "Failed to download " + source
         );
       }
-      command.add(archive.toString());
-      Utils.runOrThrow(
-        new ProcessBuilder(command),
-        "Failed to extract " + source
-      );
+      extraction.from(archive);
       System.out.println("Successfully extracted: " + source);
     } finally {
       if (download != null) {
@@ -117,6 +139,42 @@ public final class ArchiveExtractor {
       }
     }
     return extractDir;
+  }
+
+  /**
+   * Extract an archive and return a file or folder in it.
+   *
+   * @param source      the local path or URL of the archive, see
+   *                    {@link #extract(String, String, String)}
+   * @param destPath    directory to extract the archive into, or
+   *                    {@code null} for a new temporary directory
+   * @param compression compression type, or {@code null}
+   * @param path        file or folder to return, relative to the extract
+   *                    directory
+   * @return {@code path} inside the extract directory
+   * @throws IOException on failure, if archive type is unsupported or if
+   *     {@code path} is not in the archive
+   * @throws IllegalArgumentException if {@code path} is not inside the
+   *     extract directory
+   */
+  public static Path extractPath(
+      final String source,
+      final String destPath,
+      final String compression,
+      final String path)
+      throws IOException {
+    Path entry = Paths.get(path).normalize();
+    if (entry.isAbsolute() || entry.toString().isEmpty()
+        || entry.startsWith("..")) {
+      throw new IllegalArgumentException(
+        "path must be inside the extract directory: " + path
+      );
+    }
+    Path target = extract(source, destPath, compression).resolve(entry);
+    if (!Files.exists(target)) {
+      throw new IOException(path + " not found in " + source);
+    }
+    return target;
   }
 
   /**
@@ -140,6 +198,37 @@ public final class ArchiveExtractor {
   }
 
   /**
+   * The file name of a local path or URL, in its own case, without the
+   * URL query or fragment.
+   *
+   * @param source the local path or URL
+   * @return the file name
+   */
+  private static String fileName(final String source) {
+    String path = uriPath(source);
+    return path.substring(path.lastIndexOf('/') + 1);
+  }
+
+  /**
+   * The path of a URL, or a local path as is, so '#' and '?' stay in its
+   * name.
+   *
+   * @param source the local path or URL
+   * @return the path, or {@code source} if it has none or is not a valid URI
+   */
+  private static String uriPath(final String source) {
+    if (!source.contains("://")) {
+      return source;
+    }
+    try {
+      String path = new URI(source).getPath();
+      return path == null || path.isEmpty() ? source : path;
+    } catch (URISyntaxException e) {
+      return source;
+    }
+  }
+
+  /**
    * Take the compression type from the file extension of an archive.
    *
    * @param source the local path or URL of the archive
@@ -147,8 +236,7 @@ public final class ArchiveExtractor {
    * @throws IllegalArgumentException if the name has no extension
    */
   private static String compressionFromName(final String source) {
-    String path = Utils.getURLFileName(source);
-    String name = path.substring(path.lastIndexOf('/') + 1);
+    String name = fileName(source).toLowerCase(Locale.ROOT);
     int dot = name.lastIndexOf('.');
     if (dot < 0) {
       throw new IllegalArgumentException(
@@ -160,6 +248,58 @@ public final class ArchiveExtractor {
       return "tar." + extension;
     }
     return extension;
+  }
+
+  /**
+   * Choose how to extract an archive of a compression type.
+   *
+   * @param source      the local path or URL of the archive
+   * @param compression compression type, see
+   *                    {@link #extract(String, String, String)}
+   * @param extractDir  directory to extract the archive into
+   * @return the extraction
+   * @throws IllegalArgumentException if the compression type is unsupported
+   */
+  private static Extraction extraction(
+      final String source,
+      final String compression,
+      final Path extractDir) {
+    if (GZIP.contains(compression.toLowerCase(Locale.ROOT))) {
+      Path output = extractDir.resolve(gunzippedName(source));
+      return archive -> {
+        try (InputStream in = new GZIPInputStream(
+            Files.newInputStream(archive))) {
+          Files.copy(in, output, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+          throw new IOException("Failed to extract " + source, e);
+        }
+      };
+    }
+    List<String> command = extractCommand(compression, extractDir.toString());
+    return archive -> {
+      List<String> args = new ArrayList<>(command);
+      args.add(archive.toString());
+      Utils.runOrThrow(
+        new ProcessBuilder(args), "Failed to extract " + source
+      );
+    };
+  }
+
+  /**
+   * Name of a gzipped file once decompressed: its file name, in its own
+   * case, without a .gz or .gzip suffix.
+   *
+   * @param source the local path or URL of the gzipped file
+   * @return the decompressed file name
+   * @throws IllegalArgumentException if the source has no file name, or
+   *     one that would resolve to a directory ({@code .} or {@code ..})
+   */
+  private static String gunzippedName(final String source) {
+    String name = fileName(source).replaceFirst("(?i)\\.gz(ip)?$", "");
+    if (name.isEmpty() || name.equals(".") || name.equals("..")) {
+      throw new IllegalArgumentException("No file name in " + source);
+    }
+    return name;
   }
 
   /**

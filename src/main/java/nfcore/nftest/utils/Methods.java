@@ -578,7 +578,7 @@ public final class Methods {
    * Named options accepted by {@link #extract(LinkedHashMap, String)}.
    */
   private static final Set<String> EXTRACT_OPTIONS =
-    Set.of("extractDir", "compression");
+    Set.of("extractDir", "compression", "path");
 
   /**
    * Extract an archive in a new temporary directory, deleted when the JVM
@@ -597,21 +597,30 @@ public final class Methods {
    *
    * @param options {@code extractDir}: directory to extract the archive into,
    *                instead of a new temporary directory; {@code compression}:
-   *                archive type, instead of the file extension
+   *                archive type, instead of the file extension;
+   *                {@code path}: file or folder to return, relative to
+   *                the extract directory
    * @param source  the local path or URL of the archive
-   * @return the directory the archive was extracted into
-   * @throws IOException on failure or if archive type is unsupported
-   * @throws IllegalArgumentException on an unknown option
+   * @return the directory the archive was extracted into, or {@code path}
+   *     inside it
+   * @throws IOException on failure, if archive type is unsupported or if
+   *     {@code path} is not in the archive
+   * @throws IllegalArgumentException on an unknown option, or a
+   *     {@code path} not inside the extract directory
    */
   public static Path extract(
       final LinkedHashMap<String, Object> options,
       final String source)
       throws IOException {
     rejectUnknownOptions("extract", options, EXTRACT_OPTIONS);
-    return ArchiveExtractor.extract(
-      source,
-      Objects.toString(options.get("extractDir"), null),
-      Objects.toString(options.get("compression"), null)
+    String extractDir = Objects.toString(options.get("extractDir"), null);
+    String compression = Objects.toString(options.get("compression"), null);
+    Object path = options.get("path");
+    if (path == null) {
+      return ArchiveExtractor.extract(source, extractDir, compression);
+    }
+    return ArchiveExtractor.extractPath(
+      source, extractDir, compression, path.toString()
     );
   }
 
