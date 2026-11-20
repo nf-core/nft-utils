@@ -375,11 +375,11 @@ Without `getRelativePath()` (using `*.name`), you get a flat structure:
 ]
 ```
 
-The `relative` named parameter on `getAllFilesFromDir()` combines both operations:
+[`getAllFilesFromPath()`](#getallfilesfrompath) returns relative paths directly:
 
 ```groovy
-def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
-def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
+def stable_name       = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def stable_name_again = getAllFilesFromPath(params.outdir, include: ['stable/*'])
 ```
 
 ### `getAllFilesFromChannel()`
