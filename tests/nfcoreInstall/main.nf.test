@@ -14,7 +14,7 @@ nextflow_process {
         }
 
         then {
-            def minimap2_index_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/index", relative: true)
+            def minimap2_index_files = getAllFilesFromPath("${launchDir}/library/modules/nf-core/minimap2/index")
             assertAll(
                 { assert path("${launchDir}/library/modules.json").exists() },
                 { assert snapshot(minimap2_index_files).match() }
@@ -84,12 +84,12 @@ nextflow_process {
 
         then {
             // unstable files
-            def minimap2_index_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/index", relative: true)
-            def fastqc_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core-test/fastqc", relative: true)
+            def minimap2_index_files = getAllFilesFromPath("${launchDir}/library/modules/nf-core/minimap2/index")
+            def fastqc_files = getAllFilesFromPath("${launchDir}/library/modules/nf-core-test/fastqc")
 
             // stable files
-            def minimap2_align_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core/minimap2/align")
-            def prokka_files = getAllFilesFromDir("${launchDir}/library/modules/nf-core-test/prokka")
+            def minimap2_align_files = getAllFilesFromPath("${launchDir}/library/modules/nf-core/minimap2/align", relative: false)
+            def prokka_files = getAllFilesFromPath("${launchDir}/library/modules/nf-core-test/prokka", relative: false)
             assertAll(
                 // Check we have generated a modules.json
                 { assert path("${launchDir}/library/modules.json").exists() },

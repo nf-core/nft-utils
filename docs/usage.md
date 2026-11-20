@@ -155,6 +155,7 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
 
 Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
+Snapshot relative paths as they are: `*.name` fails on them with `No such property: name for class: java.lang.String`.
 
 Supported named parameters:
 
@@ -170,24 +171,16 @@ Supported named parameters:
 #### Local usage
 
 ```groovy
-// All files, ignoring unstable trace files
-def stable_files = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
-
-// Include directory entries, scoped to a sub-path
-def with_dirs = getAllFilesFromPath(params.outdir, includeDir: true, include: ['stable/*'])
-
-// Use an .nftignore file for additional exclusions
-def stable_content = getAllFilesFromPath(
-    params.outdir,
-    ignore: ['pipeline_info/execution_*.{html,txt}'],
-    ignoreFile: 'tests/mytest/.nftignore'
-)
+// Relative paths of files and directories, ignoring unstable trace files
+def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
 
 // Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())
-def stable_md5 = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
+def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
 
-assert snapshot(stable_files, with_dirs, stable_content, stable_md5).match()
+assert snapshot(stable_path, stable_content).match()
 ```
+
+![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
 
 #### S3 usage
 
@@ -227,76 +220,15 @@ assert snapshot(
 ### `getAllFilesFromDir()`
 
 :::caution
-**Deprecated.** Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead. It provides the same functionality with S3 support; its paths are relative by default, use `relative: false` for files.
+**Deprecated.** It prints a warning. Use [`getAllFilesFromPath()`](#getallfilesfrompath) instead, which takes the same named parameters:
+
+| `getAllFilesFromDir()`                         | `getAllFilesFromPath()`                          |
+| ---------------------------------------------- | ------------------------------------------------ |
+| `getAllFilesFromDir(dir, ...)`                 | `getAllFilesFromPath(dir, relative: false, ...)` |
+| `getAllFilesFromDir(dir, relative: true, ...)` | `getAllFilesFromPath(dir, ...)`                  |
+
+`getAllFilesFromPath()` accepts `includeDir: true` only with relative paths: nf-test snapshots every file inside a directory `File`, including files matched by `ignore` or `ignoreFile`.
 :::
-
-:::warning
-This function requires absolute paths and does not support relative paths to `params.outdir`.
-Assign the nf-test `outputDir` variable to `params.outdir` when calling this function.
-cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outputdir)
-
-```groovy
-  when {
-    params {
-      outdir = "$outputDir" // Use nf-test global variable to output dir
-    }
-  }
-```
-
-:::
-
-Lists all contents within a directory (and subdirectories), with glob-based inclusion/exclusion.
-
-Arguments:
-
-1. Directory path (e.g. a pipeline's `outdir`)
-2. Boolean: include subdirectory names in the list
-3. List of glob patterns to exclude
-4. File containing additional glob patterns to exclude
-5. List of glob patterns to include
-
-Example pipeline output:
-
-```bash
-results/
-├── pipeline_info
-│   └── execution_trace_2024-09-30_13-10-16.txt
-└── stable
-    ├── stable_content.txt
-    └── stable_name.txt
-
-2 directories, 3 files
-```
-
-`stable_content.txt` has stable content and a stable name. `stable_name.txt` has unstable content but a stable name. `execution_trace_2024-09-30_13-10-16.txt` is completely unstable (name changes with each run).
-
-To snapshot files with stable content and stable names while excluding the unstable file:
-
-```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
-def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
-```
-
-Pass these to the snapshot. `stable_content` goes directly (nf-test computes md5sums). Use `stable_name*.name` to extract just file names without md5sums. With `relative: true`, `stable_name` already holds `String` paths: pass it as is, since `*.name` fails with `No such property: name for class: java.lang.String`.
-
-```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null, ['*', '**/*'])
-def stable_content = getAllFilesFromDir(params.outdir, false, ['pipeline_info/execution_*.{html,txt}'], 'tests/getAllFilesFromDir/.nftignore', ['*', '**/*'])
-assert snapshot(
-  stable_content,
-  stable_name*.name,
-).match()
-```
-
-Named parameters:
-
-```groovy
-def stable_name       = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
-def stable_name_again = getAllFilesFromDir(params.outdir, include: ['stable/*'])
-def stable_content    = getAllFilesFromDir(params.outdir, includeDir: false, ignore: ['pipeline_info/execution_*.{html,txt}'], ignoreFile: 'tests/getAllFilesFromDir/.nftignore')
-```
-
-![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
 
 ### `getRelativePath()`
 
@@ -329,12 +261,12 @@ results/
 ```
 
 ```groovy
-def stable_name    = getAllFilesFromDir(params.outdir, true, ['pipeline_info/execution_*.{html,txt}'], null )
+def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
 ```
 
 ```groovy
 assert snapshot(
-  getRelativePath(stable_name, outputDir)
+  getRelativePath(stable_content, outputDir)
 ).match()
 ```
 
@@ -343,43 +275,27 @@ Output:
 ```text
 "content": [
     [
-        "pipeline_info",
-        "stable",
         "stable/stable_content.txt",
         "stable/stable_name.txt"
     ]
 ]
 ```
 
-Without folders:
-
-```text
-"content": [
-    [
-        "stable/stable_content.txt",
-        "stable/stable_name.txt"
-    ]
-]
-```
-
-Without `getRelativePath()` (using `*.name`), you get a flat structure:
-
-```text
-"content": [
-    [
-        "pipeline_info",
-        "stable",
-        "stable_content.txt",
-        "stable_name.txt"
-    ]
-]
-```
-
-The `relative` named parameter on `getAllFilesFromDir()` combines both operations:
+[`getAllFilesFromPath()`](#getallfilesfrompath) returns relative paths directly, folders included with `includeDir: true`:
 
 ```groovy
-def stable_name       = getAllFilesFromDir(params.outdir, relative: true, ignore: ['pipeline_info/execution_*.{html,txt}'] )
-def stable_name_again = getAllFilesFromDir(params.outdir, relative: true, include: ['stable/*'] )
+def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+```
+
+```text
+"content": [
+    [
+        "pipeline_info",
+        "stable",
+        "stable/stable_content.txt",
+        "stable/stable_name.txt"
+    ]
+]
 ```
 
 ### `getAllFilesFromChannel()`

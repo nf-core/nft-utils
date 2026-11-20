@@ -102,7 +102,9 @@ public final class Methods {
    * @param path The path to the directory to traverse.
    * @return A list of files found in the directory.
    * @throws IOException If an error occurs while traversing the directory.
+   * @deprecated use {@link #getAllFilesFromPath(LinkedHashMap, String)}
    */
+  @Deprecated
   public static List<?> getAllFilesFromDir(
       final String path)
       throws IOException {
@@ -117,7 +119,9 @@ public final class Methods {
    * @return A list of matching files or relative paths.
    * @throws IOException If an error occurs while traversing the directory.
    * @throws IllegalArgumentException If {@code outdir} is invalid.
+   * @deprecated use {@link #getAllFilesFromPath(LinkedHashMap, String)}
    */
+  @Deprecated
   @SuppressWarnings("unchecked")
   public static List<?> getAllFilesFromDir(
       final LinkedHashMap<String, Object> options,
@@ -143,7 +147,9 @@ public final class Methods {
    * @param includeGlobs Glob patterns to include.
    * @return A sorted list of matching files and directories.
    * @throws IOException If an error occurs while traversing the directory.
+   * @deprecated use {@link #getAllFilesFromPath(LinkedHashMap, String)}
    */
+  @Deprecated
   public static List<File> getAllFilesFromDir(
       final String outdir,
       final boolean includeDir,

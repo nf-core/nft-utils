@@ -12,7 +12,7 @@ nextflow_process {
             extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", extractDir: "${launchDir}/dbs")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -26,7 +26,7 @@ nextflow_process {
             extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", extractDir: "${launchDir}/dbs")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -40,7 +40,7 @@ nextflow_process {
             extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", extractDir: "${launchDir}/dbs")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -54,7 +54,7 @@ nextflow_process {
             extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/homo_sapiens/genome/index/igblast/igblast_base.tar", extractDir: "${launchDir}/dbs", compression: "tar")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -68,7 +68,7 @@ nextflow_process {
             extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz", extractDir: "${launchDir}/dbs", compression: "tar.gzip")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -82,7 +82,7 @@ nextflow_process {
             extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/genomics/sarscov2/genome/db/maltextract/ncbi_taxmap.zip", extractDir: "${launchDir}/dbs", compression: "zip")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -96,7 +96,7 @@ nextflow_process {
             extract("https://card.mcmaster.ca/latest/data", extractDir: "${launchDir}/dbs", compression: "tbzip2")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -110,7 +110,7 @@ nextflow_process {
             extract("${launchDir}/local.tar", extractDir: "${launchDir}/dbs")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -125,7 +125,7 @@ nextflow_process {
             extract("s3://ngi-igenomes/test-data/viralrecon/nextclade_sars-cov-2_MN908947_2022-01-05T19_54_31Z.tar.gz", extractDir: "${launchDir}/dbs")
         }
         then {
-            def files = getAllFilesFromDir("${launchDir}/dbs")
+            def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
             assert snapshot(files).match()
         }
         cleanup {
@@ -144,7 +144,7 @@ nextflow_process {
 
         then {
             def dir = extract("https://github.com/nf-core/test-datasets/raw/refs/heads/modules/data/generic/tar/hello.tar.gz")
-            assert snapshot(getAllFilesFromDir(dir.toString())).match()
+            assert snapshot(getAllFilesFromPath(dir.toString(), relative: false)).match()
         }
     }
 }

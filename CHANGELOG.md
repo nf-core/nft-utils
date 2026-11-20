@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
 - [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
 
+### Deprecated
+
+- [#118](https://github.com/nf-core/nft-utils/pull/118) `getAllFilesFromDir()`, replaced by `getAllFilesFromPath()`; it prints a warning (@maxulysse)
+
 ### Fixed
 
 - [#104](https://github.com/nf-core/nft-utils/pull/104) `filterNextflowOutput()` replaces the whole work directory hash with `[NFT_HASH]` (@maxulysse)
