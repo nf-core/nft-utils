@@ -6,10 +6,10 @@
                 "stable/stable_name.txt"
             ]
         ],
+        "timestamp": "2026-11-20T13:22:50.994533097",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.09.0"
-        },
-        "timestamp": "2024-10-07T16:03:43.069945"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.0"
+        }
     }
 }
