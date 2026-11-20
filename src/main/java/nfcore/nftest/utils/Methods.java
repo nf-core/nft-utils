@@ -589,7 +589,7 @@ public final class Methods {
    * @throws IOException on failure or if archive type is unsupported
    */
   public static Path extract(final String source) throws IOException {
-    return ArchiveExtractor.extract(source, null, null, null);
+    return ArchiveExtractor.extract(source, null, null);
   }
 
   /**
@@ -613,11 +613,14 @@ public final class Methods {
       final String source)
       throws IOException {
     rejectUnknownOptions("extract", options, EXTRACT_OPTIONS);
-    return ArchiveExtractor.extract(
-      source,
-      Objects.toString(options.get("extractDir"), null),
-      Objects.toString(options.get("compression"), null),
-      Objects.toString(options.get("path"), null)
+    String extractDir = Objects.toString(options.get("extractDir"), null);
+    String compression = Objects.toString(options.get("compression"), null);
+    Object path = options.get("path");
+    if (path == null) {
+      return ArchiveExtractor.extract(source, extractDir, compression);
+    }
+    return ArchiveExtractor.extractPath(
+      source, extractDir, compression, path.toString()
     );
   }
 
@@ -637,7 +640,7 @@ public final class Methods {
     System.err.println(
       "Warning: curlAndExtract() is deprecated, use extract() instead"
     );
-    ArchiveExtractor.extract(urlString, destPath, null, null);
+    ArchiveExtractor.extract(urlString, destPath, null);
   }
 
   /**
@@ -658,7 +661,7 @@ public final class Methods {
     System.err.println(
       "Warning: curlAndExtract() is deprecated, use extract() instead"
     );
-    ArchiveExtractor.extract(urlString, destPath, compression, null);
+    ArchiveExtractor.extract(urlString, destPath, compression);
   }
 
   /**
