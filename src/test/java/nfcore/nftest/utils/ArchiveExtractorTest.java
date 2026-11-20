@@ -399,5 +399,6 @@ class ArchiveExtractorTest {
       assertThrows(IllegalArgumentException.class,
         () -> ArchiveExtractor.extractPath("data.tar", dest, null, path));
     }
+    assertFalse(Files.exists(Path.of(dest)));
   }
 }
