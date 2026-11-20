@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `removeNextflowVersion()`, `removeFromYamlMap()` and `readYamlFile()` throw on missing files (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` throws when a module fails to install (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
-- [#114](https://github.com/nf-core/nft-utils/pull/114) Remove unused `Utils.getURLFileName()` (@maxulysse)
 - [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
 
 ### Fixed
