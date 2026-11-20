@@ -170,23 +170,13 @@ Supported named parameters:
 #### Local usage
 
 ```groovy
-// All files, ignoring unstable trace files
-def stable_files = getAllFilesFromPath(params.outdir, ignore: ['pipeline_info/execution_*.{html,txt}'])
-
-// Include directory entries, scoped to a sub-path
-def with_dirs = getAllFilesFromPath(params.outdir, includeDir: true, include: ['stable/*'])
-
-// Use an .nftignore file for additional exclusions
-def stable_content = getAllFilesFromPath(
-    params.outdir,
-    ignore: ['pipeline_info/execution_*.{html,txt}'],
-    ignoreFile: 'tests/mytest/.nftignore'
-)
+// Relative paths of files and directories, ignoring unstable trace files
+def stable_name = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
 
 // Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())
-def stable_md5 = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
+def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
 
-assert snapshot(stable_files, with_dirs, stable_content, stable_md5).match()
+assert snapshot(stable_name, stable_content).match()
 ```
 
 #### S3 usage
