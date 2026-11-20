@@ -295,6 +295,34 @@ class ArchiveExtractorTest {
   }
 
   @Test
+  void shouldDownloadUrlWithQueryString() throws Exception {
+    HttpServer server = HttpServer.create(
+      new InetSocketAddress("127.0.0.1", 0), 0);
+    try {
+      byte[] body = gzip("ACGT\n");
+      server.createContext("/ref/Genome.FA.GZ", exchange -> {
+        if ("raw=true".equals(exchange.getRequestURI().getQuery())) {
+          exchange.sendResponseHeaders(200, body.length);
+          exchange.getResponseBody().write(body);
+        } else {
+          exchange.sendResponseHeaders(404, -1);
+        }
+        exchange.close();
+      });
+      server.start();
+      String url = "http://127.0.0.1:" + server.getAddress().getPort()
+        + "/ref/Genome.FA.GZ?raw=true";
+      Path dest = tempDir.resolve("dest");
+
+      ArchiveExtractor.extract(url, dest.toString(), null);
+
+      assertEquals("ACGT\n", Files.readString(dest.resolve("Genome.FA")));
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
   void shouldGunzipWithCompressionAndKeepNameWithoutSuffix()
       throws Exception {
     Path gz = tempDir.resolve("reference");
