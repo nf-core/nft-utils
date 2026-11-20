@@ -1,4 +1,19 @@
 {
+    "getRelativePath - Replaced by getAllFilesFromPath": {
+        "content": [
+            [
+                "pipeline_info",
+                "stable",
+                "stable/stable_content.txt",
+                "stable/stable_name.txt"
+            ]
+        ],
+        "timestamp": "2026-11-20T14:53:54.493060685",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.0"
+        }
+    },
     "getRelativePath": {
         "content": [
             [
