@@ -606,7 +606,7 @@ public final class Methods {
    * @throws IOException on failure, if archive type is unsupported or if
    *     {@code path} is not in the archive
    * @throws IllegalArgumentException on an unknown option, or a
-   *     {@code path} outside the extract directory
+   *     {@code path} not inside the extract directory
    */
   public static Path extract(
       final LinkedHashMap<String, Object> options,
