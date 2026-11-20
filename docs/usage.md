@@ -171,12 +171,12 @@ Supported named parameters:
 
 ```groovy
 // Relative paths of files and directories, ignoring unstable trace files
-def stable_name = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
 
 // Files instead of paths, so the snapshot records their md5 (replaces getAllFilesFromDir())
-def stable_path = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
+def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignoreFile: 'tests/mytest/.nftignore')
 
-assert snapshot(stable_name, stable_path).match()
+assert snapshot(stable_path, stable_content).match()
 ```
 
 ![Drake not enjoying nft-csv and enjoying .nftignore](./images/nftignore_meme.png)
@@ -260,12 +260,12 @@ results/
 ```
 
 ```groovy
-def stable_path = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
 ```
 
 ```groovy
 assert snapshot(
-  getRelativePath(stable_path, outputDir)
+  getRelativePath(stable_content, outputDir)
 ).match()
 ```
 
@@ -294,7 +294,7 @@ Without `getRelativePath()` (using `*.name`), you get a flat structure:
 [`getAllFilesFromPath()`](#getallfilesfrompath) returns relative paths directly, folders included with `includeDir: true`:
 
 ```groovy
-def stable_name = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
 ```
 
 ```text
