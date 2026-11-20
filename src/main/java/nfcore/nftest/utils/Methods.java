@@ -127,10 +127,6 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String outdir)
       throws IOException {
-    System.err.println(
-      "Warning: getAllFilesFromDir() is deprecated, use getAllFilesFromPath()"
-      + " instead"
-    );
     return FileTraversalUtils.getAllFilesFromDir(
       outdir,
       (Boolean) options.getOrDefault("includeDir", false),
@@ -161,10 +157,6 @@ public final class Methods {
       final String ignoreFilePath,
       final List<String> includeGlobs)
       throws IOException {
-    System.err.println(
-      "Warning: getAllFilesFromDir() is deprecated, use getAllFilesFromPath()"
-      + " instead"
-    );
     return FileTraversalUtils.getAllFilesFromDir(
       outdir, includeDir, ignoreGlobs, ignoreFilePath, includeGlobs);
   }

@@ -219,6 +219,10 @@ public final class FileTraversalUtils {
       final String ignoreFilePath,
       final List<String> includeGlobs)
       throws IOException {
+    System.err.println(
+      "Warning: getAllFilesFromDir() is deprecated, use getAllFilesFromPath()"
+      + " instead"
+    );
     PathFilter filter = new PathFilter(
       Utils.buildMatchers(includeGlobs),
       buildExcludeMatchers(ignoreGlobs, ignoreFilePath)
