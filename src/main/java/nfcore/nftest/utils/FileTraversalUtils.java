@@ -158,7 +158,9 @@ public final class FileTraversalUtils {
    *     reading the ignore patterns file.
    * @throws IllegalArgumentException If {@code outdir} is null, empty, does
    *     not exist, or is not a directory.
+   * @deprecated use {@link #getAllFilesFromPath}
    */
+  @Deprecated
   public static List<?> getAllFilesFromDir(
       final String outdir,
       final boolean includeDir,
@@ -211,7 +213,9 @@ public final class FileTraversalUtils {
    * @return A sorted list of matching files and, if enabled, directories.
    * @throws IOException If an error occurs while traversing the directory or
    *     reading the ignore patterns file.
+   * @deprecated use {@link #getAllFilesFromPath}
    */
+  @Deprecated
   public static List<File> getAllFilesFromDir(
       final String outdir,
       final boolean includeDir,
