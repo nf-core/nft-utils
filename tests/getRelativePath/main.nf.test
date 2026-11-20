@@ -21,7 +21,7 @@ nextflow_pipeline {
         }
     }
 
-    test("getRelativePath - Replaced by getAllFilesFromPath") {
+    test("getRelativePath - Flat names without getRelativePath") {
         when {
             params {
                 outdir = "$outputDir"
@@ -29,10 +29,10 @@ nextflow_pipeline {
         }
 
         then {
-          // getAllFilesFromPath() returns relative paths directly, folders included with includeDir
-          def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: ['pipeline_info/execution_*.{html,txt}'])
+          // Without getRelativePath(), *.name drops the folders
+          def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
           assert snapshot(
-            stable_path
+            stable_content*.name
           ).match()
         }
     }
