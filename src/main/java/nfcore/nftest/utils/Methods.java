@@ -176,12 +176,12 @@ public final class Methods {
    * Converts a list of file paths to paths relative to the specified base
    * directory.
    *
-   * @param filePaths The file paths to convert.
+   * @param filePaths The files or path strings to convert.
    * @param baseDir The base directory used to calculate relative paths.
    * @return A list of relative paths.
    */
   public static List<String> getRelativePath(
-      final List<File> filePaths,
+      final List<?> filePaths,
       final String baseDir) {
     return FileTraversalUtils.getRelativePath(filePaths, baseDir);
   }

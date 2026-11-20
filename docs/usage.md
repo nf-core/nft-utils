@@ -152,7 +152,7 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 
 :::
 
-Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
+Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`), and with `includeDir` their directories are derived from the object keys. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.html` matches `report.html`.
 
 Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
 Snapshot relative paths as they are: `*.name` fails on them with `No such property: name for class: java.lang.String`.
@@ -247,7 +247,7 @@ cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outpu
 
 :::
 
-Converts a list of absolute file paths to paths relative to a given directory.
+Converts a list of files or path strings to paths relative to a given directory.
 
 ```bash
 results/
@@ -300,7 +300,7 @@ def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: [
 
 ### `getAllFilesFromChannel()`
 
-Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/").
+Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/"). A map emitted directly on the channel is a typed process record: its values are read.
 
 Before:
 
