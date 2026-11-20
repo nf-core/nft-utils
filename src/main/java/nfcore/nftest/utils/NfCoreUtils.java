@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility methods for interacting with nf-core pipelines and modules.
@@ -42,6 +43,10 @@ public final class NfCoreUtils {
     );
   }
 
+  /** Keys accepted in a module map passed to {@code nfcoreInstall()}. */
+  private static final Set<String> MODULE_OPTIONS =
+    Set.of("name", "sha", "remote");
+
   /**
    * Installs nf-core modules from a list.
    *
@@ -50,7 +55,6 @@ public final class NfCoreUtils {
    * with keys: name (required), sha (optional), remote (optional)
    * @throws IOException if a module fails to install
    */
-  @SuppressWarnings("unchecked")
   public static void nfcoreInstall(
       final String libDir,
       final List<?> modules)
@@ -67,13 +71,15 @@ public final class NfCoreUtils {
       String name;
       String sha = null;
       String remote = null;
-      if (moduleObj instanceof String) {
-        name = (String) moduleObj;
+      // toString() turns Groovy GStrings into Strings
+      if (moduleObj instanceof CharSequence) {
+        name = moduleObj.toString();
       } else if (moduleObj instanceof Map) {
-        Map<?, ?> moduleMap = (Map<?, ?>) moduleObj;
-        name = (String) moduleMap.get("name");
-        sha = (String) moduleMap.get("sha");
-        remote = (String) moduleMap.get("remote");
+        Options module = new Options(
+          "nfcoreInstall", (Map<?, ?>) moduleObj, MODULE_OPTIONS);
+        name = module.string("name", null);
+        sha = module.string("sha", null);
+        remote = module.string("remote", null);
 
         if (name == null || name.isEmpty()) {
           throw new IllegalArgumentException("Module name is required");

@@ -1,5 +1,7 @@
 # Functions usage
 
+Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept Groovy strings such as `"${projectDir}/tests/.nftignore"`.
+
 ## Snapshot functions
 
 Functions for managing pipeline-level nf-test snapshots:
