@@ -260,12 +260,12 @@ results/
 ```
 
 ```groovy
-def stable_content = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
+def files = getAllFilesFromPath(params.outdir, relative: false, ignore: ['pipeline_info/execution_*.{html,txt}'])
 ```
 
 ```groovy
 assert snapshot(
-  getRelativePath(stable_content, outputDir)
+  getRelativePath(files, outputDir)
 ).match()
 ```
 
