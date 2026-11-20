@@ -1,17 +1,4 @@
 {
-    "getRelativePath - Flat names without getRelativePath": {
-        "content": [
-            [
-                "stable_content.txt",
-                "stable_name.txt"
-            ]
-        ],
-        "timestamp": "2026-11-20T14:59:17.480243581",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.10.0"
-        }
-    },
     "getRelativePath": {
         "content": [
             [

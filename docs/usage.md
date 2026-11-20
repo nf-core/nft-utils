@@ -281,17 +281,6 @@ Output:
 ]
 ```
 
-Without `getRelativePath()` (using `*.name`), you get a flat structure:
-
-```text
-"content": [
-    [
-        "stable_content.txt",
-        "stable_name.txt"
-    ]
-]
-```
-
 [`getAllFilesFromPath()`](#getallfilesfrompath) returns relative paths directly, folders included with `includeDir: true`:
 
 ```groovy
