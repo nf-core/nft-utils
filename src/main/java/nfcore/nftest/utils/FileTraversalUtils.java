@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,8 +16,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -113,8 +117,11 @@ public final class FileTraversalUtils {
       final Predicate<Path> keepDir)
       throws IOException {
     List<Path> matches = new ArrayList<>();
+    // Nextflow publishes outputs as symlinks by default
     Files.walkFileTree(
         root,
+        EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+        Integer.MAX_VALUE,
         new SimpleFileVisitor<Path>() {
           @Override
           public FileVisitResult visitFile(
@@ -275,19 +282,20 @@ public final class FileTraversalUtils {
    * Converts a list of file paths to paths relative to the specified base
    * directory.
    *
-   * @param filePaths The file paths to convert.
+   * @param filePaths The files or path strings to convert.
    * @param baseDir The base directory used to calculate relative paths.
    * @return A list of paths relative to the specified base directory.
    */
   public static List<String> getRelativePath(
-      final List<File> filePaths,
+      final List<?> filePaths,
       final String baseDir) {
     Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
 
     return filePaths
         .stream()
         .map(filePath -> {
-          Path path = Paths.get(filePath.toURI()).toAbsolutePath().normalize();
+          Path path = Paths.get(filePath.toString()).toAbsolutePath()
+              .normalize();
           return basePath.relativize(path).toString();
         })
         .collect(Collectors.toList());
@@ -307,7 +315,13 @@ public final class FileTraversalUtils {
       return result;
     }
 
-    flattenAndFilter(channel, result);
+    Iterable<?> items = channel instanceof Iterable
+        ? (Iterable<?>) channel : List.of(channel);
+    for (Object item : items) {
+      // A map emitted on the channel is a typed process record, not meta
+      flattenAndFilter(
+          item instanceof Map ? ((Map<?, ?>) item).values() : item, result);
+    }
 
     return result;
   }
@@ -426,7 +440,7 @@ public final class FileTraversalUtils {
    *
    * @param s3Path The S3 path or prefix to list.
    * @param filter The include and exclude filter for relative paths.
-   * @param includeDir Whether directory markers should be included.
+   * @param includeDir Whether directories should be included.
    * @param noSignRequest Whether to use {@code --no-sign-request}.
    * @return A sorted list of S3 object keys matching the filters.
    * @throws IOException If an I/O error occurs.
@@ -465,7 +479,7 @@ public final class FileTraversalUtils {
       .redirectError(ProcessBuilder.Redirect.INHERIT)
       .start();
 
-    List<String> files = new ArrayList<>();
+    List<String> keys = new ArrayList<>();
     try (BufferedReader reader = new BufferedReader(
         new InputStreamReader(
           process.getInputStream(),
@@ -480,30 +494,10 @@ public final class FileTraversalUtils {
         }
 
         String fullKey = parts[AWS_S3_KEY_INDEX];
-        String relativePath;
         if (!prefix.isEmpty() && fullKey.startsWith(prefix)) {
-          relativePath = fullKey.substring(prefix.length());
+          keys.add(fullKey.substring(prefix.length()));
         } else {
-          relativePath = fullKey;
-        }
-
-        if (relativePath.isEmpty()) {
-          continue;
-        }
-
-        boolean isDir = relativePath.endsWith("/");
-        if (isDir && !includeDir) {
-          continue;
-        }
-
-        final String pathString;
-        if (isDir) {
-          pathString = relativePath.substring(0, relativePath.length() - 1);
-        } else {
-          pathString = relativePath;
-        }
-        if (filter.accepts(Paths.get(pathString))) {
-          files.add(relativePath);
+          keys.add(fullKey);
         }
       }
     }
@@ -515,6 +509,42 @@ public final class FileTraversalUtils {
           + " when listing: " + normalizedPath);
     }
 
-    return files.stream().sorted().collect(Collectors.toList());
+    return s3Paths(keys, filter, includeDir);
+  }
+
+  /**
+   * Filters S3 keys, relative to the listed prefix, like a local walk. S3 has
+   * no directories, so with {@code includeDir} they are derived from the keys.
+   *
+   * @param keys The object keys, relative to the listed prefix.
+   * @param filter The include and exclude filter for relative paths.
+   * @param includeDir Whether directories should be included.
+   * @return A sorted list of the accepted relative paths.
+   */
+  static List<String> s3Paths(
+      final List<String> keys,
+      final PathFilter filter,
+      final boolean includeDir) {
+    Set<String> paths = new TreeSet<>();
+    for (String key : keys) {
+      if (key.isEmpty()) {
+        continue;
+      }
+      // A key ending in / is a directory marker; Paths drops the slash
+      Path path = Paths.get(key);
+      boolean marker = key.endsWith("/");
+      if (!marker && filter.accepts(path)) {
+        paths.add(path.toString());
+      }
+      if (includeDir) {
+        Path dir = marker ? path : path.getParent();
+        for (; dir != null; dir = dir.getParent()) {
+          if (filter.accepts(dir)) {
+            paths.add(dir.toString());
+          }
+        }
+      }
+    }
+    return new ArrayList<>(paths);
   }
 }
