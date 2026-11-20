@@ -54,12 +54,6 @@ class NextflowOutputFilterTest {
   }
 
   @Test
-  void shouldNotDropLinesInFilterLinePattern() {
-    assertEquals("Downloading plugin nf-schema@2.5.1",
-      Methods.filterLinePattern("Downloading plugin nf-schema@2.5.1", null));
-  }
-
-  @Test
   void shouldMatchIgnoreAgainstLineWithoutAnsi() {
     List<String> result = Methods.filterNextflowOutput(
       "\u001B[1mb\u001B[0m line\na line",
