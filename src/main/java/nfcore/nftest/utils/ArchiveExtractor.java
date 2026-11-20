@@ -205,20 +205,27 @@ public final class ArchiveExtractor {
    * @return the file name
    */
   private static String fileName(final String source) {
-    String path = source;
-    // A local path is used as is, so '#' and '?' stay in its name
-    if (source.contains("://")) {
-      try {
-        String uriPath = new URI(source).getPath();
-        if (uriPath != null && !uriPath.isEmpty()) {
-          path = uriPath;
-        }
-      } catch (URISyntaxException e) {
-        // Not a valid URI: use it as is
-        path = source;
-      }
-    }
+    String path = uriPath(source);
     return path.substring(path.lastIndexOf('/') + 1);
+  }
+
+  /**
+   * The path of a URL, or a local path as is, so '#' and '?' stay in its
+   * name.
+   *
+   * @param source the local path or URL
+   * @return the path, or {@code source} if it has none or is not a valid URI
+   */
+  private static String uriPath(final String source) {
+    if (!source.contains("://")) {
+      return source;
+    }
+    try {
+      String path = new URI(source).getPath();
+      return path == null || path.isEmpty() ? source : path;
+    } catch (URISyntaxException e) {
+      return source;
+    }
   }
 
   /**
