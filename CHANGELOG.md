@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` runs `nf-core` without a shell, so paths with spaces work (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreDeleteLibrary()` and `extract()` cleanup no longer delete through symlinks (@maxulysse)
 - [#119](https://github.com/nf-core/nft-utils/pull/119) `extract()` and `downloadFromS3()` download URLs with `?` or `*` (@maxulysse)
+- [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` lists only absolute folders and keeps empty strings (@maxulysse)
 
 ## [1.3.0]
 

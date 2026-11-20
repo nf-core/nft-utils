@@ -581,6 +581,8 @@ cleanup {
 
 Cleans process and workflow outputs by removing numbered keys, creating human-readable snapshots.
 
+An output folder (an absolute path to a directory) is replaced by the list of its files. Other strings, such as `val`, `env` or `stdout` values, are kept as they are, empty strings included.
+
 ```groovy
 then {
   assert snapshot(sanitizeOutput(process.out)).match()

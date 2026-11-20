@@ -1,7 +1,9 @@
 package nfcore.nftest.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -232,4 +234,16 @@ class OutputSanitizerTest {
       sanitized
     );
   }
+
+    @Test
+    void shouldListAbsoluteFoldersOnlyAndKeepEmptyStrings(@TempDir Path dir)
+            throws Exception {
+        Files.writeString(dir.resolve("a.txt"), "a");
+
+        // "src" and "" name folders of the working directory, but are values
+        assertEquals(
+            List.of("src", "", List.of(dir.resolve("a.txt").toString())),
+            OutputSanitizer.recursiveParse(
+                List.of("src", "", dir.toString()), v -> v));
+    }
 }
