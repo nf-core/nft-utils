@@ -316,22 +316,15 @@ public final class FileTraversalUtils {
   public static List<String> getAllFilesFromChannel(
       final Object channel) {
     List<String> result = new ArrayList<>();
-
-    if (channel == null) {
+    if (!(channel instanceof List<?> items)) {
+      flattenAndFilter(channel, result);
       return result;
     }
-
-    Iterable<?> items = channel instanceof Iterable<?> iterable
-        ? iterable : List.of(channel);
     for (Object item : items) {
-      // A map emitted alone is a record, as in sanitizeOutput()
-      if (item instanceof Map<?, ?> map) {
-        flattenAndFilter(map.values(), result);
-      } else {
-        flattenAndFilter(item, result);
-      }
+      // A map emitted directly on a channel is a record, as in sanitizeOutput()
+      flattenAndFilter(
+          item instanceof Map<?, ?> record ? record.values() : item, result);
     }
-
     return result;
   }
 
@@ -453,7 +446,7 @@ public final class FileTraversalUtils {
    * @param filter The include and exclude filter for relative paths.
    * @param includeDir Whether directories should be included.
    * @param noSignRequest Whether to use {@code --no-sign-request}.
-   * @return A sorted list of S3 object keys matching the filters.
+   * @return A sorted list of the accepted paths, relative to the prefix.
    * @throws IOException If an I/O error occurs.
    * @throws InterruptedException If the thread is interrupted.
    */
@@ -505,11 +498,8 @@ public final class FileTraversalUtils {
         }
 
         String fullKey = parts[AWS_S3_KEY_INDEX];
-        if (!prefix.isEmpty() && fullKey.startsWith(prefix)) {
-          keys.add(fullKey.substring(prefix.length()));
-        } else {
-          keys.add(fullKey);
-        }
+        keys.add(fullKey.startsWith(prefix)
+            ? fullKey.substring(prefix.length()) : fullKey);
       }
     }
 

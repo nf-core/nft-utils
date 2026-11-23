@@ -144,6 +144,9 @@ class FileTraversalUtilsTest {
       List.of("/abs/ref.fa"),
       FileTraversalUtils.getAllFilesFromChannel(
         List.of(Map.of("ref", "/abs/ref.fa"))));
+    assertEquals(
+      List.of(),
+      FileTraversalUtils.getAllFilesFromChannel(Map.of("out", records)));
   }
 
   @Test
