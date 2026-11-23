@@ -204,6 +204,8 @@ Downloads a single file from S3 to a temporary local directory and returns the l
 
 It uses `nextflow fs cp`, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no `noSignRequest` option: Nextflow falls back to anonymous access, even with invalid credentials.
 
+`downloadFromS3(options, uri)` is deprecated: it takes no options, ignores them and prints a warning. Use `downloadFromS3(uri)`.
+
 ```groovy
 def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")
 assert snapshot(path(local_file.toString())).match()
