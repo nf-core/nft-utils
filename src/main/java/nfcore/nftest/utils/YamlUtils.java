@@ -13,7 +13,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 /**
  * Utility methods for reading and manipulating YAML files.
@@ -27,7 +33,20 @@ public final class YamlUtils {
   }
 
   /**
+   * Reads YAML scalars as strings, so a version such as {@code 1.10} is not
+   * read as the number {@code 1.1}. Only YAML nulls are resolved.
+   */
+  private static final class StringResolver extends Resolver {
+    @Override
+    protected void addImplicitResolvers() {
+      addImplicitResolver(Tag.NULL, NULL, "~nN\0");
+      addImplicitResolver(Tag.NULL, EMPTY, null);
+    }
+  }
+
+  /**
    * Reads a Version YAML file and returns its contents as a nested map.
+   * Versions are read as strings: {@code 1.10} stays {@code "1.10"}.
    *
    * @param filePath The path to the YAML file to read.
    * @return A nested map containing the YAML data, empty for an empty file.
@@ -40,7 +59,12 @@ public final class YamlUtils {
     try (BufferedReader reader = Files.newBufferedReader(
         Paths.get(filePath),
         StandardCharsets.UTF_8)) {
-      Object data = new Yaml().load(reader);
+      Object data = new Yaml(
+        new Constructor(new LoaderOptions()),
+        new Representer(new DumperOptions()),
+        new DumperOptions(),
+        new StringResolver()
+      ).load(reader);
       if (data == null) {
         return new TreeMap<>();
       }

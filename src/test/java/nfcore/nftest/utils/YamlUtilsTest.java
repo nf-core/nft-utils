@@ -20,8 +20,18 @@ class YamlUtilsTest {
   void shouldRemoveNextflowVersion() throws IOException {
     Path file = Files.writeString(dir.resolve("versions.yml"),
       "Workflow:\n  Nextflow: 26.10.0\n  nf-core/foo: 1.0\n");
-    assertEquals(Map.of("Workflow", Map.of("nf-core/foo", 1.0)),
+    assertEquals(Map.of("Workflow", Map.of("nf-core/foo", "1.0")),
       Methods.removeNextflowVersion(file.toString()));
+  }
+
+  @Test
+  void shouldReadVersionsAsStrings() throws IOException {
+    Path file = Files.writeString(dir.resolve("versions.yml"),
+      "TOOL:\n  samtools: 1.10\n  pigz: 2\n  bwa: 010\n  flag: no\n");
+    assertEquals(
+      Map.of("TOOL",
+        Map.of("samtools", "1.10", "pigz", "2", "bwa", "010", "flag", "no")),
+      Methods.readYamlFile(file.toString()));
   }
 
   @Test

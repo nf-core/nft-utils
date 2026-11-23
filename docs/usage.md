@@ -45,6 +45,8 @@ The argument is a path (or wildcard pattern) matching a versions file in YAML fo
 
 **Note:** Returned YAML has keys sorted alphabetically at all levels for consistent output.
 
+Versions are read as text: `1.10` stays `"1.10"` instead of becoming the number `1.1`, and `2` becomes `"2"`. Snapshots that recorded versions as numbers need updating.
+
 ### `removeFromYamlMap()`
 
 Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.
