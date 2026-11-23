@@ -53,6 +53,11 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.14.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.tukaani</groupId>
+			<artifactId>xz</artifactId>
+			<version>1.10</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -96,6 +101,13 @@
 							<pattern>org.apache.commons.io</pattern>
 							<shadedPattern>
 							nfcore.nftest.shaded.org.apache.commons.io
+							</shadedPattern>
+						</relocation>
+
+						<relocation>
+							<pattern>org.tukaani.xz</pattern>
+							<shadedPattern>
+							nfcore.nftest.shaded.org.tukaani.xz
 							</shadedPattern>
 						</relocation>
 						</relocations>

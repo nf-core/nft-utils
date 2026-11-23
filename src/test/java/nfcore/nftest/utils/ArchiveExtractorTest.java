@@ -20,6 +20,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.XZOutputStream;
 
 class ArchiveExtractorTest {
 
@@ -343,6 +345,37 @@ class ArchiveExtractorTest {
     IOException e = assertThrows(
       IOException.class,
       () -> ArchiveExtractor.extract(gz.toString(), dest, null));
+
+    assertTrue(e.getMessage().startsWith("Failed to extract"));
+  }
+
+  @Test
+  void shouldDecompressPlainXzFile() throws Exception {
+    Path xz = tempDir.resolve("genome.fa.xz");
+    try (XZOutputStream out = new XZOutputStream(
+        Files.newOutputStream(xz), new LZMA2Options())) {
+      out.write("ACGT\n".getBytes(StandardCharsets.UTF_8));
+    }
+    Path named = tempDir.resolve("named");
+    Path typed = tempDir.resolve("typed");
+
+    ArchiveExtractor.extract(xz.toString(), named.toString(), null);
+    ArchiveExtractor.extract(xz.toString(), typed.toString(), "XZ");
+
+    assertEquals("ACGT\n", Files.readString(named.resolve("genome.fa")));
+    assertEquals("ACGT\n", Files.readString(typed.resolve("genome.fa")));
+    assertTrue(Files.exists(xz));
+  }
+
+  @Test
+  void shouldFailToDecompressNonXzFile() throws Exception {
+    Path xz = tempDir.resolve("genome.fa.xz");
+    Files.writeString(xz, "not xz");
+    String dest = tempDir.resolve("dest").toString();
+
+    IOException e = assertThrows(
+      IOException.class,
+      () -> ArchiveExtractor.extract(xz.toString(), dest, null));
 
     assertTrue(e.getMessage().startsWith("Failed to extract"));
   }
