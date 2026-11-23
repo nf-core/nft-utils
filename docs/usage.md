@@ -152,7 +152,7 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 
 :::
 
-Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`), and with `includeDir` their directories are derived from the object keys. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.html` matches `report.html`.
+Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs and skipping symlink loops; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`), and with `includeDir` their directories are derived from the object keys. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.html` matches `report.html`.
 
 Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
 Snapshot relative paths as they are: `*.name` fails on them with `No such property: name for class: java.lang.String`.
@@ -300,7 +300,7 @@ def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: [
 
 ### `getAllFilesFromChannel()`
 
-Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/"). A map emitted directly on the channel is a typed process record: its values are read.
+Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/"). As in `sanitizeOutput()`, a map emitted directly on the channel is a record and its values are read: this includes maps from untyped `val` outputs, such as a meta map emitted alone.
 
 Before:
 
@@ -632,7 +632,7 @@ then {
 }
 ```
 
-- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, and `variantsMD5Keys` are not matched against these patterns.
+- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, and `variantsMD5Keys` are not matched against these patterns. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.log` matches `run.log`.
 
 ```groovy
 then {

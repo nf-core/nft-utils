@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemLoopException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,21 +105,15 @@ public final class FileTraversalUtils {
   }
 
   /**
-   * Walks a directory tree and collects the paths accepted by the filter.
+   * Lists a directory tree, the directory included, following symlinks such
+   * as the outputs Nextflow publishes by default. Symlink loops are skipped.
    *
    * @param root The directory to walk.
-   * @param filter The filter, applied to paths relative to {@code root}.
-   * @param keepDir Selects the directories that can be collected.
-   * @return The accepted paths, in traversal order.
+   * @return The paths, in traversal order.
    * @throws IOException If an error occurs while traversing the directory.
    */
-  private static List<Path> walk(
-      final Path root,
-      final PathFilter filter,
-      final Predicate<Path> keepDir)
-      throws IOException {
-    List<Path> matches = new ArrayList<>();
-    // Nextflow publishes outputs as symlinks by default
+  private static List<Path> walk(final Path root) throws IOException {
+    List<Path> paths = new ArrayList<>();
     Files.walkFileTree(
         root,
         EnumSet.of(FileVisitOption.FOLLOW_LINKS),
@@ -127,9 +123,7 @@ public final class FileTraversalUtils {
           public FileVisitResult visitFile(
               final Path file,
               final BasicFileAttributes attrs) {
-            if (filter.accepts(root.relativize(file))) {
-              matches.add(file);
-            }
+            paths.add(file);
             return FileVisitResult.CONTINUE;
           }
 
@@ -137,13 +131,22 @@ public final class FileTraversalUtils {
           public FileVisitResult preVisitDirectory(
               final Path dir,
               final BasicFileAttributes attrs) {
-            if (keepDir.test(dir) && filter.accepts(root.relativize(dir))) {
-              matches.add(dir);
-            }
+            paths.add(dir);
             return FileVisitResult.CONTINUE;
           }
+
+          @Override
+          public FileVisitResult visitFileFailed(
+              final Path file,
+              final IOException exc)
+              throws IOException {
+            if (exc instanceof FileSystemLoopException) {
+              return FileVisitResult.CONTINUE;
+            }
+            throw exc;
+          }
         });
-    return matches;
+    return paths;
   }
 
   /**
@@ -245,8 +248,11 @@ public final class FileTraversalUtils {
         && !fileName.toString().equals("output");
     };
 
-    return walk(Paths.get(outdir), filter, keepDir)
+    Path root = Paths.get(outdir);
+    return walk(root)
       .stream()
+      .filter(path -> (!Files.isDirectory(path) || keepDir.test(path))
+        && filter.accepts(root.relativize(path)))
       .map(Path::toFile)
       .sorted(Comparator.comparing(File::getPath))
       .collect(Collectors.toList());
@@ -315,12 +321,15 @@ public final class FileTraversalUtils {
       return result;
     }
 
-    Iterable<?> items = channel instanceof Iterable
-        ? (Iterable<?>) channel : List.of(channel);
+    Iterable<?> items = channel instanceof Iterable<?> iterable
+        ? iterable : List.of(channel);
     for (Object item : items) {
-      // A map emitted on the channel is a typed process record, not meta
-      flattenAndFilter(
-          item instanceof Map ? ((Map<?, ?>) item).values() : item, result);
+      // A map emitted alone is a record, as in sanitizeOutput()
+      if (item instanceof Map<?, ?> map) {
+        flattenAndFilter(map.values(), result);
+      } else {
+        flattenAndFilter(item, result);
+      }
     }
 
     return result;
@@ -420,18 +429,20 @@ public final class FileTraversalUtils {
     }
 
     Path root = Paths.get(path);
-    List<Path> matches = walk(
-        root, filter, dir -> includeDir && !dir.equals(root))
+    // Directories end in / like S3 directory markers
+    List<String> keys = walk(root)
       .stream()
-      .filter(match -> !match.equals(root))
-      .sorted()
+      .filter(entry -> !entry.equals(root))
+      .map(entry -> root.relativize(entry)
+        + (Files.isDirectory(entry) ? "/" : ""))
       .collect(Collectors.toList());
+    List<String> paths = filterRelativePaths(keys, filter, includeDir);
     if (!relative) {
-      return matches.stream().map(Path::toFile).collect(Collectors.toList());
+      return paths.stream()
+        .map(match -> root.resolve(match).toFile())
+        .collect(Collectors.toList());
     }
-    return matches.stream()
-      .map(match -> root.relativize(match).toString())
-      .collect(Collectors.toList());
+    return paths;
   }
 
   /**
@@ -509,39 +520,43 @@ public final class FileTraversalUtils {
           + " when listing: " + normalizedPath);
     }
 
-    return s3Paths(keys, filter, includeDir);
+    return filterRelativePaths(keys, filter, includeDir);
   }
 
   /**
-   * Filters S3 keys, relative to the listed prefix, like a local walk. S3 has
-   * no directories, so with {@code includeDir} they are derived from the keys.
+   * Filters relative paths, as listed locally or from S3. A path ending in
+   * {@code /} is a directory; with {@code includeDir}, the directories of the
+   * other paths are derived from them, as S3 lists no directories.
    *
-   * @param keys The object keys, relative to the listed prefix.
+   * @param keys The paths, relative to the listed directory or prefix.
    * @param filter The include and exclude filter for relative paths.
    * @param includeDir Whether directories should be included.
    * @return A sorted list of the accepted relative paths.
    */
-  static List<String> s3Paths(
+  static List<String> filterRelativePaths(
       final List<String> keys,
       final PathFilter filter,
       final boolean includeDir) {
     Set<String> paths = new TreeSet<>();
+    Set<Path> dirs = new HashSet<>();
     for (String key : keys) {
       if (key.isEmpty()) {
         continue;
       }
-      // A key ending in / is a directory marker; Paths drops the slash
+      // Paths drops the trailing / of a directory
       Path path = Paths.get(key);
-      boolean marker = key.endsWith("/");
-      if (!marker && filter.accepts(path)) {
+      boolean dir = key.endsWith("/");
+      if (!dir && filter.accepts(path)) {
         paths.add(path.toString());
       }
       if (includeDir) {
-        Path dir = marker ? path : path.getParent();
-        for (; dir != null; dir = dir.getParent()) {
-          if (filter.accepts(dir)) {
-            paths.add(dir.toString());
+        Path parent = dir ? path : path.getParent();
+        // A directory seen before has had its parents checked already
+        while (parent != null && dirs.add(parent)) {
+          if (filter.accepts(parent)) {
+            paths.add(parent.toString());
           }
+          parent = parent.getParent();
         }
       }
     }

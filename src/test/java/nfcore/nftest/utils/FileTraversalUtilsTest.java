@@ -73,6 +73,32 @@ class FileTraversalUtilsTest {
   }
 
   @Test
+  void shouldSkipSymlinkLoops() throws Exception {
+    Path sub = Files.createDirectories(dir.resolve("sub"));
+    Files.writeString(sub.resolve("a.txt"), "a");
+    Files.createSymbolicLink(sub.resolve("loop"), dir);
+
+    assertEquals(
+      List.of("sub", "sub/a.txt"),
+      FileTraversalUtils.getAllFilesFromPath(
+        dir.toString(), List.of(), List.of(), true, null, false, true));
+  }
+
+  @Test
+  void shouldIncludeEmptyAndSymlinkedDirectories() throws Exception {
+    Path target = Files.createDirectories(dir.resolve("target"));
+    Files.writeString(target.resolve("a.txt"), "a");
+    Path out = Files.createDirectories(dir.resolve("out/empty"));
+    Files.createSymbolicLink(out.resolveSibling("linked"), target);
+
+    assertEquals(
+      List.of("empty", "linked", "linked/a.txt"),
+      FileTraversalUtils.getAllFilesFromPath(
+        out.getParent().toString(), List.of(), List.of(), true, null, false,
+        true));
+  }
+
+  @Test
   void shouldMatchDoubleStarSlashGlobsAtTopLevel() throws Exception {
     Files.createDirectories(dir.resolve("sub"));
     Files.writeString(dir.resolve("a.txt"), "a");
@@ -87,22 +113,22 @@ class FileTraversalUtilsTest {
   }
 
   @Test
-  void shouldDeriveS3DirectoriesFromKeys() {
+  void shouldDeriveDirectoriesFromKeys() {
     FileTraversalUtils.PathFilter all = new FileTraversalUtils.PathFilter(
       Utils.buildMatchers(List.of("**")), List.of());
 
     assertEquals(
       List.of("qc", "qc/a.txt", "stable", "stable/sub", "stable/sub/b.txt"),
-      FileTraversalUtils.s3Paths(
+      FileTraversalUtils.filterRelativePaths(
         List.of("stable/sub/b.txt", "qc/", "qc/a.txt"), all, true));
     assertEquals(
       List.of("qc/a.txt", "stable/sub/b.txt"),
-      FileTraversalUtils.s3Paths(
+      FileTraversalUtils.filterRelativePaths(
         List.of("stable/sub/b.txt", "qc/", "qc/a.txt"), all, false));
   }
 
   @Test
-  void shouldReadFilesOfTypedRecordsButNotOfMeta() {
+  void shouldReadMapsEmittedAloneButNotInTuples() {
     List<Object> records = List.of(
       Map.of("id", "s1", "file", "/abs/f.txt"));
     List<Object> tuples = List.of(
@@ -114,6 +140,10 @@ class FileTraversalUtilsTest {
     assertEquals(
       List.of("/abs/g.txt"),
       FileTraversalUtils.getAllFilesFromChannel(tuples));
+    assertEquals(
+      List.of("/abs/ref.fa"),
+      FileTraversalUtils.getAllFilesFromChannel(
+        List.of(Map.of("ref", "/abs/ref.fa"))));
   }
 
   @Test
