@@ -1,6 +1,6 @@
 # Functions usage
 
-Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as `"${projectDir}/tests/.nftignore"`, but also a `File` or `Path`.
+Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options, and the items of list options, accept strings, Groovy strings such as `"${projectDir}/tests/.nftignore"`, `File`s and `Path`s. Integer options accept any whole number, such as `3L`.
 
 ## Snapshot functions
 

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
 - [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` module keys reject unknown names and wrong value types (@maxulysse)
+- [#123](https://github.com/nf-core/nft-utils/pull/123) String options reject values other than strings, `File`s and `Path`s (@maxulysse)
 
 ### Deprecated
 
@@ -46,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getAllFilesFromChannel()` reads typed process records (@maxulysse)
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getRelativePath()` accepts path strings (@maxulysse)
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` modules accept Groovy strings such as `"${x}"` (@maxulysse)
+- [#123](https://github.com/nf-core/nft-utils/pull/123) Named options accept `File` and `Path` list items, Groovy string names and `Long` integers (@maxulysse)
 
 ## [1.3.0]
 
