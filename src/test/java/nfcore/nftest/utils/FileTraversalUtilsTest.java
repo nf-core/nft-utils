@@ -73,6 +73,37 @@ class FileTraversalUtilsTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
+  void shouldListRootDirectoriesAndLinksFromDir() throws Exception {
+    Path target = Files.createDirectories(dir.resolve("target"));
+    Files.writeString(target.resolve("d.txt"), "d");
+    Path results = Files.createDirectories(dir.resolve("results/sub"))
+      .getParent();
+    Files.createDirectories(results.resolve("output"));
+    Files.writeString(results.resolve("a.txt"), "a");
+    Files.writeString(results.resolve("sub/b.txt"), "b");
+    Files.writeString(results.resolve("output/c.txt"), "c");
+    Files.createSymbolicLink(results.resolve("link"), target);
+
+    assertEquals(
+      List.of(results, results.resolve("a.txt"), results.resolve("link"),
+        results.resolve("link/d.txt"), results.resolve("output/c.txt"),
+        results.resolve("sub"), results.resolve("sub/b.txt"))
+        .stream().map(Path::toFile).toList(),
+      FileTraversalUtils.getAllFilesFromDir(
+        results.toString(), true, List.of(), null, List.of("**")));
+    assertEquals(
+      List.of("a.txt", "link/d.txt", "output/c.txt", "sub/b.txt"),
+      FileTraversalUtils.getAllFilesFromDir(
+        results.toString(), false, List.of(), null, List.of("**"), true));
+    assertEquals(
+      List.of(results.resolve("a.txt").toFile()),
+      FileTraversalUtils.getAllFilesFromDir(
+        results.resolve("a.txt").toString(), true, List.of(), null,
+        List.of("**")));
+  }
+
+  @Test
   void shouldSkipSymlinkLoops() throws Exception {
     Path sub = Files.createDirectories(dir.resolve("sub"));
     Files.writeString(sub.resolve("a.txt"), "a");
