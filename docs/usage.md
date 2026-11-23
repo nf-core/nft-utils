@@ -1,5 +1,7 @@
 # Functions usage
 
+Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as `"${projectDir}/tests/.nftignore"`, but also a `File` or `Path`.
+
 ## Snapshot functions
 
 Functions for managing pipeline-level nf-test snapshots:
@@ -152,21 +154,21 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 
 :::
 
-Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`).
+Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs; a symlink that loops back to a parent is left out; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`), and with `includeDir` their directories are derived from the object keys. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.html` matches `report.html`.
 
 Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
 Snapshot relative paths as they are: `*.name` fails on them with `No such property: name for class: java.lang.String`.
 
 Supported named parameters:
 
-| Option          | Type           | Default       | Description                                                                                            |
-| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
-| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                               |
-| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                               |
-| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                            |
-| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                                 |
-| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials            |
-| `relative`      | `Boolean`      | `true`        | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local, no `includeDir`) |
+| Option          | Type           | Default  | Description                                                                                            |
+| --------------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `ignore`        | `List<String>` | `[]`     | Glob patterns to exclude                                                                               |
+| `include`       | `List<String>` | `["**"]` | Glob patterns to include                                                                               |
+| `includeDir`    | `Boolean`      | `false`  | Also emit directory entries                                                                            |
+| `ignoreFile`    | `String`       | —        | Path to a local file containing additional ignore globs (one per line)                                 |
+| `noSignRequest` | `Boolean`      | `false`  | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials            |
+| `relative`      | `Boolean`      | `true`   | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local, no `includeDir`) |
 
 #### Local usage
 
@@ -247,7 +249,7 @@ cf [nf-test/docs](https://www.nf-test.com/docs/testcases/global_variables/#outpu
 
 :::
 
-Converts a list of absolute file paths to paths relative to a given directory.
+Converts a list of files or path strings to paths relative to a given directory.
 
 ```bash
 results/
@@ -300,7 +302,7 @@ def stable_path = getAllFilesFromPath(params.outdir, includeDir: true, ignore: [
 
 ### `getAllFilesFromChannel()`
 
-Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/").
+Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/"). As in `sanitizeOutput()`, a map emitted directly on the channel is a record and its values are read: this includes maps from untyped `val` outputs, such as a meta map emitted alone.
 
 Before:
 
@@ -634,7 +636,7 @@ then {
 }
 ```
 
-- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, and `variantsMD5Keys` are not matched against these patterns.
+- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, and `variantsMD5Keys` are not matched against these patterns. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.log` matches `run.log`.
 
 ```groovy
 then {

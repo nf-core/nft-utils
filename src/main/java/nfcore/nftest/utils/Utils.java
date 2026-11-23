@@ -32,6 +32,8 @@ public final class Utils {
 
   /**
    * Compiles glob patterns into path matchers, skipping null or empty globs.
+   * A glob starting with {@code **}{@code /} also matches at the top level,
+   * as in {@code .gitignore}.
    *
    * @param globs The glob patterns, or {@code null}.
    * @return The path matchers.
@@ -44,6 +46,10 @@ public final class Utils {
     for (String glob : globs) {
       if (glob != null && !glob.isEmpty()) {
         matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
+        if (glob.startsWith("**/")) {
+          matchers.add(FileSystems.getDefault()
+            .getPathMatcher("glob:" + glob.substring("**/".length())));
+        }
       }
     }
     return matchers;

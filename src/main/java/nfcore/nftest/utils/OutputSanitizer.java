@@ -150,33 +150,22 @@ public final class OutputSanitizer {
       );
     }
 
-    // Fetch options
-    List<String> unstableKeys =
-      (List<String>) options.getOrDefault("unstableKeys", List.of());
-
-    List<String> ignoreKeys =
-      (List<String>) options.getOrDefault("ignoreKeys", List.of());
-
-    List<String> unstablePatterns =
-      (List<String>) options.getOrDefault("unstablePatterns", List.of());
-
-    List<String> ignorePatterns =
-      (List<String>) options.getOrDefault("ignorePatterns", List.of());
-
-    List<String> readsMD5Keys =
-      (List<String>) options.getOrDefault("readsMD5Keys", List.of());
-
-    List<String> variantsMD5Keys =
-      (List<String>) options.getOrDefault("variantsMD5Keys", List.of());
-
-    List<String> tableMD5Keys =
-      (List<String>) options.getOrDefault("tableMD5Keys", List.of());
-
-    String referenceFasta = (String) options.getOrDefault("referenceFasta", "");
-    int tableDoubleDigits = (int) options.getOrDefault(
+    Options opts = new Options("sanitizeOutput", options,
+      "unstableKeys", "ignoreKeys", "unstablePatterns", "ignorePatterns",
+      "readsMD5Keys", "variantsMD5Keys", "tableMD5Keys", "referenceFasta",
+      "tableDoubleDigits", "tableRemoveComments");
+    List<String> unstableKeys = opts.strings("unstableKeys", List.of());
+    List<String> ignoreKeys = opts.strings("ignoreKeys", List.of());
+    List<String> unstablePatterns = opts.strings("unstablePatterns", List.of());
+    List<String> ignorePatterns = opts.strings("ignorePatterns", List.of());
+    List<String> readsMD5Keys = opts.strings("readsMD5Keys", List.of());
+    List<String> variantsMD5Keys = opts.strings("variantsMD5Keys", List.of());
+    List<String> tableMD5Keys = opts.strings("tableMD5Keys", List.of());
+    String referenceFasta = opts.string("referenceFasta", "");
+    int tableDoubleDigits = opts.integer(
       "tableDoubleDigits", TableUtils.DEFAULT_DOUBLE_DIGITS
     );
-    boolean tableRemoveComments = (boolean) options.getOrDefault(
+    boolean tableRemoveComments = opts.bool(
       "tableRemoveComments", TableUtils.DEFAULT_REMOVE_COMMENTS
     );
 
