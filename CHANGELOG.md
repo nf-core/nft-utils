@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getAllFilesFromChannel()` reads typed process records (@maxulysse)
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getRelativePath()` accepts path strings (@maxulysse)
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` modules accept Groovy strings such as `"${x}"` (@maxulysse)
-- [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` lists only absolute folders and keeps empty strings (@maxulysse)
+- [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` treats only absolute paths as outputs and keeps empty strings (@maxulysse)
 
 ## [1.3.0]
 

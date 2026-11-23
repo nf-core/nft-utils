@@ -258,4 +258,16 @@ class OutputSanitizerTest {
             OutputSanitizer.recursiveParse(
                 List.of("src", "", dir.toString()), v -> v));
     }
+
+    @Test
+    void shouldReduceOnlyAbsoluteOutputPathsToFileNames(@TempDir Path dir)
+            throws Exception {
+        Path file = Files.writeString(dir.resolve("a.txt"), "a");
+
+        // "src/main" exists in the working directory, but is a value
+        assertEquals(
+            List.of("a.txt", "src/main", ""),
+            OutputSanitizer.fixUnstable(
+                List.of(file.toString(), "src/main", "")));
+    }
 }

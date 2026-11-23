@@ -347,10 +347,8 @@ public final class OutputSanitizer {
       final Function<String, Object> applyFct) {
     if (value instanceof String) {
       String strValue = (String) value;
-      java.nio.file.Path path = Paths.get(strValue);
-      // Output folders are absolute; a relative value such as "" or "src"
-      // is a val, env or stdout output, not a folder to list
-      if (path.isAbsolute() && Files.isDirectory(path)) {
+      java.nio.file.Path path = outputPath(strValue);
+      if (path != null && Files.isDirectory(path)) {
         try (var children = Files.list(path)) {
           return sanitizeList(
             children.sorted().map(java.nio.file.Path::toString).toList(),
@@ -375,16 +373,28 @@ public final class OutputSanitizer {
   }
 
   /**
-   * Recursively sanitizes unstable file paths by replacing existing paths
-   * with their file names.
+   * The path of an output file or folder. Outputs are absolute paths; a
+   * relative value such as {@code ""} or {@code "src"} is a val, env or
+   * stdout output, even if it names a file of the working directory.
+   *
+   * @param value The string value.
+   * @return The path, or {@code null} if the value is not an output path.
+   */
+  private static java.nio.file.Path outputPath(final String value) {
+    return value.startsWith("/") ? Paths.get(value) : null;
+  }
+
+  /**
+   * Recursively sanitizes unstable file paths by replacing existing output
+   * paths with their file names.
    *
    * @param value The value to sanitize.
    * @return The sanitized value with file paths reduced to file names.
    */
-  private static Object fixUnstable(final Object value) {
+  static Object fixUnstable(final Object value) {
     return recursiveParse(value, strValue -> {
-      java.nio.file.Path path = Paths.get(strValue);
-      if (Files.exists(path)) {
+      java.nio.file.Path path = outputPath(strValue);
+      if (path != null && Files.exists(path)) {
         return path.getFileName().toString();
       }
       return strValue;
