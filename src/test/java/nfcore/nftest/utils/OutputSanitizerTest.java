@@ -156,6 +156,18 @@ class OutputSanitizerTest {
   }
 
   @Test
+  void patternSanitizerShouldMatchDoubleStarSlashGlobsAtTopLevel() {
+    Object outputCheck = OutputSanitizer.patternSanitizer(
+      List.of("**/*.bam"),
+      List.of("**/*.txt")
+    ).apply(List.of("example.bam", "example.txt", "sub/other.txt"));
+    assertEquals(
+      List.of("example.bam"),
+      outputCheck
+    );
+  }
+
+  @Test
   void patternSanitizerShouldIgnoreTxtFileAndSimplifyBamInMap() {
     Object outputCheck = OutputSanitizer.patternSanitizer(
       List.of("**/*.bam"),
