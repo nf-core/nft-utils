@@ -1162,7 +1162,7 @@ See <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir"
 </span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span><span class="o">}</span>
 </span></code></pre></div>
 <p>:::</p>
-<p>Works for <strong>local paths and S3 paths</strong> (<code>s3://</code>). Local paths are walked using Java NIO; S3 paths are listed using the AWS CLI (<code>aws s3 ls --recursive</code>).</p>
+<p>Works for <strong>local paths and S3 paths</strong> (<code>s3://</code>). Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs; a symlink that loops back to a parent is left out; S3 paths are listed using the AWS CLI (<code>aws s3 ls --recursive</code>), and with <code>includeDir</code> their directories are derived from the object keys. As in <code>.gitignore</code>, a glob starting with <code>**/</code> also matches at the top level: <code>**/*.html</code> matches <code>report.html</code>.</p>
 <p>Returns a <strong>sorted list of relative <code>String</code> paths</strong> (relative to the given root), or of <code>File</code>s with <code>relative: false</code>.
 Snapshot relative paths as they are: <code>*.name</code> fails on them with <code>No such property: name for class: java.lang.String</code>.</p>
 <p>Supported named parameters:</p>
@@ -1282,7 +1282,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="o">}</span>
 </span></code></pre></div>
 <p>:::</p>
-<p>Converts a list of absolute file paths to paths relative to a given directory.</p>
+<p>Converts a list of files or path strings to paths relative to a given directory.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>results/
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>├──<span class="w"> </span>pipeline_info
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>│<span class="w">   </span>└──<span class="w"> </span>execution_trace_2024-09-30_13-10-16.txt
@@ -1319,7 +1319,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>]
 </span></code></pre></div>
 <h3 id="getallfilesfromchannel"><code>getAllFilesFromChannel()</code></h3>
-<p>Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/").</p>
+<p>Extracts absolute file paths from Nextflow channel outputs. Collects and flattens nested structures, filters out metadata maps, and returns only paths (strings starting with "/"). As in <code>sanitizeOutput()</code>, a map emitted directly on the channel is a record and its values are read: this includes maps from untyped <code>val</code> outputs, such as a meta map emitted alone.</p>
 <p>Before:</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">file</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">zip</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">3</span><span class="o">][</span><span class="mi">0</span><span class="o">]).</span><span class="na">name</span><span class="o">,</span>
 </span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">file</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">zip</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">3</span><span class="o">][</span><span class="mi">1</span><span class="o">]).</span><span class="na">name</span><span class="o">,</span>
@@ -1595,7 +1595,7 @@ A module that fails to install fails the test, including when <code>nf-core</cod
 </span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="o">}</span>
 </span></code></pre></div>
 <ul>
-<li><code>unstablePatterns</code> and <code>ignorePatterns</code>: Glob patterns matched against each channel value. <code>unstablePatterns</code> removes md5sums; <code>ignorePatterns</code> excludes files entirely. These patterns should be mutually exclusive. Keys set by <code>unstableKeys</code>, <code>ignoreKeys</code>, <code>readsMD5Keys</code>, and <code>variantsMD5Keys</code> are not matched against these patterns.</li>
+<li><code>unstablePatterns</code> and <code>ignorePatterns</code>: Glob patterns matched against each channel value. <code>unstablePatterns</code> removes md5sums; <code>ignorePatterns</code> excludes files entirely. These patterns should be mutually exclusive. Keys set by <code>unstableKeys</code>, <code>ignoreKeys</code>, <code>readsMD5Keys</code>, and <code>variantsMD5Keys</code> are not matched against these patterns. As in <code>.gitignore</code>, a glob starting with <code>**/</code> also matches at the top level: <code>**/*.log</code> matches <code>run.log</code>.</li>
 </ul>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="n">then</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-45-2"><a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">  </span><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">sanitizeOutput</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">out</span><span class="o">,</span><span class="w"> </span><span class="nl">unstablePatterns:</span><span class="o">[</span><span class="s2">"**/*.log"</span><span class="o">],</span><span class="w"> </span><span class="nl">ignorePatterns:</span><span class="o">[</span><span class="s2">"**/VERSION_*"</span><span class="o">])).</span><span class="na">match</span><span class="o">()</span>
