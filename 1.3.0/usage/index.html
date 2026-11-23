@@ -1060,6 +1060,7 @@
 
 
 <h1 id="functions-usage">Functions usage</h1>
+<p>Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as <code>"${projectDir}/tests/.nftignore"</code>, but also a <code>File</code> or <code>Path</code>.</p>
 <h2 id="snapshot-functions">Snapshot functions</h2>
 <p>Functions for managing pipeline-level nf-test snapshots:</p>
 <h3 id="removenextflowversion"><code>removeNextflowVersion()</code></h3>
@@ -1185,7 +1186,7 @@ Snapshot relative paths as they are: <code>*.name</code> fails on them with <cod
 <tr>
 <td><code>include</code></td>
 <td><code>List&lt;String&gt;</code></td>
-<td><code>["**", "*"]</code></td>
+<td><code>["**"]</code></td>
 <td>Glob patterns to include</td>
 </tr>
 <tr>
