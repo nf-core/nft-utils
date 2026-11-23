@@ -17,6 +17,8 @@ Full documentation at [nf-co.re/nft-utils](https://nf-co.re/nft-utils).
 
 See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
+Test data for the nf-tests lives on the [`nft-utils` branch of nf-core/test-datasets](https://github.com/nf-core/test-datasets/tree/nft-utils).
+
 ## Credits
 
 nft-utils was created by the nf-core community.
