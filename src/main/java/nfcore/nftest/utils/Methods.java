@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -95,21 +94,6 @@ public final class Methods {
   // ── FILE TRAVERSAL ────────────────────────────────────────────────────
 
   /**
-   * Named options accepted by
-   * {@link #getAllFilesFromDir(LinkedHashMap, String)}.
-   */
-  private static final Set<String> GET_ALL_FILES_FROM_DIR_OPTIONS =
-    Set.of("ignore", "include", "includeDir", "ignoreFile", "relative");
-
-  /**
-   * Named options accepted by
-   * {@link #getAllFilesFromPath(LinkedHashMap, String)}.
-   */
-  private static final Set<String> GET_ALL_FILES_FROM_PATH_OPTIONS = Set.of(
-    "ignore", "include", "includeDir", "ignoreFile", "noSignRequest",
-    "relative");
-
-  /**
    * Retrieves all files from the specified directory using default options.
    *
    * @param path The path to the directory to traverse.
@@ -139,8 +123,8 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String outdir)
       throws IOException {
-    Options opts = new Options(
-      "getAllFilesFromDir", options, GET_ALL_FILES_FROM_DIR_OPTIONS);
+    Options opts = new Options("getAllFilesFromDir", options,
+      "ignore", "include", "includeDir", "ignoreFile", "relative");
     return FileTraversalUtils.getAllFilesFromDir(
       outdir,
       opts.bool("includeDir", false),
@@ -229,8 +213,9 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String path)
       throws IOException, InterruptedException {
-    Options opts = new Options(
-      "getAllFilesFromPath", options, GET_ALL_FILES_FROM_PATH_OPTIONS);
+    Options opts = new Options("getAllFilesFromPath", options,
+      "ignore", "include", "includeDir", "ignoreFile", "noSignRequest",
+      "relative");
     return FileTraversalUtils.getAllFilesFromPath(
       path,
       opts.strings("ignore", List.of()),
@@ -255,12 +240,6 @@ public final class Methods {
   }
 
   /**
-   * Named options accepted by {@link #excludeLines(LinkedHashMap, String)}.
-   */
-  private static final Set<String> EXCLUDE_LINES_OPTIONS =
-    Set.of("lines", "ignore");
-
-  /**
    * Reads a file and returns its lines, minus the excluded ones, for example
    * to hash a file with {@code listToMD5()} without its unstable lines.
    *
@@ -275,10 +254,10 @@ public final class Methods {
   public static List<String> excludeLines(
       final LinkedHashMap<String, Object> options,
       final String path) throws IOException {
-    Options opts = new Options("excludeLines", options, EXCLUDE_LINES_OPTIONS);
+    Options opts = new Options("excludeLines", options, "lines", "ignore");
     return Utils.excludeLines(
       path,
-      opts.list("lines", Integer.class),
+      opts.list("lines", Integer.class, List.of()),
       opts.strings("ignore", List.of()));
   }
 
@@ -469,13 +448,6 @@ public final class Methods {
   }
 
   /**
-   * Named options accepted by the {@code filterNextflowOutput()} map
-   * overloads.
-   */
-  private static final Set<String> FILTER_NEXTFLOW_OUTPUT_OPTIONS = Set.of(
-    "additionalPatterns", "sorted", "keepAnsi", "ignore", "include");
-
-  /**
    * Filters Nextflow output with the options of either map overload.
    *
    * @param options The filtering options, or {@code null} to use defaults
@@ -485,8 +457,8 @@ public final class Methods {
   private static List<String> filterNextflowOutputWithOptions(
       final Map<String, Object> options,
       final Object output) {
-    Options opts = new Options(
-      "filterNextflowOutput", options, FILTER_NEXTFLOW_OUTPUT_OPTIONS);
+    Options opts = new Options("filterNextflowOutput", options,
+      "additionalPatterns", "sorted", "keepAnsi", "ignore", "include");
     return filterNextflowOutput(
       output,
       opts.strings("additionalPatterns", List.of()),
@@ -597,12 +569,6 @@ public final class Methods {
   // ── ARCHIVE DOWNLOADING ───────────────────────────────────────────────
 
   /**
-   * Named options accepted by {@link #extract(LinkedHashMap, String)}.
-   */
-  private static final Set<String> EXTRACT_OPTIONS =
-    Set.of("extractDir", "compression", "path");
-
-  /**
    * Extract an archive in a new temporary directory, deleted when the JVM
    * exits, with the archive type taken from the file extension.
    *
@@ -634,7 +600,8 @@ public final class Methods {
       final LinkedHashMap<String, Object> options,
       final String source)
       throws IOException {
-    Options opts = new Options("extract", options, EXTRACT_OPTIONS);
+    Options opts = new Options(
+      "extract", options, "extractDir", "compression", "path");
     String extractDir = opts.string("extractDir", null);
     String compression = opts.string("compression", null);
     String path = opts.string("path", null);

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Utility methods for interacting with nf-core pipelines and modules.
@@ -43,10 +42,6 @@ public final class NfCoreUtils {
     );
   }
 
-  /** Keys accepted in a module map passed to {@code nfcoreInstall()}. */
-  private static final Set<String> MODULE_OPTIONS =
-    Set.of("name", "sha", "remote");
-
   /**
    * Installs nf-core modules from a list.
    *
@@ -76,7 +71,7 @@ public final class NfCoreUtils {
         name = moduleObj.toString();
       } else if (moduleObj instanceof Map) {
         Options module = new Options(
-          "nfcoreInstall", (Map<?, ?>) moduleObj, MODULE_OPTIONS);
+          "nfcoreInstall", (Map<?, ?>) moduleObj, "name", "sha", "remote");
         name = module.string("name", null);
         sha = module.string("sha", null);
         remote = module.string("remote", null);

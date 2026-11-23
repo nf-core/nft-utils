@@ -130,12 +130,6 @@ public final class OutputSanitizer {
     }
   }
 
-  /** Named options accepted by {@code sanitizeOutput()}. */
-  private static final Set<String> OPTIONS = Set.of(
-    "unstableKeys", "ignoreKeys", "unstablePatterns", "ignorePatterns",
-    "readsMD5Keys", "variantsMD5Keys", "tableMD5Keys", "referenceFasta",
-    "tableDoubleDigits", "tableRemoveComments");
-
   /**
    * Sanitizes the output channel based on the provided options.
    *
@@ -156,7 +150,10 @@ public final class OutputSanitizer {
       );
     }
 
-    Options opts = new Options("sanitizeOutput", options, OPTIONS);
+    Options opts = new Options("sanitizeOutput", options,
+      "unstableKeys", "ignoreKeys", "unstablePatterns", "ignorePatterns",
+      "readsMD5Keys", "variantsMD5Keys", "tableMD5Keys", "referenceFasta",
+      "tableDoubleDigits", "tableRemoveComments");
     List<String> unstableKeys = opts.strings("unstableKeys", List.of());
     List<String> ignoreKeys = opts.strings("ignoreKeys", List.of());
     List<String> unstablePatterns = opts.strings("unstablePatterns", List.of());

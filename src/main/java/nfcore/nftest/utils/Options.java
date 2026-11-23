@@ -8,7 +8,8 @@ import java.util.TreeSet;
 /**
  * The named options passed to one function from a Groovy test script.
  * Unknown option names and values of the wrong type fail with the function
- * name; {@code toString()} turns Groovy GStrings into Strings.
+ * name; {@code toString()} turns Groovy GStrings into Strings. String options
+ * accept any value, read with {@code toString()}.
  */
 final class Options {
 
@@ -29,22 +30,25 @@ final class Options {
   Options(
       final String functionName,
       final Map<?, ?> options,
-      final Set<String> valid) {
+      final String... valid) {
     this.function = functionName;
     this.values = options == null ? Map.of() : options;
+    Set<String> accepted = new TreeSet<>(List.of(valid));
     Set<String> unknown = new TreeSet<>();
     this.values.keySet().forEach(key -> unknown.add(String.valueOf(key)));
-    unknown.removeAll(valid);
+    unknown.removeAll(accepted);
     if (!unknown.isEmpty()) {
       throw new IllegalArgumentException(
         "Unknown " + functionName + "() options: " + unknown
-        + "; valid options: " + new TreeSet<>(valid)
+        + "; valid options: " + accepted
       );
     }
   }
 
   /**
-   * Reads an option as a string.
+   * Reads an option as a string. Any value is accepted, read with
+   * {@code toString()}: a Groovy GString, but also a {@code File} or
+   * {@code Path}.
    *
    * @param name         The option name.
    * @param defaultValue The value when the option is not passed.
@@ -88,28 +92,28 @@ final class Options {
    * @throws IllegalArgumentException if the value is not a list of strings
    */
   List<String> strings(final String name, final List<String> defaultValue) {
-    if (values.get(name) == null) {
-      return defaultValue;
-    }
-    return list(name, CharSequence.class).stream()
+    return list(name, CharSequence.class, defaultValue).stream()
       .map(Object::toString).toList();
   }
 
   /**
-   * Reads an option that must be a list of the given type, defaulting to an
-   * empty list.
+   * Reads an option that must be a list of the given type.
    *
-   * @param <T>  The item type.
-   * @param name The option name.
-   * @param type The item type.
+   * @param <T>          The item type.
+   * @param name         The option name.
+   * @param type         The item type.
+   * @param defaultValue The value when the option is not passed.
    * @return The option value.
    * @throws IllegalArgumentException if the value is not a list of
    *     {@code type}
    */
-  <T> List<T> list(final String name, final Class<T> type) {
+  <T> List<T> list(
+      final String name,
+      final Class<T> type,
+      final List<? extends T> defaultValue) {
     Object value = values.get(name);
     if (value == null) {
-      value = List.of();
+      value = defaultValue;
     }
     if (!(value instanceof List<?> list)
         || !list.stream().allMatch(type::isInstance)) {
