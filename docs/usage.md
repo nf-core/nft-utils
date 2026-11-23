@@ -355,7 +355,7 @@ test("Process output test") {
 
 ### `listToMD5()`
 
-Converts a list of values to an MD5 hash. All values must be convertible to strings.
+Converts a list of values to an MD5 hash. All values must be convertible to strings. Values are joined with newlines before hashing, so `["ab"]` and `["a", "b"]` give different hashes; a single value hashes as its text.
 
 A common use case: read a file, remove unstable lines with [`excludeLines()`](#excludelines), then regenerate the MD5 hash.
 
