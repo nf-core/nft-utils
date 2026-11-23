@@ -93,7 +93,7 @@ nextflow_process {
     test("test extract with type - tbzip2 file") {
 
         setup {
-            extract("https://card.mcmaster.ca/latest/data", extractDir: "${launchDir}/dbs", compression: "tbzip2")
+            extract("https://raw.githubusercontent.com/nf-core/test-datasets/nft-utils/extract/tbzip2_archive", extractDir: "${launchDir}/dbs", compression: "tbzip2")
         }
         then {
             def files = getAllFilesFromPath("${launchDir}/dbs", relative: false)
