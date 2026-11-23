@@ -146,7 +146,7 @@ public final class Methods {
       opts.bool("includeDir", false),
       opts.strings("ignore", List.of()),
       opts.string("ignoreFile", null),
-      opts.strings("include", List.of("*", "**/*")),
+      opts.strings("include", List.of("**/*")),
       opts.bool("relative", false));
   }
 
@@ -234,7 +234,7 @@ public final class Methods {
     return FileTraversalUtils.getAllFilesFromPath(
       path,
       opts.strings("ignore", List.of()),
-      opts.strings("include", List.of("**", "*")),
+      opts.strings("include", List.of("**")),
       opts.bool("includeDir", false),
       opts.string("ignoreFile", null),
       opts.bool("noSignRequest", false),
