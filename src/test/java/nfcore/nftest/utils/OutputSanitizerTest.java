@@ -260,6 +260,17 @@ class OutputSanitizerTest {
     }
 
     @Test
+    void shouldKeepValuesThatAreNotValidPaths() {
+        List<String> values = List.of("a\0b.txt", "/a\0b.txt");
+
+        assertEquals(values, OutputSanitizer.fixUnstable(values));
+        assertEquals(
+            values,
+            OutputSanitizer.patternSanitizer(List.of("**"), List.of())
+                .apply(values));
+    }
+
+    @Test
     void shouldReduceOnlyAbsoluteOutputPathsToFileNames(@TempDir Path dir)
             throws Exception {
         Path file = Files.writeString(dir.resolve("a.txt"), "a");

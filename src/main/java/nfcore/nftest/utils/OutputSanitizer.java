@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.function.Function;
@@ -378,10 +379,18 @@ public final class OutputSanitizer {
    * stdout output, even if it names a file of the working directory.
    *
    * @param value The string value.
-   * @return The path, or {@code null} if the value is not an output path.
+   * @return The path, or {@code null} if the value is not an output path,
+   *     or not a valid path, such as one with a NUL byte.
    */
   private static java.nio.file.Path outputPath(final String value) {
-    return value.startsWith("/") ? Paths.get(value) : null;
+    if (!value.startsWith("/")) {
+      return null;
+    }
+    try {
+      return Paths.get(value);
+    } catch (InvalidPathException e) {
+      return null;
+    }
   }
 
   /**
@@ -419,10 +428,17 @@ public final class OutputSanitizer {
     List<PathMatcher> unstableMatchers = Utils.buildMatchers(unstablePatterns);
     List<PathMatcher> ignoreMatchers = Utils.buildMatchers(ignorePatterns);
     return value -> recursiveParse(value, strValue -> {
+      java.nio.file.Path path;
+      try {
+        path = Paths.get(strValue);
+      } catch (InvalidPathException e) {
+        // Not a path, such as stdout with a NUL byte: no pattern matches
+        return strValue;
+      }
       boolean matchIgnore = ignoreMatchers.stream()
-        .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
+        .anyMatch(matcher -> matcher.matches(path));
       boolean matchUnstable = unstableMatchers.stream()
-        .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
+        .anyMatch(matcher -> matcher.matches(path));
       if (matchIgnore && matchUnstable) {
         throw new RuntimeException(
           "Value '" + strValue
@@ -433,7 +449,7 @@ public final class OutputSanitizer {
         return IGNORE;
       }
       if (matchUnstable) {
-        return Paths.get(strValue).getFileName().toString();
+        return path.getFileName().toString();
       }
       return strValue;
     });
