@@ -1,5 +1,7 @@
 # Functions usage
 
+Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as `"${projectDir}/tests/.nftignore"`, but also a `File` or `Path`.
+
 ## Snapshot functions
 
 Functions for managing pipeline-level nf-test snapshots:
@@ -159,14 +161,14 @@ Snapshot relative paths as they are: `*.name` fails on them with `No such proper
 
 Supported named parameters:
 
-| Option          | Type           | Default       | Description                                                                                            |
-| --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
-| `ignore`        | `List<String>` | `[]`          | Glob patterns to exclude                                                                               |
-| `include`       | `List<String>` | `["**", "*"]` | Glob patterns to include                                                                               |
-| `includeDir`    | `Boolean`      | `false`       | Also emit directory entries                                                                            |
-| `ignoreFile`    | `String`       | —             | Path to a local file containing additional ignore globs (one per line)                                 |
-| `noSignRequest` | `Boolean`      | `false`       | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials            |
-| `relative`      | `Boolean`      | `true`        | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local, no `includeDir`) |
+| Option          | Type           | Default  | Description                                                                                            |
+| --------------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `ignore`        | `List<String>` | `[]`     | Glob patterns to exclude                                                                               |
+| `include`       | `List<String>` | `["**"]` | Glob patterns to include                                                                               |
+| `includeDir`    | `Boolean`      | `false`  | Also emit directory entries                                                                            |
+| `ignoreFile`    | `String`       | —        | Path to a local file containing additional ignore globs (one per line)                                 |
+| `noSignRequest` | `Boolean`      | `false`  | Pass `--no-sign-request` to the AWS CLI when listing a public S3 bucket without credentials            |
+| `relative`      | `Boolean`      | `true`   | Return relative paths; `false` returns `File`s, so snapshots record their md5 (local, no `includeDir`) |
 
 #### Local usage
 

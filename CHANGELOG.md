@@ -20,10 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreInstall()` throws when a module fails to install (@maxulysse)
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
 - [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
+- [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` module keys reject unknown names and wrong value types (@maxulysse)
 
 ### Deprecated
 
 - [#118](https://github.com/nf-core/nft-utils/pull/118) `getAllFilesFromDir()`, replaced by `getAllFilesFromPath()`; it prints a warning (@maxulysse)
+
+### Removed
+
+- [#121](https://github.com/nf-core/nft-utils/pull/121) `downloadFromS3()` overload with named options, which ignored them (@maxulysse)
 
 ### Fixed
 
@@ -40,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getAllFilesFromPath()` lists S3 directories with `includeDir`, without trailing `/` (@maxulysse)
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getAllFilesFromChannel()` reads typed process records (@maxulysse)
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getRelativePath()` accepts path strings (@maxulysse)
+- [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` modules accept Groovy strings such as `"${x}"` (@maxulysse)
 
 ## [1.3.0]
 
