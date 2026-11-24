@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.function.Function;
@@ -333,7 +334,7 @@ public final class OutputSanitizer {
    * Recursively parses a value and applies the provided function
    * to string values.
    *
-   * Directories are traversed recursively, lists are parsed element
+   * Absolute directories are traversed recursively, lists are parsed element
    * by element, and maps are parsed value by value.
    * Values that resolve to the {@code IGNORE} marker are excluded
    * from the resulting collections.
@@ -347,11 +348,8 @@ public final class OutputSanitizer {
       final Function<String, Object> applyFct) {
     if (value instanceof String) {
       String strValue = (String) value;
-      if (strValue.isEmpty()) {
-        return IGNORE;
-      }
-      java.nio.file.Path path = Paths.get(strValue);
-      if (Files.isDirectory(path)) {
+      java.nio.file.Path path = outputPath(strValue);
+      if (path != null && Files.isDirectory(path)) {
         try (var children = Files.list(path)) {
           return sanitizeList(
             children.sorted().map(java.nio.file.Path::toString).toList(),
@@ -376,16 +374,45 @@ public final class OutputSanitizer {
   }
 
   /**
-   * Recursively sanitizes unstable file paths by replacing existing paths
-   * with their file names.
+   * The path of an output file or folder. Outputs are absolute paths; a
+   * relative value such as {@code ""} or {@code "src"} is a val, env or
+   * stdout output, even if it names a file of the working directory.
+   *
+   * @param value The string value.
+   * @return The path, or {@code null} if the value is not an output path,
+   *     or not a valid path, such as one with a NUL byte.
+   */
+  private static java.nio.file.Path outputPath(final String value) {
+    java.nio.file.Path path = parsePath(value);
+    return path != null && path.isAbsolute() ? path : null;
+  }
+
+  /**
+   * Parses a value as a path.
+   *
+   * @param value The string value.
+   * @return The path, or {@code null} if the value is not a valid path, such
+   *     as one with a NUL byte.
+   */
+  private static java.nio.file.Path parsePath(final String value) {
+    try {
+      return Paths.get(value);
+    } catch (InvalidPathException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Recursively sanitizes unstable file paths by replacing existing output
+   * paths with their file names.
    *
    * @param value The value to sanitize.
    * @return The sanitized value with file paths reduced to file names.
    */
-  private static Object fixUnstable(final Object value) {
+  static Object fixUnstable(final Object value) {
     return recursiveParse(value, strValue -> {
-      java.nio.file.Path path = Paths.get(strValue);
-      if (Files.exists(path)) {
+      java.nio.file.Path path = outputPath(strValue);
+      if (path != null && Files.exists(path)) {
         return path.getFileName().toString();
       }
       return strValue;
@@ -410,10 +437,15 @@ public final class OutputSanitizer {
     List<PathMatcher> unstableMatchers = Utils.buildMatchers(unstablePatterns);
     List<PathMatcher> ignoreMatchers = Utils.buildMatchers(ignorePatterns);
     return value -> recursiveParse(value, strValue -> {
+      // Patterns match every value, not only output paths
+      java.nio.file.Path path = parsePath(strValue);
+      if (path == null) {
+        return strValue;
+      }
       boolean matchIgnore = ignoreMatchers.stream()
-        .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
+        .anyMatch(matcher -> matcher.matches(path));
       boolean matchUnstable = unstableMatchers.stream()
-        .anyMatch(matcher -> matcher.matches(Paths.get(strValue)));
+        .anyMatch(matcher -> matcher.matches(path));
       if (matchIgnore && matchUnstable) {
         throw new RuntimeException(
           "Value '" + strValue
@@ -424,7 +456,7 @@ public final class OutputSanitizer {
         return IGNORE;
       }
       if (matchUnstable) {
-        return Paths.get(strValue).getFileName().toString();
+        return path.getFileName().toString();
       }
       return strValue;
     });

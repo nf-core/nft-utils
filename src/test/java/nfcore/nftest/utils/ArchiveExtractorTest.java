@@ -20,6 +20,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.XZOutputStream;
 
 class ArchiveExtractorTest {
 
@@ -348,7 +350,58 @@ class ArchiveExtractorTest {
   }
 
   @Test
-  void shouldRejectGunzippedNameResolvingToDirectory() {
+  void shouldDecompressPlainXzFile() throws Exception {
+    Path xz = tempDir.resolve("genome.fa.xz");
+    try (XZOutputStream out = new XZOutputStream(
+        Files.newOutputStream(xz), new LZMA2Options())) {
+      out.write("ACGT\n".getBytes(StandardCharsets.UTF_8));
+    }
+    Path named = tempDir.resolve("named");
+    Path typed = tempDir.resolve("typed");
+
+    ArchiveExtractor.extract(xz.toString(), named.toString(), null);
+    ArchiveExtractor.extract(xz.toString(), typed.toString(), "XZ");
+
+    assertEquals("ACGT\n", Files.readString(named.resolve("genome.fa")));
+    assertEquals("ACGT\n", Files.readString(typed.resolve("genome.fa")));
+    assertTrue(Files.exists(xz));
+  }
+
+  @Test
+  void shouldFailToDecompressNonXzFile() throws Exception {
+    Path xz = tempDir.resolve("genome.fa.xz");
+    Files.writeString(xz, "not xz");
+    String dest = tempDir.resolve("dest").toString();
+
+    IOException e = assertThrows(
+      IOException.class,
+      () -> ArchiveExtractor.extract(xz.toString(), dest, null));
+
+    assertTrue(e.getMessage().startsWith("Failed to extract"));
+  }
+
+  @Test
+  void shouldLeaveNoFileWhenDecompressionFails() throws Exception {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (XZOutputStream out = new XZOutputStream(bytes, new LZMA2Options())) {
+      out.write("ACGT\n".repeat(1000).getBytes(StandardCharsets.UTF_8));
+    }
+    byte[] full = bytes.toByteArray();
+    Path xz = tempDir.resolve("genome.fa.xz");
+    Files.write(xz, Arrays.copyOf(full, full.length - 8));
+    Path dest = tempDir.resolve("dest");
+
+    assertThrows(
+      IOException.class,
+      () -> ArchiveExtractor.extract(xz.toString(), dest.toString(), null));
+
+    try (var files = Files.list(dest)) {
+      assertEquals(List.of(), files.toList());
+    }
+  }
+
+  @Test
+  void shouldRejectDecompressedNameResolvingToDirectory() {
     String dest = tempDir.resolve("dest").toString();
     for (String url : List.of("http://x/a/%2E%2E%2Egz", "http://x/a/..gz")) {
       assertThrows(

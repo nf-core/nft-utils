@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
+import org.tukaani.xz.XZInputStream;
 
 /**
  * Utility methods for extracting archive files from local paths, URLs
@@ -49,9 +51,36 @@ public final class ArchiveExtractor {
   );
 
   /**
-   * Compression types of a plain gzip file, not a tar archive.
+   * Decompresses a stream.
    */
-  private static final Set<String> GZIP = Set.of("gz", "gzip");
+  @FunctionalInterface
+  private interface Decompressor {
+    /**
+     * Wraps a compressed stream.
+     *
+     * @param in the compressed stream
+     * @return the decompressed stream
+     * @throws IOException if the stream header is invalid
+     */
+    InputStream open(InputStream in) throws IOException;
+  }
+
+  /**
+   * The decompressor of each compression type of a single compressed file,
+   * not a tar archive.
+   */
+  private static final Map<String, Decompressor> SINGLE_FILE = Map.of(
+    "gz", GZIPInputStream::new,
+    "gzip", GZIPInputStream::new,
+    "xz", XZInputStream::new
+  );
+
+  /**
+   * The suffix of a single compressed file, in any case.
+   */
+  private static final Pattern SINGLE_FILE_SUFFIX = Pattern.compile(
+    "(?i)\\.(" + String.join("|", SINGLE_FILE.keySet()) + ")$"
+  );
 
   /**
    * Extracts a local archive.
@@ -81,8 +110,8 @@ public final class ArchiveExtractor {
    * @param compression compression type, in any case: zip, tar, or any of
    *                    the following prefixed with "tar." or "t":
    *                    gzip, gz, bzip2, bz2, xz, lz4, lzma, lzop, zst, zstd;
-   *                    or gz or gzip for a single gzipped file, written to
-   *                    the directory without its .gz suffix;
+   *                    or gz, gzip or xz for a single compressed file,
+   *                    written to the directory without that suffix;
    *                    or {@code null} to take it from the file extension
    * @return the directory the archive was extracted into
    * @throws IOException on failure or if archive type is unsupported
@@ -259,16 +288,11 @@ public final class ArchiveExtractor {
       final String source,
       final String compression,
       final Path extractDir) {
-    if (GZIP.contains(compression.toLowerCase(Locale.ROOT))) {
-      Path output = extractDir.resolve(gunzippedName(source));
-      return archive -> {
-        try (InputStream in = new GZIPInputStream(
-            Files.newInputStream(archive))) {
-          Files.copy(in, output, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-          throw new IOException("Failed to extract " + source, e);
-        }
-      };
+    Decompressor decompressor =
+      SINGLE_FILE.get(compression.toLowerCase(Locale.ROOT));
+    if (decompressor != null) {
+      Path output = extractDir.resolve(decompressedName(source));
+      return archive -> decompress(decompressor, archive, output, source);
     }
     List<String> command = extractCommand(compression, extractDir.toString());
     return archive -> {
@@ -281,16 +305,47 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Name of a gzipped file once decompressed: its file name, in its own
-   * case, without a .gz or .gzip suffix.
+   * Decompress a single compressed file. It is written next to the output
+   * first, so a failure leaves no partial file.
    *
-   * @param source the local path or URL of the gzipped file
+   * @param decompressor the decompressor of its compression type
+   * @param archive      the compressed file
+   * @param output       the decompressed file
+   * @param source       the local path or URL of the compressed file
+   * @throws IOException if the file cannot be read, decompressed or written
+   */
+  private static void decompress(
+      final Decompressor decompressor,
+      final Path archive,
+      final Path output,
+      final String source) throws IOException {
+    Path partial = output.resolveSibling(output.getFileName() + ".part");
+    try (InputStream raw = Files.newInputStream(archive);
+        InputStream in = decompressor.open(raw)) {
+      Files.copy(in, partial, StandardCopyOption.REPLACE_EXISTING);
+      Files.move(partial, output, StandardCopyOption.REPLACE_EXISTING);
+    } catch (IOException e) {
+      IOException failure = new IOException("Failed to extract " + source, e);
+      try {
+        Files.deleteIfExists(partial);
+      } catch (IOException cleanup) {
+        failure.addSuppressed(cleanup);
+      }
+      throw failure;
+    }
+  }
+
+  /**
+   * Name of a compressed file once decompressed: its file name, in its own
+   * case, without the suffix of a {@link #SINGLE_FILE} type.
+   *
+   * @param source the local path or URL of the compressed file
    * @return the decompressed file name
    * @throws IllegalArgumentException if the source has no file name, or
    *     one that would resolve to a directory ({@code .} or {@code ..})
    */
-  private static String gunzippedName(final String source) {
-    String name = fileName(source).replaceFirst("(?i)\\.gz(ip)?$", "");
+  private static String decompressedName(final String source) {
+    String name = SINGLE_FILE_SUFFIX.matcher(fileName(source)).replaceFirst("");
     if (name.isEmpty() || name.equals(".") || name.equals("..")) {
       throw new IllegalArgumentException("No file name in " + source);
     }
