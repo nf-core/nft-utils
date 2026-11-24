@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,19 +116,20 @@ public final class NextflowOutputFilter {
       final List<String> include) {
     List<Pattern> removals = compilePatterns(additionalPatterns);
     List<String> filteredLines = new ArrayList<>();
-    String capturedRunName = null;
+    List<String> lines = toLines(output);
+    String runName = lines.stream()
+      .map(NextflowOutputFilter::captureRunName)
+      .filter(Objects::nonNull)
+      .findFirst()
+      .orElse(null);
 
-    for (String line : toLines(output)) {
-      String stripped = keepAnsi ? line : ANSI.matcher(line).replaceAll("");
+    for (String line : lines) {
+      String stripped = ANSI.matcher(line).replaceAll("");
       if (!keepLine(stripped, ignore, include)) {
         continue;
       }
 
-      if (capturedRunName == null) {
-        capturedRunName = captureRunName(stripped);
-      }
-
-      String filtered = filterLinePattern(stripped, capturedRunName);
+      String filtered = filterLinePattern(keepAnsi ? line : stripped, runName);
 
       for (Pattern removal : removals) {
         filtered = removal.matcher(filtered).replaceAll("");
@@ -210,16 +212,18 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Extracts the run name from the Nextflow launching line.
+   * Extracts the run name from the Nextflow launching line, without ANSI
+   * codes.
    *
    * @param line The line to inspect
    * @return The run name, or {@code null} if the line does not contain one
    */
   private static String captureRunName(final String line) {
-    if (!line.contains("Launching")) {
+    String stripped = ANSI.matcher(line).replaceAll("");
+    if (!stripped.contains("Launching")) {
       return null;
     }
-    Matcher matcher = RUN_NAME.matcher(line);
+    Matcher matcher = RUN_NAME.matcher(stripped);
     if (matcher.find()) {
       return matcher.group(1);
     }

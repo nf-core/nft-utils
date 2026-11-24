@@ -60,4 +60,27 @@ class NextflowOutputFilterTest {
       Map.<String, Object>of("ignore", List.of("b line")));
     assertEquals(List.of("a line"), result);
   }
+
+  @Test
+  void shouldReplaceRunNameOfIgnoredLaunchingLine() {
+    List<String> result = Methods.filterNextflowOutput(
+      "Launching `main.nf` [goofy_salas] - revision: 83be6aadf5\n"
+      + "Run goofy_salas done",
+      Map.<String, Object>of("ignore", List.of("Launching")));
+    assertEquals(List.of("Run [RUN_NAME] done"), result);
+  }
+
+  @Test
+  void shouldReadRunNameAndIgnoreWithoutAnsiWhenKeepingAnsi() {
+    List<String> result = Methods.filterNextflowOutput(
+      "Launching `main.nf` [\u001B[1mgoofy_salas\u001B[0m]\n"
+      + "\u001B[1mb\u001B[0m line\n"
+      + "Run goofy_salas done",
+      Map.<String, Object>of("keepAnsi", true, "ignore", List.of("b line")));
+    assertEquals(
+      List.of(
+        "Launching `main.nf` [\u001B[1m[RUN_NAME]\u001B[0m]",
+        "Run [RUN_NAME] done"),
+      result);
+  }
 }
