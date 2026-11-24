@@ -292,24 +292,7 @@ public final class ArchiveExtractor {
       SINGLE_FILE.get(compression.toLowerCase(Locale.ROOT));
     if (decompressor != null) {
       Path output = extractDir.resolve(decompressedName(source));
-      return archive -> {
-        // Decompress next to the output, so a failure leaves no partial file
-        Path partial = output.resolveSibling(output.getFileName() + ".part");
-        try (InputStream raw = Files.newInputStream(archive);
-            InputStream in = decompressor.open(raw)) {
-          Files.copy(in, partial, StandardCopyOption.REPLACE_EXISTING);
-          Files.move(partial, output, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-          IOException failure =
-            new IOException("Failed to extract " + source, e);
-          try {
-            Files.deleteIfExists(partial);
-          } catch (IOException cleanup) {
-            failure.addSuppressed(cleanup);
-          }
-          throw failure;
-        }
-      };
+      return archive -> decompress(decompressor, archive, output, source);
     }
     List<String> command = extractCommand(compression, extractDir.toString());
     return archive -> {
@@ -319,6 +302,37 @@ public final class ArchiveExtractor {
         new ProcessBuilder(args), "Failed to extract " + source
       );
     };
+  }
+
+  /**
+   * Decompress a single compressed file. It is written next to the output
+   * first, so a failure leaves no partial file.
+   *
+   * @param decompressor the decompressor of its compression type
+   * @param archive      the compressed file
+   * @param output       the decompressed file
+   * @param source       the local path or URL of the compressed file
+   * @throws IOException if the file cannot be read, decompressed or written
+   */
+  private static void decompress(
+      final Decompressor decompressor,
+      final Path archive,
+      final Path output,
+      final String source) throws IOException {
+    Path partial = output.resolveSibling(output.getFileName() + ".part");
+    try (InputStream raw = Files.newInputStream(archive);
+        InputStream in = decompressor.open(raw)) {
+      Files.copy(in, partial, StandardCopyOption.REPLACE_EXISTING);
+      Files.move(partial, output, StandardCopyOption.REPLACE_EXISTING);
+    } catch (IOException e) {
+      IOException failure = new IOException("Failed to extract " + source, e);
+      try {
+        Files.deleteIfExists(partial);
+      } catch (IOException cleanup) {
+        failure.addSuppressed(cleanup);
+      }
+      throw failure;
+    }
   }
 
   /**
