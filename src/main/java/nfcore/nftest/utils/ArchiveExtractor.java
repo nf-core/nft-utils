@@ -300,8 +300,14 @@ public final class ArchiveExtractor {
           Files.copy(in, partial, StandardCopyOption.REPLACE_EXISTING);
           Files.move(partial, output, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-          Files.deleteIfExists(partial);
-          throw new IOException("Failed to extract " + source, e);
+          IOException failure =
+            new IOException("Failed to extract " + source, e);
+          try {
+            Files.deleteIfExists(partial);
+          } catch (IOException cleanup) {
+            failure.addSuppressed(cleanup);
+          }
+          throw failure;
         }
       };
     }
@@ -317,7 +323,7 @@ public final class ArchiveExtractor {
 
   /**
    * Name of a compressed file once decompressed: its file name, in its own
-   * case, without a .gz, .gzip or .xz suffix.
+   * case, without the suffix of a {@link #SINGLE_FILE} type.
    *
    * @param source the local path or URL of the compressed file
    * @return the decompressed file name
