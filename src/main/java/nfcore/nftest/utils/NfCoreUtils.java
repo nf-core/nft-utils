@@ -3,6 +3,7 @@ package nfcore.nftest.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -212,7 +213,8 @@ public final class NfCoreUtils {
   private static List<File> libraryOrgDirs(
       final String libDir,
       final File modulesDir) throws IOException {
-    File libModulesDir = new File(libDir, "modules");
+    // Absolute, so links to it resolve from any directory
+    File libModulesDir = new File(libDir, "modules").getAbsoluteFile();
     if (!libModulesDir.isDirectory()) {
       throw new IOException(
         "Library modules directory does not exist: "
@@ -248,9 +250,21 @@ public final class NfCoreUtils {
       final File destDir) throws IOException {
     String itemName = libDir.getName();
     File destItem = new File(destDir, itemName);
+    Path destPath = destItem.toPath();
 
+    // Never write through a link: it may point into another library
+    if (Files.isSymbolicLink(destPath)) {
+      Path target = Files.readSymbolicLink(destPath);
+      if (!target.equals(libDir.toPath())) {
+        throw new IOException(
+          "Cannot link " + libDir + ": " + destPath + " already links to "
+          + target
+        );
+      }
+      return;
+    }
     if (!destItem.exists()) {
-      Files.createSymbolicLink(destItem.toPath(), libDir.toPath());
+      Files.createSymbolicLink(destPath, libDir.toPath());
       return;
     }
     File[] subDirs = libDir.listFiles();

@@ -51,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` modules accept Groovy strings such as `"${x}"` (@maxulysse)
 - [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` treats only absolute paths as outputs and keeps empty strings (@maxulysse)
 - [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` no longer fails on values that are not valid paths (@maxulysse)
+- [#129](https://github.com/nf-core/nft-utils/pull/129) `nfcoreLink()` links a library given as a relative path (@maxulysse)
+- [#129](https://github.com/nf-core/nft-utils/pull/129) `nfcoreLink()` fails instead of writing into a folder linked to another library (@maxulysse)
 
 ## [1.3.0]
 

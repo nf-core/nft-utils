@@ -466,7 +466,7 @@ Functions for managing test dependencies on nf-core components. Useful when writ
 
 ### `nfcoreInitialise()` - set up a temporary nf-core library
 
-Creates a temporary nf-core library for module installation. Pass the path to the library location. Use a location inside `.nf-test/` to keep it contained, or `${launchDir}` for a test-specific library.
+Creates a temporary nf-core library for module installation. Pass the path to the library location, inside `${launchDir}` so each test has its own library: tests running in parallel would otherwise install into the same one.
 
 ```groovy
 setup {
@@ -508,7 +508,7 @@ A `state/` directory inside the library tracks which modules have been installed
 
 ### `nfcoreLink()` - Link a temporary library to your modules directory
 
-Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test.
+Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test, and so does a module folder that already links to another library.
 
 ```groovy
 setup {
