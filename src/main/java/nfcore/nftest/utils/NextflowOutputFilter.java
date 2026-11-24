@@ -118,7 +118,7 @@ public final class NextflowOutputFilter {
     List<String> filteredLines = new ArrayList<>();
     List<String> lines = toLines(output);
     String runName = lines.stream()
-      .map(line -> captureRunName(ANSI.matcher(line).replaceAll("")))
+      .map(NextflowOutputFilter::captureRunName)
       .filter(Objects::nonNull)
       .findFirst()
       .orElse(null);
@@ -212,16 +212,18 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Extracts the run name from the Nextflow launching line.
+   * Extracts the run name from the Nextflow launching line, without ANSI
+   * codes.
    *
    * @param line The line to inspect
    * @return The run name, or {@code null} if the line does not contain one
    */
   private static String captureRunName(final String line) {
-    if (!line.contains("Launching")) {
+    String stripped = ANSI.matcher(line).replaceAll("");
+    if (!stripped.contains("Launching")) {
       return null;
     }
-    Matcher matcher = RUN_NAME.matcher(line);
+    Matcher matcher = RUN_NAME.matcher(stripped);
     if (matcher.find()) {
       return matcher.group(1);
     }
