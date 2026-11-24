@@ -2,13 +2,13 @@
     "Should run without failures": {
         "content": [
             [
-                "a2112ea5e55a647ce81b27810d0d1070"
+                "da8ef0ab8ec99664b9b489bc827573b2"
             ]
         ],
+        "timestamp": "2026-11-23T17:54:05.815384266",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.10.0"
-        },
-        "timestamp": "2024-10-28T14:22:04.02598768"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.0"
+        }
     }
 }

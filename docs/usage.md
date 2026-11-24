@@ -1,6 +1,6 @@
 # Functions usage
 
-Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as `"${projectDir}/tests/.nftignore"`, but also a `File` or `Path`.
+Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options and the items of string lists accept strings, Groovy strings such as `"${projectDir}/tests/.nftignore"`, `File`s and `Path`s. Integer options, and the items of `lines`, accept any whole number, such as `3L`.
 
 ## Snapshot functions
 
@@ -204,6 +204,8 @@ Downloads a single file from S3 to a temporary local directory and returns the l
 
 It uses `nextflow fs cp`, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no `noSignRequest` option: Nextflow falls back to anonymous access, even with invalid credentials.
 
+`downloadFromS3(options, uri)` is deprecated: it takes no options, ignores them and prints a warning. Use `downloadFromS3(uri)`.
+
 ```groovy
 def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")
 assert snapshot(path(local_file.toString())).match()
@@ -355,7 +357,7 @@ test("Process output test") {
 
 ### `listToMD5()`
 
-Converts a list of values to an MD5 hash. All values must be convertible to strings.
+Converts a list of values to an MD5 hash. All values must be convertible to strings. Values are joined with newlines before hashing, so `["ab"]` and `["a", "b"]` give different hashes; a single value hashes as its text. A list of lines hashes like the text they form, so `printf 'a\nb' | md5sum` gives the hash of `["a", "b"]`.
 
 A common use case: read a file, remove unstable lines with [`excludeLines()`](#excludelines), then regenerate the MD5 hash.
 

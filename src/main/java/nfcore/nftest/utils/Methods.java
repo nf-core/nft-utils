@@ -257,7 +257,7 @@ public final class Methods {
     Options opts = new Options("excludeLines", options, "lines", "ignore");
     return Utils.excludeLines(
       path,
-      opts.list("lines", Integer.class, List.of()),
+      opts.integers("lines", List.of()),
       opts.strings("ignore", List.of()));
   }
 
@@ -662,6 +662,28 @@ public final class Methods {
   public static Path downloadFromS3(
       final String cloudUri)
       throws IOException {
+    return ArchiveExtractor.downloadFromS3(cloudUri);
+  }
+
+  /**
+   * Downloads a single file from a cloud URI to a temporary local directory
+   * and returns the local {@link Path}. The named options are ignored.
+   *
+   * @param options Ignored
+   * @param cloudUri The cloud URI of the file to download
+   * @return A {@link Path} pointing to the downloaded local file
+   * @throws IOException if {@code nextflow fs cp} fails
+   * @deprecated it takes no options; use {@link #downloadFromS3(String)}
+   */
+  @Deprecated
+  public static Path downloadFromS3(
+      final LinkedHashMap<String, Object> options,
+      final String cloudUri)
+      throws IOException {
+    System.err.println(
+      "Warning: downloadFromS3() takes no options, use downloadFromS3(uri)"
+      + " instead"
+    );
     return ArchiveExtractor.downloadFromS3(cloudUri);
   }
 }
