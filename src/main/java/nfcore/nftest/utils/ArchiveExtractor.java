@@ -293,10 +293,15 @@ public final class ArchiveExtractor {
     if (decompressor != null) {
       Path output = extractDir.resolve(decompressedName(source));
       return archive -> {
-        try (InputStream in = decompressor.open(
-            Files.newInputStream(archive))) {
-          Files.copy(in, output, StandardCopyOption.REPLACE_EXISTING);
+        // Decompress next to the output, so a failure leaves no partial file
+        Path partial = Files.createTempFile(
+          extractDir, output.getFileName().toString(), ".part");
+        try (InputStream raw = Files.newInputStream(archive);
+            InputStream in = decompressor.open(raw)) {
+          Files.copy(in, partial, StandardCopyOption.REPLACE_EXISTING);
+          Files.move(partial, output, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
+          Files.deleteIfExists(partial);
           throw new IOException("Failed to extract " + source, e);
         }
       };

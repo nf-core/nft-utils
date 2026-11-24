@@ -381,6 +381,26 @@ class ArchiveExtractorTest {
   }
 
   @Test
+  void shouldLeaveNoFileWhenDecompressionFails() throws Exception {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (XZOutputStream out = new XZOutputStream(bytes, new LZMA2Options())) {
+      out.write("ACGT\n".repeat(1000).getBytes(StandardCharsets.UTF_8));
+    }
+    byte[] full = bytes.toByteArray();
+    Path xz = tempDir.resolve("genome.fa.xz");
+    Files.write(xz, Arrays.copyOf(full, full.length - 8));
+    Path dest = tempDir.resolve("dest");
+
+    assertThrows(
+      IOException.class,
+      () -> ArchiveExtractor.extract(xz.toString(), dest.toString(), null));
+
+    try (var files = Files.list(dest)) {
+      assertEquals(List.of(), files.toList());
+    }
+  }
+
+  @Test
   void shouldRejectDecompressedNameResolvingToDirectory() {
     String dest = tempDir.resolve("dest").toString();
     for (String url : List.of("http://x/a/%2E%2E%2Egz", "http://x/a/..gz")) {
