@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,20 +116,20 @@ public final class NextflowOutputFilter {
       final List<String> include) {
     List<Pattern> removals = compilePatterns(additionalPatterns);
     List<String> filteredLines = new ArrayList<>();
-    String capturedRunName = null;
+    List<String> lines = toLines(output);
+    String runName = lines.stream()
+      .map(line -> captureRunName(ANSI.matcher(line).replaceAll("")))
+      .filter(Objects::nonNull)
+      .findFirst()
+      .orElse(null);
 
-    for (String line : toLines(output)) {
+    for (String line : lines) {
       String stripped = ANSI.matcher(line).replaceAll("");
-      // The launching line names the run even when it is filtered out
-      if (capturedRunName == null) {
-        capturedRunName = captureRunName(stripped);
-      }
       if (!keepLine(stripped, ignore, include)) {
         continue;
       }
 
-      String filtered =
-        filterLinePattern(keepAnsi ? line : stripped, capturedRunName);
+      String filtered = filterLinePattern(keepAnsi ? line : stripped, runName);
 
       for (Pattern removal : removals) {
         filtered = removal.matcher(filtered).replaceAll("");
