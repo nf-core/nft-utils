@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#105](https://github.com/nf-core/nft-utils/pull/105) `nfcoreLink()`, `nfcoreUnlink()` and `nfcoreDeleteLibrary()` throw instead of only warning (@maxulysse)
 - [#116](https://github.com/nf-core/nft-utils/pull/116) `filterNextflowOutput()` matches `ignore` and `include` against lines without ANSI codes (@maxulysse)
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` module keys reject unknown names and wrong value types (@maxulysse)
+- [#125](https://github.com/nf-core/nft-utils/pull/125) `removeNextflowVersion()` and `removeFromYamlMap()` read versions as strings, so `1.10` stays `1.10` (@maxulysse)
 - [#126](https://github.com/nf-core/nft-utils/pull/126) `listToMD5()` joins values with newlines, so `["ab"]` and `["a", "b"]` differ (@maxulysse)
 
 ### Deprecated
