@@ -35,6 +35,15 @@ class YamlUtilsTest {
   }
 
   @Test
+  void shouldMergeAnchoredMaps() throws IOException {
+    Path file = Files.writeString(dir.resolve("versions.yml"),
+      "BASE: &base\n  pigz: 2.8\nTOOL:\n  <<: *base\n  samtools: 1.10\n");
+    assertEquals(
+      Map.of("pigz", "2.8", "samtools", "1.10"),
+      Methods.readYamlFile(file.toString()).get("TOOL"));
+  }
+
+  @Test
   void shouldReadEmptyFileAsEmptyMap() throws IOException {
     Path file = Files.writeString(dir.resolve("versions.yml"), "");
     assertEquals(Map.of(), Methods.removeNextflowVersion(file.toString()));

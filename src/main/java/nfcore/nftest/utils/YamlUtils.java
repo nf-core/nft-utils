@@ -16,7 +16,7 @@ import java.util.TreeMap;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
@@ -34,13 +34,15 @@ public final class YamlUtils {
 
   /**
    * Reads YAML scalars as strings, so a version such as {@code 1.10} is not
-   * read as the number {@code 1.1}. Only YAML nulls are resolved.
+   * read as the number {@code 1.1}. Only YAML nulls and merge keys are
+   * resolved.
    */
   private static final class StringResolver extends Resolver {
     @Override
     protected void addImplicitResolvers() {
       addImplicitResolver(Tag.NULL, NULL, "~nN\0");
       addImplicitResolver(Tag.NULL, EMPTY, null);
+      addImplicitResolver(Tag.MERGE, MERGE, "<");
     }
   }
 
@@ -60,7 +62,7 @@ public final class YamlUtils {
         Paths.get(filePath),
         StandardCharsets.UTF_8)) {
       Object data = new Yaml(
-        new Constructor(new LoaderOptions()),
+        new SafeConstructor(new LoaderOptions()),
         new Representer(new DumperOptions()),
         new DumperOptions(),
         new StringResolver()
