@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` no longer fails on values that are not valid paths (@maxulysse)
 - [#127](https://github.com/nf-core/nft-utils/pull/127) Named options accept `File` and `Path` list items, Groovy string names and `Long` integers (@maxulysse)
 - [#128](https://github.com/nf-core/nft-utils/pull/128) `filterNextflowOutput()` replaces the run name when the launching line is filtered out or `keepAnsi` is set (@maxulysse)
+- [#129](https://github.com/nf-core/nft-utils/pull/129) `nfcoreLink()` links a library given as a relative path (@maxulysse)
+- [#129](https://github.com/nf-core/nft-utils/pull/129) `nfcoreLink()` fails instead of writing into a folder linked to another library (@maxulysse)
 
 ## [1.3.0]
 
