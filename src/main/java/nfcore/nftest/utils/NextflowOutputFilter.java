@@ -118,16 +118,17 @@ public final class NextflowOutputFilter {
     String capturedRunName = null;
 
     for (String line : toLines(output)) {
-      String stripped = keepAnsi ? line : ANSI.matcher(line).replaceAll("");
+      String stripped = ANSI.matcher(line).replaceAll("");
+      // The launching line names the run even when it is filtered out
+      if (capturedRunName == null) {
+        capturedRunName = captureRunName(stripped);
+      }
       if (!keepLine(stripped, ignore, include)) {
         continue;
       }
 
-      if (capturedRunName == null) {
-        capturedRunName = captureRunName(stripped);
-      }
-
-      String filtered = filterLinePattern(stripped, capturedRunName);
+      String filtered =
+        filterLinePattern(keepAnsi ? line : stripped, capturedRunName);
 
       for (Pattern removal : removals) {
         filtered = removal.matcher(filtered).replaceAll("");

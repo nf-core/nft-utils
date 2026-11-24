@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` modules accept Groovy strings such as `"${x}"` (@maxulysse)
 - [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` treats only absolute paths as outputs and keeps empty strings (@maxulysse)
 - [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` no longer fails on values that are not valid paths (@maxulysse)
+- [#128](https://github.com/nf-core/nft-utils/pull/128) `filterNextflowOutput()` replaces the run name when the launching line is filtered out or `keepAnsi` is set (@maxulysse)
 
 ## [1.3.0]
 
