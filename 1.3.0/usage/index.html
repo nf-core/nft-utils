@@ -1060,7 +1060,7 @@
 
 
 <h1 id="functions-usage">Functions usage</h1>
-<p>Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as <code>"${projectDir}/tests/.nftignore"</code>, but also a <code>File</code> or <code>Path</code>.</p>
+<p>Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options and the items of string lists accept strings, Groovy strings such as <code>"${projectDir}/tests/.nftignore"</code>, <code>File</code>s and <code>Path</code>s. Integer options, and the items of <code>lines</code>, accept any whole number, such as <code>3L</code>.</p>
 <h2 id="snapshot-functions">Snapshot functions</h2>
 <p>Functions for managing pipeline-level nf-test snapshots:</p>
 <h3 id="removenextflowversion"><code>removeNextflowVersion()</code></h3>
@@ -1237,6 +1237,7 @@ Support for GCS (<code>gs://</code>) and Azure Blob (<code>az://</code>) paths i
 <h3 id="downloadfroms3"><code>downloadFromS3()</code></h3>
 <p>Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.</p>
 <p>It uses <code>nextflow fs cp</code>, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no <code>noSignRequest</code> option: Nextflow falls back to anonymous access, even with invalid credentials.</p>
+<p><code>downloadFromS3(options, uri)</code> is deprecated: it takes no options, ignores them and prints a warning. Use <code>downloadFromS3(uri)</code>.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">local_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">downloadFromS3</span><span class="o">(</span><span class="s2">"s3://my-bucket/path/to/file.vcf.gz"</span><span class="o">)</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">path</span><span class="o">(</span><span class="n">local_file</span><span class="o">.</span><span class="na">toString</span><span class="o">())).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
