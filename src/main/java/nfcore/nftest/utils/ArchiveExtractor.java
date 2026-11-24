@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.tukaani.xz.XZInputStream;
@@ -72,6 +73,13 @@ public final class ArchiveExtractor {
     "gz", GZIPInputStream::new,
     "gzip", GZIPInputStream::new,
     "xz", XZInputStream::new
+  );
+
+  /**
+   * The suffix of a single compressed file, in any case.
+   */
+  private static final Pattern SINGLE_FILE_SUFFIX = Pattern.compile(
+    "(?i)\\.(" + String.join("|", SINGLE_FILE.keySet()) + ")$"
   );
 
   /**
@@ -313,7 +321,7 @@ public final class ArchiveExtractor {
    *     one that would resolve to a directory ({@code .} or {@code ..})
    */
   private static String decompressedName(final String source) {
-    String name = fileName(source).replaceFirst("(?i)\\.(gz|gzip|xz)$", "");
+    String name = SINGLE_FILE_SUFFIX.matcher(fileName(source)).replaceFirst("");
     if (name.isEmpty() || name.equals(".") || name.equals("..")) {
       throw new IllegalArgumentException("No file name in " + source);
     }

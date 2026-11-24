@@ -381,7 +381,7 @@ class ArchiveExtractorTest {
   }
 
   @Test
-  void shouldRejectGunzippedNameResolvingToDirectory() {
+  void shouldRejectDecompressedNameResolvingToDirectory() {
     String dest = tempDir.resolve("dest").toString();
     for (String url : List.of("http://x/a/%2E%2E%2Egz", "http://x/a/..gz")) {
       assertThrows(
