@@ -30,11 +30,6 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Length of the URI scheme separator.
-   */
-  private static final int SCHEME_SEPARATOR_LENGTH = 3;
-
-  /**
    * The {@code tar} decompression flag of each supported compression suffix.
    */
   private static final Map<String, String> TAR_FLAGS = Map.of(
@@ -345,7 +340,21 @@ public final class ArchiveExtractor {
    *     one that would resolve to a directory ({@code .} or {@code ..})
    */
   private static String decompressedName(final String source) {
-    String name = SINGLE_FILE_SUFFIX.matcher(fileName(source)).replaceFirst("");
+    return checkedName(
+      SINGLE_FILE_SUFFIX.matcher(fileName(source)).replaceFirst(""), source
+    );
+  }
+
+  /**
+   * Checks that a file name stays inside the directory it is resolved in.
+   *
+   * @param name   the file name
+   * @param source the local path or URL it comes from, for the error
+   * @return the file name
+   * @throws IllegalArgumentException if the name is empty, {@code .} or
+   *     {@code ..}
+   */
+  private static String checkedName(final String name, final String source) {
     if (name.isEmpty() || name.equals(".") || name.equals("..")) {
       throw new IllegalArgumentException("No file name in " + source);
     }
@@ -398,12 +407,13 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Downloads a single file from a cloud URI to a temporary local directory
-   * and returns the local {@link Path}.
+   * Downloads a single file from a cloud URI into a new temporary directory,
+   * deleted when nf-test exits, and returns the local {@link Path}.
    *
    * @param cloudUri The cloud URI of the file to download
    * @return A {@link Path} pointing to the downloaded local file
    * @throws IOException if {@code nextflow fs cp} fails
+   * @throws IllegalArgumentException if the URI has no file name
    */
   public static Path downloadFromS3(
       final String cloudUri)
@@ -414,33 +424,8 @@ public final class ArchiveExtractor {
       );
     }
 
-    int schemeEnd = cloudUri.indexOf("://");
-    String withoutScheme;
-    if (schemeEnd >= 0) {
-      withoutScheme = cloudUri.substring(
-        schemeEnd + SCHEME_SEPARATOR_LENGTH
-      );
-    } else {
-      withoutScheme = cloudUri;
-    }
-
-    int firstSlash = withoutScheme.indexOf('/');
-    String relativeKey;
-    if (firstSlash >= 0) {
-      relativeKey = withoutScheme.substring(firstSlash + 1);
-    } else {
-      relativeKey = withoutScheme;
-    }
-
-    Path destFile = Paths.get(
-      System.getProperty("java.io.tmpdir"),
-      "nft-utils-cloud", relativeKey
-    );
-    Path destParent = destFile.getParent();
-    if (destParent != null) {
-      Files.createDirectories(destParent);
-    }
-
+    String name = checkedName(fileName(cloudUri), cloudUri);
+    Path destFile = temporaryDirectory().resolve(name);
     copy(cloudUri, destFile);
     return destFile;
   }
