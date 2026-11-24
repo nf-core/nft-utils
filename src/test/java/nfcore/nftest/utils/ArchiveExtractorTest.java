@@ -160,6 +160,8 @@ class ArchiveExtractorTest {
 
       assertEquals("archive.tar", first.getFileName().toString());
       assertNotEquals(first.getParent(), second.getParent());
+      // One parent per run, deleted by one shutdown hook
+      assertEquals(first.getParent().getParent(), second.getParent().getParent());
       assertEquals("data", Files.readString(second));
     } finally {
       server.stop(0);

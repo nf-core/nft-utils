@@ -197,23 +197,33 @@ public final class ArchiveExtractor {
   }
 
   /**
-   * Create a temporary directory that is deleted when the JVM exits.
+   * The directory holding every temporary directory of this run, created on
+   * first use, or {@code null} before.
+   */
+  private static Path sessionDir;
+
+  /**
+   * Create a temporary directory that is deleted when the JVM exits. All of
+   * them share one parent, so one shutdown hook deletes them all.
    *
    * @return the directory
    * @throws IOException if the directory cannot be created
    */
-  private static Path temporaryDirectory() throws IOException {
-    Path dir = Files.createTempDirectory("nft-utils-extract");
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      try {
-        Utils.deleteDirectory(dir.toFile());
-      } catch (IOException e) {
-        System.err.println(
-          "Warning: failed to delete " + dir + ": " + e.getMessage()
-        );
-      }
-    }));
-    return dir;
+  private static synchronized Path temporaryDirectory() throws IOException {
+    if (sessionDir == null) {
+      Path dir = Files.createTempDirectory("nft-utils");
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        try {
+          Utils.deleteDirectory(dir.toFile());
+        } catch (IOException e) {
+          System.err.println(
+            "Warning: failed to delete " + dir + ": " + e.getMessage()
+          );
+        }
+      }));
+      sessionDir = dir;
+    }
+    return Files.createTempDirectory(sessionDir, "tmp");
   }
 
   /**
