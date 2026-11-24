@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` decompresses plain gzip files, such as `genome.fa.gz` (@maxulysse)
 - [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` option `path` returns a file or folder from the extracted archive (@maxulysse)
 - [#115](https://github.com/nf-core/nft-utils/pull/115) `getAllFilesFromPath()` option `relative: false` returns local files (@maxulysse)
+- [#124](https://github.com/nf-core/nft-utils/pull/124) `extract()` decompresses plain xz files, such as `genome.fa.xz` (@maxulysse)
 
 ### Changed
 
@@ -47,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getAllFilesFromChannel()` reads typed process records (@maxulysse)
 - [#120](https://github.com/nf-core/nft-utils/pull/120) `getRelativePath()` accepts path strings (@maxulysse)
 - [#121](https://github.com/nf-core/nft-utils/pull/121) Named options and `nfcoreInstall()` modules accept Groovy strings such as `"${x}"` (@maxulysse)
+- [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` treats only absolute paths as outputs and keeps empty strings (@maxulysse)
+- [#122](https://github.com/nf-core/nft-utils/pull/122) `sanitizeOutput()` no longer fails on values that are not valid paths (@maxulysse)
 
 ## [1.3.0]
 
