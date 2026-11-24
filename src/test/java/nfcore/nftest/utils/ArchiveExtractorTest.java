@@ -2,6 +2,7 @@ package nfcore.nftest.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -144,6 +145,36 @@ class ArchiveExtractorTest {
       () -> ArchiveExtractor.extract(archive, dest, null));
 
     assertTrue(e.getMessage().startsWith("Failed to extract"));
+  }
+
+  @Test
+  void shouldDownloadEachCallIntoItsOwnDirectory() throws Exception {
+    HttpServer server = HttpServer.create(
+      new InetSocketAddress("127.0.0.1", 0), 0);
+    try {
+      byte[] body = "data".getBytes(StandardCharsets.UTF_8);
+      String url = serve(server, 200, body.length, body);
+
+      Path first = ArchiveExtractor.downloadFromS3(url);
+      Path second = ArchiveExtractor.downloadFromS3(url);
+
+      assertEquals("archive.tar", first.getFileName().toString());
+      assertNotEquals(first.getParent(), second.getParent());
+      // One parent per run, deleted by one shutdown hook
+      assertEquals(first.getParent().getParent(), second.getParent().getParent());
+      assertEquals("data", Files.readString(second));
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void shouldRejectDownloadWithoutFileName() {
+    for (String uri : List.of("s3://bucket/dir/", "s3://bucket/dir/..")) {
+      assertThrows(
+        IllegalArgumentException.class,
+        () -> ArchiveExtractor.downloadFromS3(uri));
+    }
   }
 
   @Test
