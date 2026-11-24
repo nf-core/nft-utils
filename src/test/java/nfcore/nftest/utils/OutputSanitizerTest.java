@@ -281,4 +281,28 @@ class OutputSanitizerTest {
             OutputSanitizer.fixUnstable(
                 List.of(file.toString(), "src/main", "")));
     }
+
+    @Test
+    void md5KeysShouldHashOnlyAbsoluteOutputFiles(@TempDir Path dir)
+            throws Exception {
+        // Relative to the working directory: values, not output files
+        Path base = Files.createTempDirectory(
+            Files.createDirectories(Path.of("target")), "md5");
+        try {
+            List<String> values = List.of(
+                Files.writeString(base.resolve("t.csv"), "a,b\n").toString(),
+                Files.writeString(base.resolve("v.vcf"), "").toString(),
+                Files.writeString(base.resolve("r.bam"), "").toString(),
+                "a\0b.csv");
+
+            assertEquals(values, TableUtils.tableMD5(values, 6, false));
+            assertEquals(values, VcfUtils.vcfMD5(values));
+            assertEquals(values, BamUtils.bamMD5(values, null));
+        } finally {
+            Utils.deleteDirectory(base.toFile());
+        }
+
+        String bcf = Files.writeString(dir.resolve("x.bcf"), "").toString();
+        assertEquals(List.of(bcf), VcfUtils.vcfMD5(List.of(bcf)));
+    }
 }

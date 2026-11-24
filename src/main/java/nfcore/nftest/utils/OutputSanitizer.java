@@ -382,7 +382,7 @@ public final class OutputSanitizer {
    * @return The path, or {@code null} if the value is not an output path,
    *     or not a valid path, such as one with a NUL byte.
    */
-  private static java.nio.file.Path outputPath(final String value) {
+  static java.nio.file.Path outputPath(final String value) {
     java.nio.file.Path path = parsePath(value);
     return path != null && path.isAbsolute() ? path : null;
   }

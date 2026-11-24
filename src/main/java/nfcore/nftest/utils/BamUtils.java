@@ -3,7 +3,6 @@ package nfcore.nftest.utils;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 
 /**
@@ -79,8 +78,8 @@ public final class BamUtils {
    */
   public static Object bamMD5(final Object value, final String referenceFasta) {
     return OutputSanitizer.recursiveParse(value, strValue -> {
-      Path pathBam = Paths.get(strValue);
-      if (!Files.exists(pathBam)) {
+      Path pathBam = OutputSanitizer.outputPath(strValue);
+      if (pathBam == null || !Files.exists(pathBam)) {
         return strValue;
       }
       String extension = Utils.getExtension(pathBam, false);
