@@ -1,11 +1,10 @@
 package nfcore.nftest.utils;
 
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Utility methods for computing MD5 hashes.
@@ -30,7 +29,8 @@ public final class HashUtils {
 
   /**
    * Computes an MD5 hash from the string representation of each element in
-   * a list.
+   * a list, joined with newlines, so {@code ["ab"]} and {@code ["a", "b"]}
+   * differ.
    *
    * @param input The list of objects to include in the MD5 calculation.
    * @return The MD5 digest as a hexadecimal string.
@@ -43,10 +43,14 @@ public final class HashUtils {
       // Every Java platform must support MD5
       throw new IllegalStateException(e);
     }
+    boolean first = true;
     for (final Object item : input) {
+      if (!first) {
+        md5.update((byte) '\n');
+      }
+      first = false;
       md5.update(item.toString().getBytes(StandardCharsets.UTF_8));
     }
-    return String.format(
-      Locale.ROOT, "%032x", new BigInteger(1, md5.digest()));
+    return HexFormat.of().formatHex(md5.digest());
   }
 }
