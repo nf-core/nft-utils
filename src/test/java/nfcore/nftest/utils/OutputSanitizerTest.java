@@ -1,7 +1,9 @@
 package nfcore.nftest.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -244,4 +246,39 @@ class OutputSanitizerTest {
       sanitized
     );
   }
+
+    @Test
+    void shouldListAbsoluteFoldersOnlyAndKeepEmptyStrings(@TempDir Path dir)
+            throws Exception {
+        Files.writeString(dir.resolve("a.txt"), "a");
+
+        // "src" and "" name folders of the working directory, but are values
+        assertEquals(
+            List.of("src", "", List.of(dir.resolve("a.txt").toString())),
+            OutputSanitizer.recursiveParse(
+                List.of("src", "", dir.toString()), v -> v));
+    }
+
+    @Test
+    void shouldKeepValuesThatAreNotValidPaths() {
+        List<String> values = List.of("a\0b.txt", "/a\0b.txt");
+
+        assertEquals(values, OutputSanitizer.fixUnstable(values));
+        assertEquals(
+            values,
+            OutputSanitizer.patternSanitizer(List.of("**"), List.of())
+                .apply(values));
+    }
+
+    @Test
+    void shouldReduceOnlyAbsoluteOutputPathsToFileNames(@TempDir Path dir)
+            throws Exception {
+        Path file = Files.writeString(dir.resolve("a.txt"), "a");
+
+        // "src/main" exists in the working directory, but is a value
+        assertEquals(
+            List.of("a.txt", "src/main", ""),
+            OutputSanitizer.fixUnstable(
+                List.of(file.toString(), "src/main", "")));
+    }
 }
