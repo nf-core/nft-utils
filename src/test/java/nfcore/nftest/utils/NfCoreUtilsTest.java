@@ -49,7 +49,8 @@ class NfCoreUtilsTest {
   @Test
   void shouldLinkLibraryGivenAsRelativePath() throws IOException {
     // Under the working directory, so the relative path does not climb to /
-    Path base = Files.createTempDirectory(Path.of("target"), "nfcore");
+    Path base = Files.createTempDirectory(
+      Files.createDirectories(Path.of("target")), "nfcore");
     try {
       Path lib = base.resolve("lib/modules/nf-core/fastqc");
       Files.createDirectories(lib);
