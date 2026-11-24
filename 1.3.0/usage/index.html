@@ -1235,7 +1235,7 @@ Snapshot relative paths as they are: <code>*.name</code> fails on them with <cod
 Support for GCS (<code>gs://</code>) and Azure Blob (<code>az://</code>) paths is planned for a future version.
 :::</p>
 <h3 id="downloadfroms3"><code>downloadFromS3()</code></h3>
-<p>Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.</p>
+<p>Downloads a single file from S3 into a new temporary directory, deleted when nf-test exits, and returns the local path. Each call downloads again, into its own directory, so parallel tests never share a file.</p>
 <p>It uses <code>nextflow fs cp</code>, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no <code>noSignRequest</code> option: Nextflow falls back to anonymous access, even with invalid credentials.</p>
 <p><code>downloadFromS3(options, uri)</code> is deprecated: it takes no options, ignores them and prints a warning. Use <code>downloadFromS3(uri)</code>.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">def</span><span class="w"> </span><span class="n">local_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">downloadFromS3</span><span class="o">(</span><span class="s2">"s3://my-bucket/path/to/file.vcf.gz"</span><span class="o">)</span>
