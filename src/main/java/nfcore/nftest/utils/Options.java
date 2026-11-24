@@ -146,13 +146,11 @@ final class Options {
     if (value == null) {
       return defaultValue;
     }
-    List<Integer> integers = value instanceof List<?> list
-      ? list.stream().map(Options::wholeInt).toList()
-      : null;
-    if (integers == null || integers.contains(null)) {
+    if (!(value instanceof List<?> list)
+        || !list.stream().allMatch(item -> wholeInt(item) != null)) {
       throw invalid(name, "a list of Integer", value);
     }
-    return integers;
+    return list.stream().map(Options::wholeInt).toList();
   }
 
   /**
