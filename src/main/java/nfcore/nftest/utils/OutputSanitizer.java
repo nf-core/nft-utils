@@ -383,7 +383,8 @@ public final class OutputSanitizer {
    *     or not a valid path, such as one with a NUL byte.
    */
   private static java.nio.file.Path outputPath(final String value) {
-    return value.startsWith("/") ? parsePath(value) : null;
+    java.nio.file.Path path = parsePath(value);
+    return path != null && path.isAbsolute() ? path : null;
   }
 
   /**
@@ -436,6 +437,7 @@ public final class OutputSanitizer {
     List<PathMatcher> unstableMatchers = Utils.buildMatchers(unstablePatterns);
     List<PathMatcher> ignoreMatchers = Utils.buildMatchers(ignorePatterns);
     return value -> recursiveParse(value, strValue -> {
+      // Patterns match every value, not only output paths
       java.nio.file.Path path = parsePath(strValue);
       if (path == null) {
         return strValue;
