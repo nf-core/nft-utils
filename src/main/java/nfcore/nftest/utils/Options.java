@@ -101,7 +101,14 @@ final class Options {
    * @throws IllegalArgumentException if the value is not a boolean
    */
   boolean bool(final String name, final boolean defaultValue) {
-    return get(name, Boolean.class, defaultValue);
+    Object value = values.get(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    if (!(value instanceof Boolean bool)) {
+      throw invalid(name, "a Boolean", value);
+    }
+    return bool;
   }
 
   /**
@@ -118,14 +125,34 @@ final class Options {
     if (value == null) {
       return defaultValue;
     }
-    if (!(value instanceof Number number)) {
+    Integer integer = wholeInt(value);
+    if (integer == null) {
       throw invalid(name, "an Integer", value);
     }
-    try {
-      return new BigDecimal(number.toString()).intValueExact();
-    } catch (ArithmeticException | NumberFormatException e) {
-      throw invalid(name, "an Integer", value);
+    return integer;
+  }
+
+  /**
+   * Reads an option that must be a list of whole numbers that fit an
+   * {@code int}, such as {@code [1, 3L]}.
+   *
+   * @param name         The option name.
+   * @param defaultValue The value when the option is not passed.
+   * @return The option value.
+   * @throws IllegalArgumentException if the value is not a list of integers
+   */
+  List<Integer> integers(final String name, final List<Integer> defaultValue) {
+    Object value = values.get(name);
+    if (value == null) {
+      return defaultValue;
     }
+    List<Integer> integers = value instanceof List<?> list
+      ? list.stream().map(Options::wholeInt).toList()
+      : null;
+    if (integers == null || integers.contains(null)) {
+      throw invalid(name, "a list of Integer", value);
+    }
+    return integers;
   }
 
   /**
@@ -150,56 +177,6 @@ final class Options {
   }
 
   /**
-   * Reads an option that must be a list of the given type.
-   *
-   * @param <T>          The item type.
-   * @param name         The option name.
-   * @param type         The item type.
-   * @param defaultValue The value when the option is not passed.
-   * @return The option value.
-   * @throws IllegalArgumentException if the value is not a list of
-   *     {@code type}
-   */
-  <T> List<T> list(
-      final String name,
-      final Class<T> type,
-      final List<? extends T> defaultValue) {
-    Object value = values.get(name);
-    if (value == null) {
-      value = defaultValue;
-    }
-    if (!(value instanceof List<?> list)
-        || !list.stream().allMatch(type::isInstance)) {
-      throw invalid(name, "a list of " + type.getSimpleName(), value);
-    }
-    return list.stream().map(type::cast).toList();
-  }
-
-  /**
-   * Reads an option of the given type.
-   *
-   * @param <T>          The option type.
-   * @param name         The option name.
-   * @param type         The option type.
-   * @param defaultValue The value when the option is not passed.
-   * @return The option value.
-   * @throws IllegalArgumentException if the value is not a {@code type}
-   */
-  private <T> T get(
-      final String name,
-      final Class<T> type,
-      final T defaultValue) {
-    Object value = values.get(name);
-    if (value == null) {
-      return defaultValue;
-    }
-    if (!type.isInstance(value)) {
-      throw invalid(name, "a " + type.getSimpleName(), value);
-    }
-    return type.cast(value);
-  }
-
-  /**
    * Tells whether a value is read as text: a string, Groovy GString,
    * {@code File} or {@code Path}.
    *
@@ -210,6 +187,23 @@ final class Options {
     return value instanceof CharSequence
       || value instanceof File
       || value instanceof Path;
+  }
+
+  /**
+   * Converts a whole number that fits an {@code int}, such as {@code 3L}.
+   *
+   * @param value The value.
+   * @return The integer, or {@code null} if the value is not one.
+   */
+  private static Integer wholeInt(final Object value) {
+    if (!(value instanceof Number number)) {
+      return null;
+    }
+    try {
+      return new BigDecimal(number.toString()).intValueExact();
+    } catch (ArithmeticException | NumberFormatException e) {
+      return null;
+    }
   }
 
   /**

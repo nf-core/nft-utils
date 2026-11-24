@@ -257,7 +257,7 @@ public final class Methods {
     Options opts = new Options("excludeLines", options, "lines", "ignore");
     return Utils.excludeLines(
       path,
-      opts.list("lines", Integer.class, List.of()),
+      opts.integers("lines", List.of()),
       opts.strings("ignore", List.of()));
   }
 

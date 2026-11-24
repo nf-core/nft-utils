@@ -35,7 +35,7 @@ class OptionsTest {
     assertEquals(true, opts.bool("a", true));
     assertEquals(3, opts.integer("a", 3));
     assertEquals(List.of("y"), opts.strings("a", List.of("y")));
-    assertEquals(List.of(1), opts.list("a", Integer.class, List.of(1)));
+    assertEquals(List.of(1), opts.integers("a", List.of(1)));
   }
 
   @Test
@@ -61,11 +61,15 @@ class OptionsTest {
   @Test
   void shouldReadWholeNumbersAsIntegers() {
     Options opts = new Options(
-      "f", Map.of("a", 3L, "b", 3.5, "c", "3"), "a", "b", "c");
+      "f",
+      Map.of("a", 3L, "b", 3.5, "c", "3", "d", List.of(1, 3L), "e", List.of(1.5)),
+      "a", "b", "c", "d", "e");
 
     assertEquals(3, opts.integer("a", 0));
     assertThrows(IllegalArgumentException.class, () -> opts.integer("b", 0));
     assertThrows(IllegalArgumentException.class, () -> opts.integer("c", 0));
+    assertEquals(List.of(1, 3), opts.integers("d", List.of()));
+    assertThrows(IllegalArgumentException.class, () -> opts.integers("e", List.of()));
   }
 
   @Test
