@@ -294,8 +294,7 @@ public final class ArchiveExtractor {
       Path output = extractDir.resolve(decompressedName(source));
       return archive -> {
         // Decompress next to the output, so a failure leaves no partial file
-        Path partial = Files.createTempFile(
-          extractDir, output.getFileName().toString(), ".part");
+        Path partial = output.resolveSibling(output.getFileName() + ".part");
         try (InputStream raw = Files.newInputStream(archive);
             InputStream in = decompressor.open(raw)) {
           Files.copy(in, partial, StandardCopyOption.REPLACE_EXISTING);
