@@ -1460,7 +1460,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 <h2 id="dependency-management">Dependency management</h2>
 <p>Functions for managing test dependencies on nf-core components. Useful when writing tests for cross-organisational subworkflows in non-nf-core repositories.</p>
 <h3 id="nfcoreinitialise-set-up-a-temporary-nf-core-library"><code>nfcoreInitialise()</code> - set up a temporary nf-core library</h3>
-<p>Creates a temporary nf-core library for module installation. Pass the path to the library location. Use a location inside <code>.nf-test/</code> to keep it contained, or <code>${launchDir}</code> for a test-specific library.</p>
+<p>Creates a temporary nf-core library for module installation. Pass the path to the library location, inside <code>${launchDir}</code> so each test has its own library: tests running in parallel would otherwise install into the same one.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="o">}</span>
@@ -1493,7 +1493,7 @@ A module that fails to install fails the test, including when <code>nf-core</cod
 </span></code></pre></div>
 <p>A <code>state/</code> directory inside the library tracks which modules have been installed. If a state file exists for a module (matching name, sha, and remote), installation is skipped.</p>
 <h3 id="nfcorelink-link-a-temporary-library-to-your-modules-directory"><code>nfcoreLink()</code> - Link a temporary library to your modules directory</h3>
-<p>Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test.</p>
+<p>Symlinks modules from the temporary library into your project's modules directory. A missing library or modules directory fails the test, and so does a module folder that already links to another library.</p>
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="n">setup</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">    </span><span class="n">nfcoreInitialise</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">)</span>
 </span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="w">    </span><span class="n">nfcoreInstall</span><span class="o">(</span><span class="s2">"${launchDir}/library"</span><span class="o">,</span><span class="w"> </span><span class="o">[</span><span class="s2">"minimap2/index"</span><span class="o">,</span><span class="w"> </span><span class="s2">"minimap2/align"</span><span class="o">])</span>
