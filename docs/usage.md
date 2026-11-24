@@ -355,7 +355,7 @@ test("Process output test") {
 
 ### `listToMD5()`
 
-Converts a list of values to an MD5 hash. All values must be convertible to strings. Values are joined with newlines before hashing, so `["ab"]` and `["a", "b"]` give different hashes; a single value hashes as its text.
+Converts a list of values to an MD5 hash. All values must be convertible to strings. Values are joined with newlines before hashing, so `["ab"]` and `["a", "b"]` give different hashes; a single value hashes as its text. A list of lines hashes like the text they form, so `printf 'a\nb' | md5sum` gives the hash of `["a", "b"]`.
 
 A common use case: read a file, remove unstable lines with [`excludeLines()`](#excludelines), then regenerate the MD5 hash.
 

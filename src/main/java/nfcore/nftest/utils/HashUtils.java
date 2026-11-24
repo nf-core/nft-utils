@@ -1,11 +1,10 @@
 package nfcore.nftest.utils;
 
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Utility methods for computing MD5 hashes.
@@ -52,7 +51,6 @@ public final class HashUtils {
       first = false;
       md5.update(item.toString().getBytes(StandardCharsets.UTF_8));
     }
-    return String.format(
-      Locale.ROOT, "%032x", new BigInteger(1, md5.digest()));
+    return HexFormat.of().formatHex(md5.digest());
   }
 }
