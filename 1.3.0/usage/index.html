@@ -1355,7 +1355,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 </span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="listtomd5"><code>listToMD5()</code></h3>
-<p>Converts a list of values to an MD5 hash. All values must be convertible to strings.</p>
+<p>Converts a list of values to an MD5 hash. All values must be convertible to strings. Values are joined with newlines before hashing, so <code>["ab"]</code> and <code>["a", "b"]</code> give different hashes; a single value hashes as its text. A list of lines hashes like the text they form, so <code>printf 'a\nb' | md5sum</code> gives the hash of <code>["a", "b"]</code>.</p>
 <p>A common use case: read a file, remove unstable lines with <a href="#excludelines"><code>excludeLines()</code></a>, then regenerate the MD5 hash.</p>
 <h3 id="excludelines"><code>excludeLines()</code></h3>
 <p>Reads a file and returns its lines, minus the excluded ones.</p>
