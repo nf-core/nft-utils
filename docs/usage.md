@@ -1,6 +1,6 @@
 # Functions usage
 
-Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options accept any value, read as text: Groovy strings such as `"${projectDir}/tests/.nftignore"`, but also a `File` or `Path`.
+Functions that take named options throw an error on an unknown option name or a value of the wrong type. String options and the items of string lists accept strings, Groovy strings such as `"${projectDir}/tests/.nftignore"`, `File`s and `Path`s. Integer options, and the items of `lines`, accept any whole number, such as `3L`.
 
 ## Snapshot functions
 
@@ -203,6 +203,8 @@ Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future
 Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.
 
 It uses `nextflow fs cp`, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no `noSignRequest` option: Nextflow falls back to anonymous access, even with invalid credentials.
+
+`downloadFromS3(options, uri)` is deprecated: it takes no options, ignores them and prints a warning. Use `downloadFromS3(uri)`.
 
 ```groovy
 def local_file = downloadFromS3("s3://my-bucket/path/to/file.vcf.gz")

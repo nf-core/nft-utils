@@ -71,8 +71,8 @@ public final class NfCoreUtils {
       if (moduleObj instanceof CharSequence) {
         name = moduleObj.toString();
       } else if (moduleObj instanceof Map) {
-        Options module = new Options(
-          "nfcoreInstall", (Map<?, ?>) moduleObj, "name", "sha", "remote");
+        Options module = new Options("nfcoreInstall", "module key",
+          (Map<?, ?>) moduleObj, "name", "sha", "remote");
         name = module.string("name", null);
         sha = module.string("sha", null);
         remote = module.string("remote", null);
