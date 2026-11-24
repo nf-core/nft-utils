@@ -86,6 +86,9 @@ class NfCoreUtilsTest {
 
     assertDoesNotThrow(
       () -> Methods.nfcoreLink(lib1.toString(), mods.toString()));
+    // The same library, spelled another way
+    assertDoesNotThrow(() -> Methods.nfcoreLink(
+      lib1.resolve("../lib1").toString(), mods.toString()));
     assertThrows(IOException.class,
       () -> Methods.nfcoreLink(lib2.toString(), mods.toString()));
     try (var modules = Files.list(lib1.resolve("modules/nf-core"))) {

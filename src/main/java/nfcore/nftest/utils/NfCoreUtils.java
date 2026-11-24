@@ -243,7 +243,8 @@ public final class NfCoreUtils {
    *
    * @param libDir The source library directory
    * @param destDir The destination directory
-   * @throws IOException If file operations fail
+   * @throws IOException If file operations fail, or if a folder already links
+   *     to another directory
    */
   private static void recurseLink(
       final File libDir,
@@ -254,11 +255,11 @@ public final class NfCoreUtils {
 
     // Never write through a link: it may point into another library
     if (Files.isSymbolicLink(destPath)) {
-      Path target = Files.readSymbolicLink(destPath);
-      if (!target.equals(libDir.toPath())) {
+      if (!Files.exists(destPath)
+          || !Files.isSameFile(destPath, libDir.toPath())) {
         throw new IOException(
           "Cannot link " + libDir + ": " + destPath + " already links to "
-          + target
+          + Files.readSymbolicLink(destPath)
         );
       }
       return;
