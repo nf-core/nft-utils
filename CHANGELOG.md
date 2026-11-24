@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` decompresses plain gzip files, such as `genome.fa.gz` (@maxulysse)
 - [#114](https://github.com/nf-core/nft-utils/pull/114) `extract()` option `path` returns a file or folder from the extracted archive (@maxulysse)
 - [#115](https://github.com/nf-core/nft-utils/pull/115) `getAllFilesFromPath()` option `relative: false` returns local files (@maxulysse)
+- [#124](https://github.com/nf-core/nft-utils/pull/124) `extract()` decompresses plain xz files, such as `genome.fa.xz` (@maxulysse)
 
 ### Changed
 
