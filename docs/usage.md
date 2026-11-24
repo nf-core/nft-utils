@@ -200,7 +200,7 @@ Support for GCS (`gs://`) and Azure Blob (`az://`) paths is planned for a future
 
 ### `downloadFromS3()`
 
-Downloads a single file from S3 to a temporary local directory and returns the local path. The destination mirrors the S3 key structure under a plugin-specific temp directory, so repeated calls for the same URI are idempotent.
+Downloads a single file from S3 into a new temporary directory, deleted when nf-test exits, and returns the local path. Each call downloads again, into its own directory, so parallel tests never share a file.
 
 It uses `nextflow fs cp`, so it needs Nextflow, and Nextflow's S3 credentials for private buckets. Public buckets need no `noSignRequest` option: Nextflow falls back to anonymous access, even with invalid credentials.
 
