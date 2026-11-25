@@ -178,10 +178,7 @@ public final class NfCoreUtils {
       final String libDir,
       final String modulesDir) throws IOException {
     Path destModulesDir = Paths.get(modulesDir);
-    for (Path orgDir
-        : subDirectories(libraryModulesDir(libDir, destModulesDir))) {
-      recurseLink(orgDir, destModulesDir);
-    }
+    linkInto(libraryModulesDir(libDir, destModulesDir), destModulesDir);
   }
 
   /**
@@ -196,18 +193,22 @@ public final class NfCoreUtils {
       final String libDir,
       final String modulesDir) throws IOException {
     Path destModulesDir = Paths.get(modulesDir);
-    Path libModulesDir = libraryModulesDir(libDir, destModulesDir);
+    Path libModulesDir =
+      libraryModulesDir(libDir, destModulesDir).toRealPath();
     List<Path> links;
-    // Links are not followed, so only links inside the modules directory
-    try (Stream<Path> walk = Files.walk(destModulesDir)) {
-      links = walk.skip(1).filter(Files::isSymbolicLink).toList();
+    // Links are not followed, so only links inside the modules directory,
+    // which is resolved first as it may itself be a link
+    try (Stream<Path> walk = Files.walk(destModulesDir.toRealPath())) {
+      links = walk.filter(Files::isSymbolicLink).toList();
     }
     for (Path link : links) {
       // A relative link target is relative to the folder of the link
       Path target = link.resolveSibling(Files.readSymbolicLink(link));
-      if (isWithinDirectory(target, libModulesDir)) {
+      // getCanonicalFile resolves links, and paths that no longer exist
+      if (target.toFile().getCanonicalFile().toPath()
+          .startsWith(libModulesDir)) {
         Files.delete(link);
-        System.out.println("Removed symlink: " + link.toAbsolutePath());
+        System.out.println("Removed symlink: " + link);
       }
     }
   }
@@ -240,68 +241,36 @@ public final class NfCoreUtils {
   }
 
   /**
-   * List the directories inside a directory.
-   *
-   * @param dir The directory
-   * @return Its sub-directories
-   * @throws IOException if the directory cannot be listed
-   */
-  private static List<Path> subDirectories(final Path dir)
-      throws IOException {
-    try (Stream<Path> entries = Files.list(dir)) {
-      return entries.filter(Files::isDirectory).toList();
-    }
-  }
-
-  /**
-   * Recursively iterate through a library and a target module directory
-   * and link files at the lowest-available directory level.
+   * Link the directories of a library directory into a destination
+   * directory, at the lowest level not already present there.
    *
    * @param libDir The source library directory
    * @param destDir The destination directory
    * @throws IOException If file operations fail, or if a folder already links
    *     to another directory
    */
-  private static void recurseLink(
+  private static void linkInto(
       final Path libDir,
       final Path destDir) throws IOException {
-    Path dest = destDir.resolve(libDir.getFileName());
-
-    // Never write through a link: it may point into another library
-    if (Files.isSymbolicLink(dest)) {
-      if (!Files.exists(dest) || !Files.isSameFile(dest, libDir)) {
-        throw new IOException(
-          "Cannot link " + libDir + ": " + dest + " already links to "
-          + Files.readSymbolicLink(dest)
-        );
+    List<Path> subDirs;
+    try (Stream<Path> entries = Files.list(libDir)) {
+      subDirs = entries.filter(Files::isDirectory).toList();
+    }
+    for (Path subDir : subDirs) {
+      Path dest = destDir.resolve(subDir.getFileName());
+      // Never write through a link: it may point into another library
+      if (Files.isSymbolicLink(dest)) {
+        if (!Files.exists(dest) || !Files.isSameFile(dest, subDir)) {
+          throw new IOException(
+            "Cannot link " + subDir + ": " + dest + " already links to "
+            + Files.readSymbolicLink(dest)
+          );
+        }
+      } else if (!Files.exists(dest)) {
+        Files.createSymbolicLink(dest, subDir);
+      } else {
+        linkInto(subDir, dest);
       }
-      return;
-    }
-    if (!Files.exists(dest)) {
-      Files.createSymbolicLink(dest, libDir);
-      return;
-    }
-    for (Path subDir : subDirectories(libDir)) {
-      recurseLink(subDir, dest);
-    }
-  }
-
-  /**
-   * Helper method to check if a path is within a given directory.
-   *
-   * @param path The path to check
-   * @param directory The directory to check against
-   * @return true if the path is within the directory, false otherwise
-   */
-  private static boolean isWithinDirectory(
-      final Path path,
-      final Path directory) {
-    try {
-      // getCanonicalFile resolves links, and paths that no longer exist
-      return path.toFile().getCanonicalFile().toPath()
-        .startsWith(directory.toFile().getCanonicalFile().toPath());
-    } catch (IOException e) {
-      return false;
     }
   }
 

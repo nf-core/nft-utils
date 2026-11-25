@@ -109,4 +109,17 @@ class NfCoreUtilsTest {
 
     assertFalse(Files.exists(org.resolve("fastqc"), LinkOption.NOFOLLOW_LINKS));
   }
+
+  @Test
+  void shouldUnlinkThroughALinkedModulesDir() throws IOException {
+    Path lib = library("lib", "fastqc");
+    Path mods = Files.createDirectories(dir.resolve("mods"));
+    Path linkedMods = Files.createSymbolicLink(dir.resolve("linked"), mods);
+    Methods.nfcoreLink(lib.toString(), linkedMods.toString());
+
+    Methods.nfcoreUnlink(lib.toString(), linkedMods.toString());
+
+    assertFalse(Files.exists(mods.resolve("nf-core/fastqc"),
+      LinkOption.NOFOLLOW_LINKS));
+  }
 }
