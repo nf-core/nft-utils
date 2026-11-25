@@ -396,8 +396,9 @@ public final class FileTraversalUtils {
    *     files when {@code relative} is disabled
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
-   * @throws IllegalArgumentException if {@code path} is empty, or if
-   *     {@code relative} is disabled with an S3 path or {@code includeDir}
+   * @throws IllegalArgumentException if {@code path} is empty, a local path
+   *     that does not exist or is not a directory, or if {@code relative}
+   *     is disabled with an S3 path or {@code includeDir}
    */
   public static List<?> getAllFilesFromPath(
       final String path,
@@ -414,6 +415,12 @@ public final class FileTraversalUtils {
       );
     }
     boolean s3 = path.startsWith("s3://");
+    // A file would list as empty, and its snapshot would never fail
+    if (!s3 && !Files.isDirectory(Paths.get(path))) {
+      throw new IllegalArgumentException(
+        "The specified path does not exist or is not a directory: " + path
+      );
+    }
     // nf-test would hash a whole directory, ignored files included
     if (!relative && (includeDir || s3)) {
       throw new IllegalArgumentException(
