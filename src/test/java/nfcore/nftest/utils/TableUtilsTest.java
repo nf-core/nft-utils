@@ -2,9 +2,16 @@ package nfcore.nftest.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class TableUtilsTest {
 
@@ -126,5 +133,49 @@ class TableUtilsTest {
       List.of("test.txt", "C", "3.79"),
       normalized.rows().get(2)
     );
+  }
+
+  @TempDir
+  Path dir;
+
+  private String normalize(final String name, final byte[] content,
+      final boolean removeComments) throws IOException {
+    Path file = Files.write(dir.resolve(name), content);
+    return TableUtils.normalizeTable(file, 6, removeComments);
+  }
+
+  private static byte[] utf8(final String text) {
+    return text.getBytes(StandardCharsets.UTF_8);
+  }
+
+  @Test
+  void shouldReadTableBelowLeadingComments() throws IOException {
+    byte[] table = utf8("# made by tool, v1\nb\ta\n2\t1\n");
+    assertEquals("# made by tool, v1\na,b\n1,2\n",
+      normalize("t.tsv", table, false));
+    assertEquals("a,b\n1,2\n", normalize("t.tsv", table, true));
+  }
+
+  @Test
+  void shouldPadShortRowsAndBlankLines() throws IOException {
+    assertEquals("\"\",a,b,c\n\"\",,,\n\"\",1,2,\n7,4,5,6\n",
+      normalize("t.csv", utf8("a,b,c\n1,2\n\n4,5,6,7\n"), false));
+  }
+
+  @Test
+  void shouldKeepValuesTooLargeToRound() throws IOException {
+    assertEquals("a\n0.123457\n1.5E13\n",
+      normalize("t.csv", utf8("a\n1.5e13\n0.1234567\n"), false));
+  }
+
+  @Test
+  void shouldReadGzippedAndNonUtf8Tables() throws IOException {
+    ByteArrayOutputStream gz = new ByteArrayOutputStream();
+    try (GZIPOutputStream out = new GZIPOutputStream(gz)) {
+      out.write(utf8("a,b\n1,2\n"));
+    }
+    assertEquals("a,b\n1,2\n", normalize("t.csv.gz", gz.toByteArray(), false));
+    assertEquals("a\n\uFFFD\n",
+      normalize("t.csv", new byte[] {'a', '\n', (byte) 0xff, '\n'}, false));
   }
 }
