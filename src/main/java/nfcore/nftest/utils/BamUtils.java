@@ -1,9 +1,8 @@
 package nfcore.nftest.utils;
 
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Set;
 import java.util.LinkedHashMap;
 
 /**
@@ -78,41 +77,31 @@ public final class BamUtils {
    * @return value with read MD5 replacements
    */
   public static Object bamMD5(final Object value, final String referenceFasta) {
-    return OutputSanitizer.recursiveParse(value, strValue -> {
-      Path pathBam = Paths.get(strValue);
-      if (!Files.exists(pathBam)) {
-        return strValue;
-      }
-      String extension = Utils.getExtension(pathBam, false);
-      if (!"bam".equals(extension)
-          && !"sam".equals(extension)
-          && !"cram".equals(extension)) {
-        return strValue;
-      }
-      if ("cram".equals(extension)
-          && (referenceFasta == null || referenceFasta.isEmpty())) {
-        throw new RuntimeException(
-          "A reference FASTA file is required to calculate reads MD5 "
-          + "for CRAM file: "
-          + pathBam
-        );
-      }
-      return pathBam.getFileName().toString()
-        + ":md5Reads,"
-        + getReadsMD5(strValue, referenceFasta);
-    });
+    return OutputSanitizer.hashOutputFiles(
+      value, Set.of("bam", "sam", "cram"), "md5Reads",
+      path -> getReadsMD5(path, referenceFasta)
+    );
   }
 
   /**
    * Calculates the read MD5 using nft-bam.
    *
    * @param pathBam alignment file path
-   * @param pathFasta reference FASTA path
+   * @param pathFasta reference FASTA path, required for CRAM files
    * @return read MD5
    */
   private static String getReadsMD5(
-      final String pathBam,
+      final Path pathBam,
       final String pathFasta) {
+    final String fastaPath = pathFasta == null ? "" : pathFasta;
+    if ("cram".equals(Utils.getExtension(pathBam, false))
+        && fastaPath.isEmpty()) {
+      throw new RuntimeException(
+        "A reference FASTA file is required to calculate reads MD5 "
+        + "for CRAM file: "
+        + pathBam
+      );
+    }
     try {
       Class<?> methodsClass = getNftBamMethodsClass();
       Method bamMethod = methodsClass.getMethod(
@@ -122,10 +111,6 @@ public final class BamUtils {
         CharSequence.class
       );
 
-      String fastaPath = pathFasta;
-      if (fastaPath == null) {
-        fastaPath = "";
-      }
       Object alignmentFile = bamMethod.invoke(
         null,
         new LinkedHashMap<String, Object>(),

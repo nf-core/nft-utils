@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Set;
 import java.util.List;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -61,30 +61,12 @@ public final class TableUtils {
     final int digits,
     final boolean removeComments
   ) {
-    return OutputSanitizer.recursiveParse(value, strValue -> {
-      final Path path = Paths.get(strValue);
-
-      if (!Files.exists(path)) {
-        return strValue;
-      }
-
-      final String extension = Utils.getExtension(path, false);
-
-      if (
-        !"csv".equals(extension)
-        && !"tsv".equals(extension)
-        && !"txt".equals(extension)
-        && !"tbl".equals(extension)
-        && !"dat".equals(extension)
-        && !"out".equals(extension)
-      ) {
-        return strValue;
-      }
-
-      return path.getFileName().toString()
-        + ":md5NormedTable,"
-        + getTableMD5(path, digits, removeComments);
-    });
+    return OutputSanitizer.hashOutputFiles(
+      value,
+      Set.of("csv", "tsv", "txt", "tbl", "dat", "out"),
+      "md5NormedTable",
+      path -> getTableMD5(path, digits, removeComments)
+    );
   }
 
 
