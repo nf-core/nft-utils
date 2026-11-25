@@ -49,7 +49,7 @@ public final class HashUtils {
         md5.update((byte) '\n');
       }
       first = false;
-      md5.update(item.toString().getBytes(StandardCharsets.UTF_8));
+      md5.update(String.valueOf(item).getBytes(StandardCharsets.UTF_8));
     }
     return HexFormat.of().formatHex(md5.digest());
   }
