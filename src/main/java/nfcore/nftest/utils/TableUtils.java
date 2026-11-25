@@ -79,11 +79,11 @@ public final class TableUtils {
    * values
    * @return the normalized table
    */
-  static TableUtilsClass normalizeTable(
-    final TableUtilsClass table,
+  static Table normalizeTable(
+    final Table table,
     final int digits
   ) {
-    TableUtilsClass tableNormed = normalizeColumns(table);
+    Table tableNormed = normalizeColumns(table);
     tableNormed = normalizeValues(tableNormed, digits);
     tableNormed = normalizeRows(tableNormed);
     return tableNormed;
@@ -117,7 +117,7 @@ public final class TableUtils {
       // Leading comments are not table rows: kept as they are, or removed
       final String comments = removeComments || start == 0 ? ""
         : String.join("\n", lines.subList(0, start)) + "\n";
-      final TableUtilsClass table = readTable(
+      final Table table = readTable(
         String.join("\n", lines.subList(start, lines.size()))
       );
       return comments + toCanonicalTable(normalizeTable(table, digits));
@@ -227,7 +227,7 @@ public final class TableUtils {
    * @return the parsed table
    * @throws IOException if the text cannot be parsed
    */
-  private static TableUtilsClass readTable(final String content)
+  private static Table readTable(final String content)
     throws IOException {
     final char separator = detectSeparator(content);
 
@@ -251,7 +251,7 @@ public final class TableUtils {
         rows.add(row);
       }
       if (rows.isEmpty()) {
-        return new TableUtilsClass(List.of(), rows);
+        return new Table(List.of(), rows);
       }
       final int width = rows.stream().mapToInt(List::size).max().orElse(0);
       for (List<String> row : rows) {
@@ -260,7 +260,7 @@ public final class TableUtils {
         }
       }
       final List<String> columns = rows.remove(0);
-      return new TableUtilsClass(columns, rows);
+      return new Table(columns, rows);
     }
   }
 
@@ -324,7 +324,7 @@ public final class TableUtils {
    * @param table the table whose columns should be reordered
    * @return a new table with columns sorted alphabetically by name
    */
-  private static TableUtilsClass normalizeColumns(final TableUtilsClass table) {
+  private static Table normalizeColumns(final Table table) {
     final List<Integer> indexes = new ArrayList<>();
 
     for (int i = 0; i < table.columns().size(); i++) {
@@ -348,7 +348,7 @@ public final class TableUtils {
       }
       rows.add(normalizedRow);
     }
-    return new TableUtilsClass(columns, rows);
+    return new Table(columns, rows);
   }
 
   /**
@@ -360,8 +360,8 @@ public final class TableUtils {
    * values
    * @return the normalized table
    */
-  private static TableUtilsClass normalizeValues(
-    final TableUtilsClass table,
+  private static Table normalizeValues(
+    final Table table,
     final int digits
   ) {
     final List<List<String>> rows = new ArrayList<>();
@@ -385,7 +385,7 @@ public final class TableUtils {
       }
       rows.add(normalizedRow);
     }
-    return new TableUtilsClass(table.columns(), rows);
+    return new Table(table.columns(), rows);
   }
 
   /**
@@ -463,13 +463,13 @@ public final class TableUtils {
    * @param table the table whose rows should be sorted
    * @return the table with rows sorted by all columns
    */
-  private static TableUtilsClass normalizeRows(final TableUtilsClass table) {
+  private static Table normalizeRows(final Table table) {
     final List<List<String>> rows = table.rows().stream()
       .map(row -> Map.entry(String.join("\u0000", row), row))
       .sorted(Map.Entry.comparingByKey())
       .map(Map.Entry::getValue)
       .collect(Collectors.toList());
-    return new TableUtilsClass(table.columns(), rows);
+    return new Table(table.columns(), rows);
   }
 
   /**
@@ -486,7 +486,7 @@ public final class TableUtils {
    * @return the table serialized as UTF-8 CSV with normalized line endings
    * @throws IOException if the table cannot be serialized
    */
-  private static String toCanonicalTable(final TableUtilsClass table)
+  private static String toCanonicalTable(final Table table)
     throws IOException {
     final StringWriter output = new StringWriter();
     final CSVFormat format = CSVFormat.DEFAULT.builder()
@@ -507,50 +507,9 @@ public final class TableUtils {
    * Represents the contents of a delimited text file as column names
    * and rows of string values.
    *
-   * This class is used internally to represent tabular data without
-   * relying on an external table library.
+   * @param columns the column names of the table
+   * @param rows the rows of the table, each a list of values
    */
-  static final class TableUtilsClass {
-    /**
-     * The column names of the table.
-     */
-    private final List<String> columns;
-
-    /**
-     * The rows of the table, with each row represented as a list of values.
-     */
-    private final List<List<String>> rows;
-
-    /**
-     * Creates a table.
-     *
-     * @param columnNames column names
-     * @param rowsNames table rows
-     */
-    TableUtilsClass(
-      final List<String> columnNames,
-      final List<List<String>> rowsNames
-    ) {
-      this.columns = columnNames;
-      this.rows = rowsNames;
-    }
-
-    /**
-     * Returns the column names.
-     *
-     * @return the column names
-     */
-    List<String> columns() {
-      return columns;
-    }
-
-    /**
-     * Returns the rows names.
-     *
-     * @return the rows names
-     */
-    List<List<String>> rows() {
-      return rows;
-    }
+  record Table(List<String> columns, List<List<String>> rows) {
   }
 }
