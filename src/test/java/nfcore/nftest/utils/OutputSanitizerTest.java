@@ -304,5 +304,11 @@ class OutputSanitizerTest {
 
         String bcf = Files.writeString(dir.resolve("x.bcf"), "").toString();
         assertEquals(List.of(bcf), VcfUtils.vcfMD5(List.of(bcf)));
+
+        String cram = Files.writeString(dir.resolve("x.cram"), "").toString();
+        RuntimeException e = assertThrows(RuntimeException.class,
+            () -> BamUtils.bamMD5(List.of(cram), null));
+        assertTrue(e.getMessage().startsWith(
+            "A reference FASTA file is required"));
     }
 }
