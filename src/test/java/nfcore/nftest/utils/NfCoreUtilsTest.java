@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -95,5 +96,17 @@ class NfCoreUtilsTest {
     try (var modules = Files.list(lib1.resolve("modules/nf-core"))) {
       assertEquals(1, modules.count());
     }
+  }
+
+  @Test
+  void shouldUnlinkRelativeLinksIntoTheLibrary() throws IOException {
+    Path lib = library("lib", "fastqc");
+    Path org = Files.createDirectories(dir.resolve("mods/nf-core"));
+    Files.createSymbolicLink(
+      org.resolve("fastqc"), Path.of("../../lib/modules/nf-core/fastqc"));
+
+    Methods.nfcoreUnlink(lib.toString(), dir.resolve("mods").toString());
+
+    assertFalse(Files.exists(org.resolve("fastqc"), LinkOption.NOFOLLOW_LINKS));
   }
 }

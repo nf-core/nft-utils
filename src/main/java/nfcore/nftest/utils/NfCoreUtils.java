@@ -7,9 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for interacting with nf-core pipelines and modules.
@@ -178,8 +178,8 @@ public final class NfCoreUtils {
   public static void nfcoreLink(
       final String libDir,
       final String modulesDir) throws IOException {
-    File destModulesDir = new File(modulesDir);
-    for (File orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+    Path destModulesDir = Paths.get(modulesDir);
+    for (Path orgDir : libraryOrgDirs(libDir, destModulesDir)) {
       recurseLink(orgDir, destModulesDir);
     }
   }
@@ -195,8 +195,8 @@ public final class NfCoreUtils {
   public static void nfcoreUnlink(
       final String libDir,
       final String modulesDir) throws IOException {
-    File destModulesDir = new File(modulesDir);
-    for (File orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+    Path destModulesDir = Paths.get(modulesDir);
+    for (Path orgDir : libraryOrgDirs(libDir, destModulesDir)) {
       recurseUnlink(orgDir, destModulesDir);
     }
   }
@@ -210,31 +210,36 @@ public final class NfCoreUtils {
    * @return The organisation directories of the library
    * @throws IOException if either directory does not exist or cannot be listed
    */
-  private static List<File> libraryOrgDirs(
+  private static List<Path> libraryOrgDirs(
       final String libDir,
-      final File modulesDir) throws IOException {
+      final Path modulesDir) throws IOException {
     // Absolute, so links to it resolve from any directory
-    File libModulesDir = new File(libDir, "modules").getAbsoluteFile();
-    if (!libModulesDir.isDirectory()) {
+    Path libModulesDir = Paths.get(libDir, "modules").toAbsolutePath();
+    if (!Files.isDirectory(libModulesDir)) {
       throw new IOException(
-        "Library modules directory does not exist: "
-        + libModulesDir.getAbsolutePath()
+        "Library modules directory does not exist: " + libModulesDir
       );
     }
-    if (!modulesDir.exists()) {
+    if (!Files.exists(modulesDir)) {
       throw new IOException(
-        "Modules directory does not exist: "
-        + modulesDir.getAbsolutePath()
+        "Modules directory does not exist: " + modulesDir.toAbsolutePath()
       );
     }
-    File[] entries = libModulesDir.listFiles();
-    if (entries == null) {
-      throw new IOException(
-        "Unable to list library modules directory: "
-        + libModulesDir.getAbsolutePath()
-      );
+    return subDirectories(libModulesDir);
+  }
+
+  /**
+   * List the directories inside a directory.
+   *
+   * @param dir The directory
+   * @return Its sub-directories
+   * @throws IOException if the directory cannot be listed
+   */
+  private static List<Path> subDirectories(final Path dir)
+      throws IOException {
+    try (Stream<Path> entries = Files.list(dir)) {
+      return entries.filter(Files::isDirectory).toList();
     }
-    return Arrays.stream(entries).filter(File::isDirectory).toList();
   }
 
   /**
@@ -247,37 +252,26 @@ public final class NfCoreUtils {
    *     to another directory
    */
   private static void recurseLink(
-      final File libDir,
-      final File destDir) throws IOException {
-    String itemName = libDir.getName();
-    File destItem = new File(destDir, itemName);
-    Path destPath = destItem.toPath();
+      final Path libDir,
+      final Path destDir) throws IOException {
+    Path dest = destDir.resolve(libDir.getFileName());
 
     // Never write through a link: it may point into another library
-    if (Files.isSymbolicLink(destPath)) {
-      if (!Files.exists(destPath)
-          || !Files.isSameFile(destPath, libDir.toPath())) {
+    if (Files.isSymbolicLink(dest)) {
+      if (!Files.exists(dest) || !Files.isSameFile(dest, libDir)) {
         throw new IOException(
-          "Cannot link " + libDir + ": " + destPath + " already links to "
-          + Files.readSymbolicLink(destPath)
+          "Cannot link " + libDir + ": " + dest + " already links to "
+          + Files.readSymbolicLink(dest)
         );
       }
       return;
     }
-    if (!destItem.exists()) {
-      Files.createSymbolicLink(destPath, libDir.toPath());
+    if (!Files.exists(dest)) {
+      Files.createSymbolicLink(dest, libDir);
       return;
     }
-    File[] subDirs = libDir.listFiles();
-    if (subDirs == null) {
-      throw new IOException(
-        "Unable to list directory: " + libDir.getAbsolutePath()
-      );
-    }
-    for (File subDir : subDirs) {
-      if (subDir.isDirectory()) {
-        recurseLink(subDir, destItem);
-      }
+    for (Path subDir : subDirectories(libDir)) {
+      recurseLink(subDir, dest);
     }
   }
 
@@ -290,50 +284,43 @@ public final class NfCoreUtils {
    * @throws IOException If file operations fail
    */
   private static void recurseUnlink(
-      final File libDir,
-      final File destDir) throws IOException {
-    if (!destDir.exists() || !destDir.isDirectory()) {
+      final Path libDir,
+      final Path destDir) throws IOException {
+    if (!Files.isDirectory(destDir)) {
       return;
     }
-
-    File[] files = destDir.listFiles();
-    if (files == null) {
-      return;
+    List<Path> files;
+    try (Stream<Path> entries = Files.list(destDir)) {
+      files = entries.toList();
     }
-
-    for (File file : files) {
-      if (Files.isSymbolicLink(file.toPath())) {
-        File linkTarget = Files.readSymbolicLink(file.toPath()).toFile();
-        if (!linkTarget.isAbsolute()) {
-          linkTarget = new File(file.getParentFile(), linkTarget.getPath())
-            .getCanonicalFile();
+    for (Path file : files) {
+      if (Files.isSymbolicLink(file)) {
+        // A relative link target is relative to the folder of the link
+        Path target = destDir.resolve(Files.readSymbolicLink(file));
+        if (isWithinDirectory(target, libDir)) {
+          Files.delete(file);
+          System.out.println("Removed symlink: " + file.toAbsolutePath());
         }
-
-        if (isWithinDirectory(linkTarget, libDir)) {
-          Files.delete(file.toPath());
-          System.out.println("Removed symlink: " + file.getAbsolutePath());
-        }
-      } else if (file.isDirectory()) {
+      } else if (Files.isDirectory(file)) {
         recurseUnlink(libDir, file);
       }
     }
   }
 
   /**
-   * Helper method to check if a file is within a given directory.
+   * Helper method to check if a path is within a given directory.
    *
-   * @param file The file to check
+   * @param path The path to check
    * @param directory The directory to check against
-   * @return true if the file is within the directory, false
-   * otherwise
+   * @return true if the path is within the directory, false otherwise
    */
   private static boolean isWithinDirectory(
-      final File file,
-      final File directory) {
+      final Path path,
+      final Path directory) {
     try {
-      String filePath = file.getCanonicalPath();
-      String dirPath = directory.getCanonicalPath();
-      return filePath.startsWith(dirPath);
+      // getCanonicalFile resolves links, and paths that no longer exist
+      return path.toFile().getCanonicalFile().toPath()
+        .startsWith(directory.toFile().getCanonicalFile().toPath());
     } catch (IOException e) {
       return false;
     }
