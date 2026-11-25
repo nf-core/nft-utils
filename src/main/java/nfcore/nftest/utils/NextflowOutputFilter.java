@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 /**
@@ -147,25 +146,17 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Compiles regex patterns, warning about and skipping invalid ones.
+   * Compiles regex patterns.
    *
    * @param patterns The regex patterns, or {@code null}
    * @return The compiled patterns
+   * @throws java.util.regex.PatternSyntaxException on an invalid pattern
    */
   private static List<Pattern> compilePatterns(final List<String> patterns) {
-    List<Pattern> compiled = new ArrayList<>();
     if (patterns == null) {
-      return compiled;
+      return List.of();
     }
-    for (String pattern : patterns) {
-      try {
-        compiled.add(Pattern.compile(pattern));
-      } catch (PatternSyntaxException e) {
-        System.err.println("Warning: Invalid regex pattern '" + pattern
-            + "': " + e.getMessage());
-      }
-    }
-    return compiled;
+    return patterns.stream().map(Pattern::compile).toList();
   }
 
   /**
