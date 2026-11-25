@@ -507,50 +507,9 @@ public final class TableUtils {
    * Represents the contents of a delimited text file as column names
    * and rows of string values.
    *
-   * This class is used internally to represent tabular data without
-   * relying on an external table library.
+   * @param columns the column names of the table
+   * @param rows the rows of the table, each a list of values
    */
-  static final class TableUtilsClass {
-    /**
-     * The column names of the table.
-     */
-    private final List<String> columns;
-
-    /**
-     * The rows of the table, with each row represented as a list of values.
-     */
-    private final List<List<String>> rows;
-
-    /**
-     * Creates a table.
-     *
-     * @param columnNames column names
-     * @param rowsNames table rows
-     */
-    TableUtilsClass(
-      final List<String> columnNames,
-      final List<List<String>> rowsNames
-    ) {
-      this.columns = columnNames;
-      this.rows = rowsNames;
-    }
-
-    /**
-     * Returns the column names.
-     *
-     * @return the column names
-     */
-    List<String> columns() {
-      return columns;
-    }
-
-    /**
-     * Returns the rows names.
-     *
-     * @return the rows names
-     */
-    List<List<String>> rows() {
-      return rows;
-    }
+  record TableUtilsClass(List<String> columns, List<List<String>> rows) {
   }
 }
