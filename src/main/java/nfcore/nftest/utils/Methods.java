@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -336,7 +337,8 @@ public final class Methods {
    * @return The filtered output as a List&lt;String&gt;
    */
   public static List<String> filterNextflowOutput(final Object output) {
-    return filterNextflowOutput(output, null, true, false, null, null);
+    return filterNextflowOutput(
+      output, List.of(), true, false, List.of(), List.of());
   }
 
   /**
@@ -349,7 +351,8 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final boolean sorted) {
-    return filterNextflowOutput(output, null, sorted, false, null, null);
+    return filterNextflowOutput(
+      output, List.of(), sorted, false, List.of(), List.of());
   }
 
   /**
@@ -365,7 +368,8 @@ public final class Methods {
       final Object output,
       final boolean sorted,
       final boolean keepAnsi) {
-    return filterNextflowOutput(output, null, sorted, keepAnsi, null, null);
+    return filterNextflowOutput(
+      output, List.of(), sorted, keepAnsi, List.of(), List.of());
   }
 
   /**
@@ -402,8 +406,14 @@ public final class Methods {
       final boolean keepAnsi,
       final List<String> ignore,
       final List<String> include) {
+    // A Groovy caller can pass null for any list
     return NextflowOutputFilter.filterNextflowOutput(
-      output, additionalPatterns, sorted, keepAnsi, ignore, include);
+      output,
+      Objects.requireNonNullElse(additionalPatterns, List.of()),
+      sorted,
+      keepAnsi,
+      Objects.requireNonNullElse(ignore, List.of()),
+      Objects.requireNonNullElse(include, List.of()));
   }
 
   /**
@@ -417,7 +427,7 @@ public final class Methods {
       final Object output,
       final List<String> additionalPatterns) {
     return filterNextflowOutput(
-      output, additionalPatterns, true, false, null, null);
+      output, additionalPatterns, true, false, List.of(), List.of());
   }
 
   /**

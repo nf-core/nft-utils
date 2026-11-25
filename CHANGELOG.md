@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#133](https://github.com/nf-core/nft-utils/pull/133) Simplify `nfcoreLink()` and `nfcoreUnlink()` internals; `nfcoreUnlink()` fails on unreadable directories (@maxulysse)
 - [#135](https://github.com/nf-core/nft-utils/pull/135) `filterNextflowOutput()` throws on an invalid `additionalPatterns` regex instead of skipping it (@maxulysse)
 - [#137](https://github.com/nf-core/nft-utils/pull/137) Simplify `TableUtils` internals with a Java record; output is unchanged (@maxulysse)
+- [#138](https://github.com/nf-core/nft-utils/pull/138) Simplify `filterNextflowOutput()` internals; output is unchanged (@maxulysse)
 
 ### Deprecated
 

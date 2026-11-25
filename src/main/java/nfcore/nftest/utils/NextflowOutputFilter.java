@@ -102,9 +102,10 @@ public final class NextflowOutputFilter {
    * @param sorted             Whether to sort the output lines alphabetically
    * @param keepAnsi           Whether to keep ANSI escape codes
    * @param ignore             List of strings to filter out
-   * @param include            List of strings to include
+   * @param include            List of strings to include, or empty for all
    * @return The filtered output as a List&lt;String&gt; with unstable patterns
    *     removed
+   * @throws java.util.regex.PatternSyntaxException on an invalid pattern
    */
   public static List<String> filterNextflowOutput(
       final Object output,
@@ -113,7 +114,9 @@ public final class NextflowOutputFilter {
       final boolean keepAnsi,
       final List<String> ignore,
       final List<String> include) {
-    List<Pattern> removals = compilePatterns(additionalPatterns);
+    List<Pattern> removals = additionalPatterns.stream()
+      .map(Pattern::compile)
+      .toList();
     List<String> filteredLines = new ArrayList<>();
     List<String> lines = toLines(output);
     String runName = lines.stream()
@@ -146,20 +149,6 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Compiles regex patterns.
-   *
-   * @param patterns The regex patterns, or {@code null}
-   * @return The compiled patterns
-   * @throws java.util.regex.PatternSyntaxException on an invalid pattern
-   */
-  private static List<Pattern> compilePatterns(final List<String> patterns) {
-    if (patterns == null) {
-      return List.of();
-    }
-    return patterns.stream().map(Pattern::compile).toList();
-  }
-
-  /**
    * Splits output into lines.
    *
    * @param output The output (String or List), or {@code null}
@@ -182,9 +171,9 @@ public final class NextflowOutputFilter {
    * matching {@link #DROPPED_LINES}.
    *
    * @param line    The line to check
-   * @param ignore  Strings rejecting the line, or {@code null}
-   * @param include Strings of which the line must contain one, or {@code null}
-   *                or empty to accept any line
+   * @param ignore  Strings rejecting the line
+   * @param include Strings of which the line must contain one, or empty to
+   *                accept any line
    * @return {@code true} if the line should be kept
    */
   private static boolean keepLine(
@@ -194,12 +183,10 @@ public final class NextflowOutputFilter {
     if (DROPPED_LINES.stream().anyMatch(p -> p.matcher(line).find())) {
       return false;
     }
-    if (ignore != null && ignore.stream().anyMatch(line::contains)) {
+    if (ignore.stream().anyMatch(line::contains)) {
       return false;
     }
-    return include == null
-      || include.isEmpty()
-      || include.stream().anyMatch(line::contains);
+    return include.isEmpty() || include.stream().anyMatch(line::contains);
   }
 
   /**
