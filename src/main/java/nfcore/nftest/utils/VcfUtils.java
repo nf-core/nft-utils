@@ -1,8 +1,8 @@
 package nfcore.nftest.utils;
 
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * Utility methods for interacting with VCF files and the nft-vcf plugin.
@@ -67,22 +67,11 @@ public final class VcfUtils {
    * @return value with variants MD5 replacements
    */
   public static Object vcfMD5(final Object value) {
-    return OutputSanitizer.recursiveParse(value, strValue -> {
-      Path path = OutputSanitizer.outputPath(strValue);
-
-      if (path == null || !Files.exists(path)) {
-        return strValue;
-      }
-      String extension = Utils.getExtension(path, false);
-      // shortcut: no BCF, its nft-vcf hash changes with header lines; add
-      // it back once nft-vcf ignores them
-      if (!"vcf".equals(extension)) {
-        return strValue;
-      }
-      return path.getFileName().toString()
-        + ":md5Variants,"
-        + getVariantsMD5(path);
-    });
+    // shortcut: no BCF, its nft-vcf hash changes with header lines; add
+    // it back once nft-vcf ignores them
+    return OutputSanitizer.hashOutputFiles(
+      value, Set.of("vcf"), "md5Variants", VcfUtils::getVariantsMD5
+    );
   }
 
   /**

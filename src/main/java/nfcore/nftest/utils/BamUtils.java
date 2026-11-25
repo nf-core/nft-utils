@@ -1,8 +1,7 @@
 package nfcore.nftest.utils;
 
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Set;
 import java.util.LinkedHashMap;
 
 /**
@@ -77,29 +76,18 @@ public final class BamUtils {
    * @return value with read MD5 replacements
    */
   public static Object bamMD5(final Object value, final String referenceFasta) {
-    return OutputSanitizer.recursiveParse(value, strValue -> {
-      Path pathBam = OutputSanitizer.outputPath(strValue);
-      if (pathBam == null || !Files.exists(pathBam)) {
-        return strValue;
-      }
-      String extension = Utils.getExtension(pathBam, false);
-      if (!"bam".equals(extension)
-          && !"sam".equals(extension)
-          && !"cram".equals(extension)) {
-        return strValue;
-      }
-      if ("cram".equals(extension)
-          && (referenceFasta == null || referenceFasta.isEmpty())) {
-        throw new RuntimeException(
-          "A reference FASTA file is required to calculate reads MD5 "
-          + "for CRAM file: "
-          + pathBam
-        );
-      }
-      return pathBam.getFileName().toString()
-        + ":md5Reads,"
-        + getReadsMD5(strValue, referenceFasta);
-    });
+    return OutputSanitizer.hashOutputFiles(
+      value, Set.of("bam", "sam", "cram"), "md5Reads", path -> {
+        if ("cram".equals(Utils.getExtension(path, false))
+            && (referenceFasta == null || referenceFasta.isEmpty())) {
+          throw new RuntimeException(
+            "A reference FASTA file is required to calculate reads MD5 "
+            + "for CRAM file: "
+            + path
+          );
+        }
+        return getReadsMD5(path.toString(), referenceFasta);
+      });
   }
 
   /**

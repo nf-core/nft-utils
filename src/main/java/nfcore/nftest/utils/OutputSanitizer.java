@@ -382,7 +382,7 @@ public final class OutputSanitizer {
    * @return The path, or {@code null} if the value is not an output path,
    *     or not a valid path, such as one with a NUL byte.
    */
-  static java.nio.file.Path outputPath(final String value) {
+  private static java.nio.file.Path outputPath(final String value) {
     java.nio.file.Path path = parsePath(value);
     return path != null && path.isAbsolute() ? path : null;
   }
@@ -400,6 +400,32 @@ public final class OutputSanitizer {
     } catch (InvalidPathException e) {
       return null;
     }
+  }
+
+  /**
+   * Recursively replaces the output files with one of the given extensions,
+   * ignoring {@code .gz}, by {@code name:tag,hash}. Other values, including
+   * relative paths, are kept as they are.
+   *
+   * @param value The value to sanitize.
+   * @param extensions The file extensions to hash, in lower case.
+   * @param tag The label between the file name and the hash.
+   * @param hash The hash of an output file.
+   * @return The sanitized value.
+   */
+  static Object hashOutputFiles(
+      final Object value,
+      final Set<String> extensions,
+      final String tag,
+      final Function<java.nio.file.Path, String> hash) {
+    return recursiveParse(value, strValue -> {
+      java.nio.file.Path path = outputPath(strValue);
+      if (path == null || !Files.exists(path)
+          || !extensions.contains(Utils.getExtension(path, false))) {
+        return strValue;
+      }
+      return path.getFileName() + ":" + tag + "," + hash.apply(path);
+    });
   }
 
   /**
