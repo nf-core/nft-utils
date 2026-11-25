@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for filtering Nextflow stdout/stderr output to remove
@@ -254,15 +255,13 @@ public final class NextflowOutputFilter {
    */
   private static List<String> sortOrderIndependentLines(
       final List<String> lines) {
-    List<String> sortedLines = lines.stream()
-        .filter(line -> !isOrderIndependent(line))
+    return Stream.concat(
+        lines.stream().filter(line -> !isOrderIndependent(line)),
+        lines.stream()
+            .filter(NextflowOutputFilter::isOrderIndependent)
+            .sorted()
+            .distinct())
         .collect(Collectors.toList());
-    lines.stream()
-        .filter(NextflowOutputFilter::isOrderIndependent)
-        .sorted()
-        .distinct()
-        .forEach(sortedLines::add);
-    return sortedLines;
   }
 
   /**
