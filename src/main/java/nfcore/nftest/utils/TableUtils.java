@@ -1,6 +1,8 @@
 package nfcore.nftest.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +13,9 @@ import java.util.stream.Collectors;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -27,6 +32,13 @@ public final class TableUtils {
 
   /** Default decision to keep comments in table. */
   public static final boolean DEFAULT_REMOVE_COMMENTS = false;
+
+  /** 2^63: scaled values from here on overflow {@code Math.round}. */
+  private static final double LONG_LIMIT = 0x1p63;
+
+  /** Matches an absolute Windows path, such as {@code C:\data}. */
+  private static final Pattern WINDOWS_PATH =
+    Pattern.compile("^[A-Za-z]:[\\\\/]");
 
   /**
    * Prevents instantiation of this utility class.
@@ -100,9 +112,15 @@ public final class TableUtils {
     final boolean removeComments
   ) {
     try {
-      TableUtilsClass table = readTable(path, removeComments);
-      table = normalizeTable(table, digits);
-      return toCanonicalTable(table);
+      final List<String> lines = readContent(path).lines().toList();
+      final int start = tableStart(lines, !removeComments);
+      // Leading comments are not table rows: kept as they are, or removed
+      final String comments = removeComments || start == 0 ? ""
+        : String.join("\n", lines.subList(0, start)) + "\n";
+      final TableUtilsClass table = readTable(
+        String.join("\n", lines.subList(start, lines.size()))
+      );
+      return comments + toCanonicalTable(normalizeTable(table, digits));
     } catch (Exception e) {
       throw new RuntimeException(
         "Failed to normalize delimited file: " + path,
@@ -137,41 +155,81 @@ public final class TableUtils {
   }
 
   /**
-   * Reads a delimited text file using Apache Commons CSV.
+   * Reads a file as UTF-8 text, decompressing it first if it is gzipped.
+   * Bytes that are not valid UTF-8 are replaced, not rejected.
    *
-   * The separator is detected automatically from the file contents,
-   * allowing CSV, TSV, and semicolon-separated files to be read regardless
-   * of their file extension.
-   *
-   * @param path path to the delimited text file
-   * @param removeComments whether leading comment lines starting with {@code #}
-   * should be removed
-   * @return the parsed table
-   * @throws IOException if the file cannot be read or parsed
+   * @param path the file
+   * @return the file text
+   * @throws IOException if the file cannot be read or decompressed
    */
-  private static TableUtilsClass readTable(
-    final Path path,
-    final boolean removeComments
-  )
-    throws IOException {
-
-    final String content = Files.readString(
-      path,
-      StandardCharsets.UTF_8
-    );
-
-    final String tableContent;
-    if (removeComments) {
-      tableContent = content.lines()
-        .dropWhile(line ->
-          line.isBlank() || line.trim().startsWith("#")
-        )
-        .collect(Collectors.joining("\n"));
-    } else {
-      tableContent = content;
+  private static String readContent(final Path path) throws IOException {
+    byte[] bytes = Files.readAllBytes(path);
+    if (bytes.length > 1
+        && (Byte.toUnsignedInt(bytes[0])
+          | Byte.toUnsignedInt(bytes[1]) << Byte.SIZE)
+          == GZIPInputStream.GZIP_MAGIC) {
+      try (InputStream in = new GZIPInputStream(
+          new ByteArrayInputStream(bytes))) {
+        bytes = in.readAllBytes();
+      }
     }
+    return new String(bytes, StandardCharsets.UTF_8);
+  }
 
-    final char separator = detectSeparator(tableContent);
+  /**
+   * The index of the first table line: after the leading blank and
+   * {@code #} lines, except a {@code #} line right above the data with as
+   * many columns, such as {@code #chrom}, which is the header.
+   *
+   * @param lines the file lines
+   * @param hashHeader whether a {@code #} line can be the header
+   * @return the index of the first table line
+   */
+  private static int tableStart(
+    final List<String> lines,
+    final boolean hashHeader
+  ) {
+    int start = 0;
+    while (start < lines.size() && isComment(lines.get(start))) {
+      start++;
+    }
+    if (hashHeader && start > 0 && start < lines.size()
+        && !lines.get(start - 1).isBlank()) {
+      final char separator = detectSeparator(lines.get(start));
+      if (countOccurrences(lines.get(start - 1), separator)
+          == countOccurrences(lines.get(start), separator)) {
+        start--;
+      }
+    }
+    return start;
+  }
+
+  /**
+   * Tells whether a line belongs to the leading comment block: blank, or
+   * starting with {@code #}.
+   *
+   * @param line the line
+   * @return {@code true} if the line is blank or a comment
+   */
+  private static boolean isComment(final String line) {
+    return line.isBlank() || line.trim().startsWith("#");
+  }
+
+  /**
+   * Parses delimited text using Apache Commons CSV.
+   *
+   * The separator is detected automatically from the first line, allowing
+   * CSV, TSV, and semicolon-separated files to be read regardless of their
+   * file extension. Rows are padded with empty values to the widest row, so
+   * short rows and blank lines keep every value.
+   *
+   * @param content the delimited text, without leading comments
+   * @return the parsed table
+   * @throws IOException if the text cannot be parsed
+   */
+  private static TableUtilsClass readTable(final String content)
+    throws IOException {
+    final char separator = detectSeparator(content);
 
     final CSVFormat format = CSVFormat.DEFAULT.builder()
       .setDelimiter(separator)
@@ -180,7 +238,7 @@ public final class TableUtils {
 
     try (
       CSVParser parser = CSVParser.builder()
-        .setReader(new StringReader(tableContent))
+        .setReader(new StringReader(content))
         .setFormat(format)
         .get()
     ) {
@@ -194,6 +252,12 @@ public final class TableUtils {
       }
       if (rows.isEmpty()) {
         return new TableUtilsClass(List.of(), rows);
+      }
+      final int width = rows.stream().mapToInt(List::size).max().orElse(0);
+      for (List<String> row : rows) {
+        while (row.size() < width) {
+          row.add("");
+        }
       }
       final List<String> columns = rows.remove(0);
       return new TableUtilsClass(columns, rows);
@@ -357,7 +421,12 @@ public final class TableUtils {
     final int scale
   ) {
     final double multiplier = Math.pow(10, scale);
-    return Math.round(value * multiplier) / multiplier;
+    final double scaled = value * multiplier;
+    // Math.round caps at Long.MAX_VALUE: keep values too large to round
+    if (!Double.isFinite(scaled) || Math.abs(scaled) >= LONG_LIMIT) {
+      return value;
+    }
+    return Math.round(scaled) / multiplier;
   }
 
   /**
@@ -384,8 +453,7 @@ public final class TableUtils {
    *         otherwise {@code false}
    */
   private static boolean isAbsolutePath(final String value) {
-    return value.startsWith("/")
-      || value.matches("^[A-Za-z]:[\\\\/].*");
+    return value.startsWith("/") || WINDOWS_PATH.matcher(value).find();
   }
 
   /**
@@ -396,12 +464,11 @@ public final class TableUtils {
    * @return the table with rows sorted by all columns
    */
   private static TableUtilsClass normalizeRows(final TableUtilsClass table) {
-    final List<List<String>> rows = new ArrayList<>(table.rows());
-    rows.sort(
-      Comparator.comparing(
-        row -> String.join("\u0000", row)
-      )
-    );
+    final List<List<String>> rows = table.rows().stream()
+      .map(row -> Map.entry(String.join("\u0000", row), row))
+      .sorted(Map.Entry.comparingByKey())
+      .map(Map.Entry::getValue)
+      .collect(Collectors.toList());
     return new TableUtilsClass(table.columns(), rows);
   }
 

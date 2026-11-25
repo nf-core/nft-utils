@@ -4,7 +4,7 @@
             "path,sample,value\nfiles.py,B,2.000021\nfolder,\"#A\",1.034013\ntest.txt,C,3.046136\n",
             "path,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.034\ntest.txt,C,3.0461\n",
             "path,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.03\ntest.txt,C,3.05\n",
-            "\"  \"\n\"  #Mon Sep 28 05:35:45 PM CEST 2026\"\n\"#Other label\"\nfiles.py\tB\t2.000021\nfolder\t#A\t1.034012\npath\tsample\tvalue\ntest.txt\tC\t3.046136\n",
+            "  \n  #Mon Sep 28 05:35:45 PM CEST 2026\n#Other label\npath,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.03\ntest.txt,C,3.05\n",
             "path,sample,value\nfiles.py,B,2.0\nfolder,\"#A\",1.03\ntest.txt,C,3.05\n",
             "path,sample,value\nfiles.py,B,2.000021\nfolder,\"#A\",1.034012\ntest.txt,C,3.046136\n",
             {
@@ -32,10 +32,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-29T09:34:08.289823577",
+        "timestamp": "2026-11-25T10:49:23.578881035",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.04.6"
+            "nextflow": "26.10.0"
         }
     }
 }

@@ -628,8 +628,8 @@ then {
 }
 ```
 
-- `tableMD5Keys`: Keys containing flat text tables (`.txt`, `.tsv`, `.csv`, `.tbl`, `.dat`, `.out`). MD5 is computed from normalized table: rows and columns sorted, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to `\n`.
-  Set precision with `tableDoubleDigits` (default: 6) and remove leading lines starting with `#` with `tableRemoveComments: true` (default: false).
+- `tableMD5Keys`: Keys containing flat text tables (`.txt`, `.tsv`, `.csv`, `.tbl`, `.dat`, `.out`), plain or gzipped. MD5 is computed from normalized table: rows and columns sorted, short rows padded with empty values, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to `\n`.
+  Set precision with `tableDoubleDigits` (default: 6) and remove leading lines starting with `#` with `tableRemoveComments: true` (default: false: they are kept as they are, above the table; a `#` line right above the table with as many columns, such as `#chrom`, is its header). With `tableRemoveComments: true`, such a `#` header is removed too, and the first data line becomes the header.
   Use `normalizeTable(path(process.out.csv[0][1]), 6, true)` for debugging.
 
 ```groovy
@@ -638,7 +638,7 @@ then {
 }
 ```
 
-- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, and `variantsMD5Keys` are not matched against these patterns. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.log` matches `run.log`.
+- `unstablePatterns` and `ignorePatterns`: Glob patterns matched against each channel value. `unstablePatterns` removes md5sums; `ignorePatterns` excludes files entirely. These patterns should be mutually exclusive. Keys set by `unstableKeys`, `ignoreKeys`, `readsMD5Keys`, `variantsMD5Keys`, and `tableMD5Keys` are not matched against these patterns. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.log` matches `run.log`.
 
 ```groovy
 then {
