@@ -25,6 +25,13 @@ class NextflowOutputFilterTest {
   }
 
   @Test
+  void shouldKeepRepeatedLinesButNotRepeatedSortedLines() {
+    List<String> result = Methods.filterNextflowOutput(
+      "Done\nDone\nWARN: b\nWARN: a\nWARN: b");
+    assertEquals(List.of("Done", "Done", "WARN: a", "WARN: b"), result);
+  }
+
+  @Test
   void shouldReplaceWorkDirHash() {
     List<String> result = Methods.filterNextflowOutput(
       "file(/data/work/7b/b7421f705229baeb721b87806b97ed/test_1.fastq.gz)");

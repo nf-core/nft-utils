@@ -412,7 +412,7 @@ These line types are sorted alphabetically after censoring:
 
 Set `sorted: false` to disable sorting (not recommended; causes snapshot failures).
 
-All other lines keep their original order.
+All other lines keep their original order; repeated sorted lines are kept once.
 
 Example: process submissions like
 
