@@ -3,11 +3,11 @@ package nfcore.nftest.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -337,8 +337,7 @@ public final class Methods {
    * @return The filtered output as a List&lt;String&gt;
    */
   public static List<String> filterNextflowOutput(final Object output) {
-    return filterNextflowOutput(
-      output, List.of(), true, false, List.of(), List.of());
+    return filterNextflowOutputWithOptions(null, output);
   }
 
   /**
@@ -351,8 +350,7 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final boolean sorted) {
-    return filterNextflowOutput(
-      output, List.of(), sorted, false, List.of(), List.of());
+    return filterNextflowOutputWithOptions(Map.of("sorted", sorted), output);
   }
 
   /**
@@ -368,8 +366,8 @@ public final class Methods {
       final Object output,
       final boolean sorted,
       final boolean keepAnsi) {
-    return filterNextflowOutput(
-      output, List.of(), sorted, keepAnsi, List.of(), List.of());
+    return filterNextflowOutputWithOptions(
+      Map.of("sorted", sorted, "keepAnsi", keepAnsi), output);
   }
 
   /**
@@ -406,14 +404,14 @@ public final class Methods {
       final boolean keepAnsi,
       final List<String> ignore,
       final List<String> include) {
-    // A Groovy caller can pass null for any list
-    return NextflowOutputFilter.filterNextflowOutput(
-      output,
-      Objects.requireNonNullElse(additionalPatterns, List.of()),
-      sorted,
-      keepAnsi,
-      Objects.requireNonNullElse(ignore, List.of()),
-      Objects.requireNonNullElse(include, List.of()));
+    // A HashMap, as a Groovy caller can pass null for any list
+    Map<String, Object> options = new HashMap<>();
+    options.put("additionalPatterns", additionalPatterns);
+    options.put("sorted", sorted);
+    options.put("keepAnsi", keepAnsi);
+    options.put("ignore", ignore);
+    options.put("include", include);
+    return filterNextflowOutputWithOptions(options, output);
   }
 
   /**
@@ -426,8 +424,9 @@ public final class Methods {
   public static List<String> filterNextflowOutput(
       final Object output,
       final List<String> additionalPatterns) {
-    return filterNextflowOutput(
-      output, additionalPatterns, true, false, List.of(), List.of());
+    return filterNextflowOutputWithOptions(
+      Collections.singletonMap("additionalPatterns", additionalPatterns),
+      output);
   }
 
   /**
@@ -458,7 +457,8 @@ public final class Methods {
   }
 
   /**
-   * Filters Nextflow output with the options of either map overload.
+   * Filters Nextflow output with named options, which hold the defaults of
+   * every overload; a missing or {@code null} option takes its default.
    *
    * @param options The filtering options, or {@code null} to use defaults
    * @param output  The output to filter
@@ -469,7 +469,7 @@ public final class Methods {
       final Object output) {
     Options opts = new Options("filterNextflowOutput", options,
       "additionalPatterns", "sorted", "keepAnsi", "ignore", "include");
-    return filterNextflowOutput(
+    return NextflowOutputFilter.filterNextflowOutput(
       output,
       opts.strings("additionalPatterns", List.of()),
       opts.bool("sorted", true),

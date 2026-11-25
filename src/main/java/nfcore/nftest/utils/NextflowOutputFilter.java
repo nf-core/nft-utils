@@ -98,11 +98,13 @@ public final class NextflowOutputFilter {
    *
    * @param output             The stdout or stderr output (String or List) to
    *                           filter
-   * @param additionalPatterns List of additional regex patterns to remove
+   * @param additionalPatterns List of additional regex patterns to remove, not
+   *                           {@code null}
    * @param sorted             Whether to sort the output lines alphabetically
    * @param keepAnsi           Whether to keep ANSI escape codes
-   * @param ignore             List of strings to filter out
-   * @param include            List of strings to include, or empty for all
+   * @param ignore             List of strings to filter out, not {@code null}
+   * @param include            List of strings to include, or empty for all,
+   *                           not {@code null}
    * @return The filtered output as a List&lt;String&gt; with unstable patterns
    *     removed
    * @throws java.util.regex.PatternSyntaxException on an invalid pattern
