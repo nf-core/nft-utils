@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#131](https://github.com/nf-core/nft-utils/pull/131) `variantsMD5Keys` no longer hashes BCF files, as documented (@maxulysse)
 - [#132](https://github.com/nf-core/nft-utils/pull/132) `tableMD5Keys` reads leading comments, short rows, gzipped and non-UTF-8 tables (@maxulysse)
 - [#132](https://github.com/nf-core/nft-utils/pull/132) `tableMD5Keys` keeps floats too large to round instead of capping them (@maxulysse)
+- [#134](https://github.com/nf-core/nft-utils/pull/134) `getAllFilesFromPath()` throws on a path that is not a directory (@maxulysse)
 - [#136](https://github.com/nf-core/nft-utils/pull/136) `filterNextflowOutput()` keeps repeated unsorted lines, so snapshots with them change (@maxulysse)
 
 ## [1.3.0]

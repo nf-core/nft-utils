@@ -55,6 +55,17 @@ class FileTraversalUtilsTest {
   }
 
   @Test
+  void shouldRejectFileOrMissingPath() throws IOException {
+    Path file = Files.writeString(dir.resolve("a.txt"), "a");
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> relativePaths(file.toString()));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> relativePaths(dir.resolve("missing").toString()));
+  }
+
+  @Test
   void shouldFollowSymlinkedDirectories() throws Exception {
     Path target = Files.createDirectories(dir.resolve("published/fastqc"));
     Files.writeString(target.resolve("a.txt"), "a");
