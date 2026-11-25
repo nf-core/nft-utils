@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#125](https://github.com/nf-core/nft-utils/pull/125) `removeNextflowVersion()` and `removeFromYamlMap()` read versions as strings, so `1.10` stays `1.10` (@maxulysse)
 - [#126](https://github.com/nf-core/nft-utils/pull/126) `listToMD5()` joins values with newlines, so `["ab"]` and `["a", "b"]` differ (@maxulysse)
 - [#127](https://github.com/nf-core/nft-utils/pull/127) String options reject values other than strings, `File`s and `Path`s (@maxulysse)
+- [#133](https://github.com/nf-core/nft-utils/pull/133) Simplify `nfcoreLink()` and `nfcoreUnlink()` internals; `nfcoreUnlink()` fails on unreadable directories (@maxulysse)
 
 ### Deprecated
 
