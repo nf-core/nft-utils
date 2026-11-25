@@ -1,9 +1,11 @@
 package nfcore.nftest.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.PatternSyntaxException;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,10 +20,9 @@ class NextflowOutputFilterTest {
   }
 
   @Test
-  void shouldSkipInvalidAdditionalPattern() {
-    List<String> result = Methods.filterNextflowOutput(
-      "keep me", List.of("("));
-    assertEquals(List.of("keep me"), result);
+  void shouldRejectInvalidAdditionalPattern() {
+    assertThrows(PatternSyntaxException.class,
+      () -> Methods.filterNextflowOutput("keep me", List.of("(")));
   }
 
   @Test

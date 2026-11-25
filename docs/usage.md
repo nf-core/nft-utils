@@ -397,7 +397,7 @@ def filtered_with_ignore = filterNextflowOutput(workflow.stdout, ignore: ["Submi
 // Include only lines containing specific strings
 def filtered_with_include = filterNextflowOutput(workflow.stdout, include: ["Submitted process"])
 
-// Remove each regex match from every line; `.*foo.*` removes the whole line
+// Remove each regex match from every line; `.*foo.*` removes the whole line; an invalid regex fails the test
 def filtered_with_patterns = filterNextflowOutput(workflow.stdout, additionalPatterns: [/\d+ ms/])
 ```
 
