@@ -179,7 +179,8 @@ public final class NfCoreUtils {
       final String libDir,
       final String modulesDir) throws IOException {
     Path destModulesDir = Paths.get(modulesDir);
-    for (Path orgDir : libraryOrgDirs(libDir, destModulesDir)) {
+    for (Path orgDir
+        : subDirectories(libraryModulesDir(libDir, destModulesDir))) {
       recurseLink(orgDir, destModulesDir);
     }
   }
@@ -196,21 +197,32 @@ public final class NfCoreUtils {
       final String libDir,
       final String modulesDir) throws IOException {
     Path destModulesDir = Paths.get(modulesDir);
-    for (Path orgDir : libraryOrgDirs(libDir, destModulesDir)) {
-      recurseUnlink(orgDir, destModulesDir);
+    Path libModulesDir = libraryModulesDir(libDir, destModulesDir);
+    List<Path> links;
+    // Links are not followed, so only links inside the modules directory
+    try (Stream<Path> walk = Files.walk(destModulesDir)) {
+      links = walk.skip(1).filter(Files::isSymbolicLink).toList();
+    }
+    for (Path link : links) {
+      // A relative link target is relative to the folder of the link
+      Path target = link.resolveSibling(Files.readSymbolicLink(link));
+      if (isWithinDirectory(target, libModulesDir)) {
+        Files.delete(link);
+        System.out.println("Removed symlink: " + link.toAbsolutePath());
+      }
     }
   }
 
   /**
-   * List the organisation directories (e.g. nf-core) of a library, after
-   * checking that the library and the modules directory exist.
+   * The modules directory of a library, after checking that it and the
+   * modules directory to link it into exist.
    *
    * @param libDir An nf-core library initialised by nfcoreInitialise()
    * @param modulesDir Location to make the library available at
-   * @return The organisation directories of the library
-   * @throws IOException if either directory does not exist or cannot be listed
+   * @return The absolute modules directory of the library
+   * @throws IOException if either directory does not exist
    */
-  private static List<Path> libraryOrgDirs(
+  private static Path libraryModulesDir(
       final String libDir,
       final Path modulesDir) throws IOException {
     // Absolute, so links to it resolve from any directory
@@ -225,7 +237,7 @@ public final class NfCoreUtils {
         "Modules directory does not exist: " + modulesDir.toAbsolutePath()
       );
     }
-    return subDirectories(libModulesDir);
+    return libModulesDir;
   }
 
   /**
@@ -272,38 +284,6 @@ public final class NfCoreUtils {
     }
     for (Path subDir : subDirectories(libDir)) {
       recurseLink(subDir, dest);
-    }
-  }
-
-  /**
-   * Recursively iterate through a target module directory and remove symlinks
-   * that point to anywhere within the library directory.
-   *
-   * @param libDir The source library directory
-   * @param destDir The destination directory to traverse
-   * @throws IOException If file operations fail
-   */
-  private static void recurseUnlink(
-      final Path libDir,
-      final Path destDir) throws IOException {
-    if (!Files.isDirectory(destDir)) {
-      return;
-    }
-    List<Path> files;
-    try (Stream<Path> entries = Files.list(destDir)) {
-      files = entries.toList();
-    }
-    for (Path file : files) {
-      if (Files.isSymbolicLink(file)) {
-        // A relative link target is relative to the folder of the link
-        Path target = destDir.resolve(Files.readSymbolicLink(file));
-        if (isWithinDirectory(target, libDir)) {
-          Files.delete(file);
-          System.out.println("Removed symlink: " + file.toAbsolutePath());
-        }
-      } else if (Files.isDirectory(file)) {
-        recurseUnlink(libDir, file);
-      }
     }
   }
 
