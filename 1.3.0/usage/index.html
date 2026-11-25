@@ -1418,7 +1418,7 @@ cf <a href="https://www.nf-test.com/docs/testcases/global_variables/#outputdir">
 <li><code>ERROR ~</code> messages</li>
 </ul>
 <p>Set <code>sorted: false</code> to disable sorting (not recommended; causes snapshot failures).</p>
-<p>All other lines keep their original order.</p>
+<p>All other lines keep their original order, except for duplicates, which are only kept once.</p>
 <p>Example: process submissions like</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="o">[</span><span class="m">57</span>/0d391c<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_2<span class="o">)</span>
 </span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="o">[</span>6f/3be732<span class="o">]</span><span class="w"> </span>Submitted<span class="w"> </span>process<span class="w"> </span>&gt;<span class="w"> </span>FASTQC<span class="w"> </span><span class="o">(</span>sample_1<span class="o">)</span>
