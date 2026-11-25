@@ -58,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#129](https://github.com/nf-core/nft-utils/pull/129) `nfcoreLink()` links a library given as a relative path (@maxulysse)
 - [#129](https://github.com/nf-core/nft-utils/pull/129) `nfcoreLink()` fails instead of writing into a folder linked to another library (@maxulysse)
 - [#130](https://github.com/nf-core/nft-utils/pull/130) `downloadFromS3()` downloads into its own temporary directory, not a shared `/tmp` path (@maxulysse)
+- [#131](https://github.com/nf-core/nft-utils/pull/131) `sanitizeOutput()` MD5 keys hash only absolute output files, and no longer fail on invalid paths (@maxulysse)
+- [#131](https://github.com/nf-core/nft-utils/pull/131) `variantsMD5Keys` no longer hashes BCF files, as documented (@maxulysse)
 
 ## [1.3.0]
 
