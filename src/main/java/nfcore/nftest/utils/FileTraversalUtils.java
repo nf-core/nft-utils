@@ -397,8 +397,8 @@ public final class FileTraversalUtils {
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
    * @throws IllegalArgumentException if {@code path} is empty, a local path
-   *     that does not exist or is not a directory, or if {@code relative} is disabled with an
-   *     S3 path or {@code includeDir}
+   *     that does not exist or is not a directory, or if {@code relative}
+   *     is disabled with an S3 path or {@code includeDir}
    */
   public static List<?> getAllFilesFromPath(
       final String path,
