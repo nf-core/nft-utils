@@ -109,10 +109,9 @@ public final class NfCoreUtils {
       final String remote
     ) throws IOException {
     String cacheKey = createModuleCacheKey(name, sha, remote);
-    File stateFile = new File(
-      libDir + "/state/" + cacheKey + ".installed");
+    Path stateFile = Paths.get(libDir, "state", cacheKey + ".installed");
 
-    if (stateFile.exists()) {
+    if (Files.exists(stateFile)) {
       System.out.println(
         "Module already installed (cached): " + name);
       return;
@@ -137,7 +136,7 @@ public final class NfCoreUtils {
       + " with: " + String.join(" ", command)
     );
     System.out.println("Successfully installed module: " + name);
-    Files.write(stateFile.toPath(), new byte[0], StandardOpenOption.CREATE);
+    Files.write(stateFile, new byte[0], StandardOpenOption.CREATE);
   }
 
   /**
