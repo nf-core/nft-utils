@@ -33,9 +33,6 @@ public final class TableUtils {
   /** Default decision to keep comments in table. */
   public static final boolean DEFAULT_REMOVE_COMMENTS = false;
 
-  /** The first two bytes of a gzip file. */
-  private static final byte[] GZIP_MAGIC = {(byte) 0x1f, (byte) 0x8b};
-
   /** 2^63: scaled values from here on overflow {@code Math.round}. */
   private static final double LONG_LIMIT = 0x1p63;
 
@@ -138,6 +135,17 @@ public final class TableUtils {
       while (start < lines.size() && isComment(lines.get(start))) {
         start++;
       }
+      // A # line right above the data and as wide as it is the header
+      if (!removeComments && start > 0 && start < lines.size()) {
+        final String header = lines.get(start - 1);
+        final String data = lines.get(start);
+        final char separator = detectSeparator(data);
+        if (!header.isBlank()
+            && countOccurrences(header, separator)
+              == countOccurrences(data, separator)) {
+          start--;
+        }
+      }
       // Leading comments are not table rows: kept as they are, or removed
       final String comments = removeComments || start == 0 ? ""
         : String.join("\n", lines.subList(0, start)) + "\n";
@@ -188,8 +196,10 @@ public final class TableUtils {
    */
   private static String readContent(final Path path) throws IOException {
     byte[] bytes = Files.readAllBytes(path);
-    if (bytes.length > 1 && bytes[0] == GZIP_MAGIC[0]
-        && bytes[1] == GZIP_MAGIC[1]) {
+    if (bytes.length > 1
+        && (Byte.toUnsignedInt(bytes[0])
+          | Byte.toUnsignedInt(bytes[1]) << Byte.SIZE)
+          == GZIPInputStream.GZIP_MAGIC) {
       try (InputStream in = new GZIPInputStream(
           new ByteArrayInputStream(bytes))) {
         bytes = in.readAllBytes();

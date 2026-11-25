@@ -157,6 +157,14 @@ class TableUtilsTest {
   }
 
   @Test
+  void shouldReadHashHeaderAsHeader() throws IOException {
+    byte[] table = utf8("##source=tool\n#chrom\tstart\tend\nchr2\t5\t9\n"
+      + "chr1\t1\t2\n");
+    assertEquals("##source=tool\n\"#chrom\",end,start\nchr1,2,1\nchr2,9,5\n",
+      normalize("t.tsv", table, false));
+  }
+
+  @Test
   void shouldPadShortRowsAndBlankLines() throws IOException {
     assertEquals("\"\",a,b,c\n\"\",,,\n\"\",1,2,\n7,4,5,6\n",
       normalize("t.csv", utf8("a,b,c\n1,2\n\n4,5,6,7\n"), false));
