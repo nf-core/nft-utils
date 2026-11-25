@@ -629,7 +629,7 @@ then {
 ```
 
 - `tableMD5Keys`: Keys containing flat text tables (`.txt`, `.tsv`, `.csv`, `.tbl`, `.dat`, `.out`), plain or gzipped. MD5 is computed from normalized table: rows and columns sorted, short rows padded with empty values, floats rounded to 6 decimals, absolute paths reduced to file/folder names, line endings standardized to `\n`.
-  Set precision with `tableDoubleDigits` (default: 6) and remove leading lines starting with `#` with `tableRemoveComments: true` (default: false: they are kept as they are, above the table; a `#` line right above the table with as many columns, such as `#chrom`, is its header).
+  Set precision with `tableDoubleDigits` (default: 6) and remove leading lines starting with `#` with `tableRemoveComments: true` (default: false: they are kept as they are, above the table; a `#` line right above the table with as many columns, such as `#chrom`, is its header). With `tableRemoveComments: true`, such a `#` header is removed too, and the first data line becomes the header.
   Use `normalizeTable(path(process.out.csv[0][1]), 6, true)` for debugging.
 
 ```groovy

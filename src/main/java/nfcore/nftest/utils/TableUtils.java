@@ -113,21 +113,7 @@ public final class TableUtils {
   ) {
     try {
       final List<String> lines = readContent(path).lines().toList();
-      int start = 0;
-      while (start < lines.size() && isComment(lines.get(start))) {
-        start++;
-      }
-      // A # line right above the data and as wide as it is the header
-      if (!removeComments && start > 0 && start < lines.size()) {
-        final String header = lines.get(start - 1);
-        final String data = lines.get(start);
-        final char separator = detectSeparator(data);
-        if (!header.isBlank()
-            && countOccurrences(header, separator)
-              == countOccurrences(data, separator)) {
-          start--;
-        }
-      }
+      final int start = tableStart(lines, !removeComments);
       // Leading comments are not table rows: kept as they are, or removed
       final String comments = removeComments || start == 0 ? ""
         : String.join("\n", lines.subList(0, start)) + "\n";
@@ -188,6 +174,34 @@ public final class TableUtils {
       }
     }
     return new String(bytes, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * The index of the first table line: after the leading blank and
+   * {@code #} lines, except a {@code #} line right above the data with as
+   * many columns, such as {@code #chrom}, which is the header.
+   *
+   * @param lines the file lines
+   * @param hashHeader whether a {@code #} line can be the header
+   * @return the index of the first table line
+   */
+  private static int tableStart(
+    final List<String> lines,
+    final boolean hashHeader
+  ) {
+    int start = 0;
+    while (start < lines.size() && isComment(lines.get(start))) {
+      start++;
+    }
+    if (hashHeader && start > 0 && start < lines.size()
+        && !lines.get(start - 1).isBlank()) {
+      final char separator = detectSeparator(lines.get(start));
+      if (countOccurrences(lines.get(start - 1), separator)
+          == countOccurrences(lines.get(start), separator)) {
+        start--;
+      }
+    }
+    return start;
   }
 
   /**
