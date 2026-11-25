@@ -396,8 +396,9 @@ public final class FileTraversalUtils {
    *     files when {@code relative} is disabled
    * @throws IOException if the path cannot be walked or the AWS CLI fails
    * @throws InterruptedException if the AWS CLI process is interrupted
-   * @throws IllegalArgumentException if {@code path} is empty, or if
-   *     {@code relative} is disabled with an S3 path or {@code includeDir}
+   * @throws IllegalArgumentException if {@code path} is empty, a local path
+   *     that is not a directory, or if {@code relative} is disabled with an
+   *     S3 path or {@code includeDir}
    */
   public static List<?> getAllFilesFromPath(
       final String path,
@@ -438,6 +439,12 @@ public final class FileTraversalUtils {
     }
 
     Path root = Paths.get(path);
+    // A file would list as empty, and its snapshot would never fail
+    if (!Files.isDirectory(root)) {
+      throw new IllegalArgumentException(
+        "The specified path is not a directory: " + path
+      );
+    }
     List<String> paths = filterRelativePaths(walk(root), filter, includeDir);
     if (!relative) {
       return paths.stream()

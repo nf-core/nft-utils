@@ -154,7 +154,7 @@ See [nf-test docs](https://www.nf-test.com/docs/testcases/global_variables/#outp
 
 :::
 
-Works for **local paths and S3 paths** (`s3://`). Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs; a symlink that loops back to a parent is left out; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`), and with `includeDir` their directories are derived from the object keys. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.html` matches `report.html`.
+Works for **local directories and S3 paths** (`s3://`); a local path that is not a directory fails the test. Local paths are walked using Java NIO, following symlinks such as Nextflow's default published outputs; a symlink that loops back to a parent is left out; S3 paths are listed using the AWS CLI (`aws s3 ls --recursive`), and with `includeDir` their directories are derived from the object keys. As in `.gitignore`, a glob starting with `**/` also matches at the top level: `**/*.html` matches `report.html`.
 
 Returns a **sorted list of relative `String` paths** (relative to the given root), or of `File`s with `relative: false`.
 Snapshot relative paths as they are: `*.name` fails on them with `No such property: name for class: java.lang.String`.
