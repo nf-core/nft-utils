@@ -2,13 +2,13 @@ package nfcore.nftest.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for filtering Nextflow stdout/stderr output to remove
@@ -238,32 +238,21 @@ public final class NextflowOutputFilter {
   }
 
   /**
-   * Moves order-independent lines to the end in sorted order, keeps other
-   * lines in place, and drops adjacent duplicates.
+   * Moves order-independent lines to the end in sorted order, without
+   * duplicates, and keeps other lines in place.
    *
    * @param lines The lines to sort
    * @return The sorted lines
    */
   private static List<String> sortOrderIndependentLines(
       final List<String> lines) {
-    List<String> combinedLines = lines.stream()
-        .filter(line -> !isOrderIndependent(line))
+    return Stream.concat(
+        lines.stream().filter(line -> !isOrderIndependent(line)),
+        lines.stream()
+            .filter(NextflowOutputFilter::isOrderIndependent)
+            .sorted()
+            .distinct())
         .collect(Collectors.toList());
-    List<String> sortableLines = lines.stream()
-        .filter(NextflowOutputFilter::isOrderIndependent)
-        .collect(Collectors.toList());
-    Collections.sort(sortableLines);
-    combinedLines.addAll(sortableLines);
-
-    List<String> uniqueLines = new ArrayList<>();
-    String lastLine = null;
-    for (String line : combinedLines) {
-      if (!line.equals(lastLine)) {
-        uniqueLines.add(line);
-        lastLine = line;
-      }
-    }
-    return uniqueLines;
   }
 
   /**
