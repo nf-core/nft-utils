@@ -33,6 +33,12 @@ class NextflowOutputFilterTest {
   }
 
   @Test
+  void shouldAcceptNullLists() {
+    assertEquals(List.of("keep me"), Methods.filterNextflowOutput(
+      "keep me", null, true, false, null, null));
+  }
+
+  @Test
   void shouldReplaceWorkDirHash() {
     List<String> result = Methods.filterNextflowOutput(
       "file(/data/work/7b/b7421f705229baeb721b87806b97ed/test_1.fastq.gz)");
