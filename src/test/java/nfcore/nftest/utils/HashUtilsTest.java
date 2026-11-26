@@ -3,6 +3,7 @@ package nfcore.nftest.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -25,5 +26,12 @@ class HashUtilsTest {
     assertNotEquals(
       HashUtils.listToMD5(List.of("ab")),
       HashUtils.listToMD5(List.of("a", "b")));
+  }
+
+  @Test
+  void shouldHashNullAsItsText() {
+    assertEquals(
+      HashUtils.listToMD5(List.of("a", "null")),
+      HashUtils.listToMD5(Arrays.asList("a", null)));
   }
 }

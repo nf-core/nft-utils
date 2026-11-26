@@ -231,7 +231,7 @@ public final class Methods {
 
   /**
    * Computes an MD5 hash from the string representation of each element in
-   * a list.
+   * a list, {@code null} as {@code null}.
    *
    * @param input The list of objects to include in the MD5 calculation.
    * @return The MD5 digest as a hexadecimal string.
