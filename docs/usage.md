@@ -43,7 +43,7 @@ assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/*_versions.yml")
 
 The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.
 
-**Note:** Returned YAML has its sections and their keys sorted alphabetically; deeper levels keep the order of the file.
+**Note:** The returned map has its top-level sections and their keys sorted alphabetically; deeper levels keep the order of the file.
 
 ### `removeFromYamlMap()`
 
@@ -135,7 +135,7 @@ assert snapshot(removeFromYamlMap("$outputDir/pipeline_info/*_versions.yml", "Wo
 **Notes:**
 
 - Wildcards merge all matching files.
-- Returned YAML has its sections and their keys sorted alphabetically; deeper levels keep the order of the file.
+- The returned map has its top-level sections and their keys sorted alphabetically; deeper levels keep the order of the file.
 
 ### `getAllFilesFromPath()`
 

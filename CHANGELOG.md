@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#132](https://github.com/nf-core/nft-utils/pull/132) `tableMD5Keys` keeps floats too large to round instead of capping them (@maxulysse)
 - [#134](https://github.com/nf-core/nft-utils/pull/134) `getAllFilesFromPath()` throws on a path that is not a directory (@maxulysse)
 - [#136](https://github.com/nf-core/nft-utils/pull/136) `filterNextflowOutput()` keeps repeated unsorted lines, so snapshots with them change (@maxulysse)
-- [#140](https://github.com/nf-core/nft-utils/pull/140) Docs: `removeNextflowVersion()` and `removeFromYamlMap()` sort only sections and their keys (@maxulysse)
+- [#140](https://github.com/nf-core/nft-utils/pull/140) Docs: `removeNextflowVersion()` and `removeFromYamlMap()` sort only top-level sections and their keys (@maxulysse)
 
 ## [1.3.0]
 
