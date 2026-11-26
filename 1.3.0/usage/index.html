@@ -1085,7 +1085,7 @@
 <div class="language-groovy highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">assert</span><span class="w"> </span><span class="n">snapshot</span><span class="o">(</span><span class="n">removeNextflowVersion</span><span class="o">(</span><span class="s2">"$outputDir/pipeline_info/*_versions.yml"</span><span class="o">)).</span><span class="na">match</span><span class="o">()</span>
 </span></code></pre></div>
 <p>The argument is a path (or wildcard pattern) matching a versions file in YAML format per the nf-core standard. Wildcards merge all matching files. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.</p>
-<p><strong>Note:</strong> Returned YAML has keys sorted alphabetically at all levels for consistent output.</p>
+<p><strong>Note:</strong> The returned map has its top-level sections and their keys sorted alphabetically; deeper levels keep the order of the file.</p>
 <h3 id="removefromyamlmap"><code>removeFromYamlMap()</code></h3>
 <p>Remove a key or entire section from a YAML file. Supports two patterns and wildcard file paths. A missing file, a wildcard matching no file, or a top-level key without nested keys fails the test.</p>
 <h4 id="remove-a-specific-subkey-3-arguments">Remove a specific subkey (3 arguments)</h4>
@@ -1149,7 +1149,7 @@
 <p><strong>Notes:</strong></p>
 <ul>
 <li>Wildcards merge all matching files.</li>
-<li>Returned YAML has keys sorted alphabetically at all levels.</li>
+<li>The returned map has its top-level sections and their keys sorted alphabetically; deeper levels keep the order of the file.</li>
 </ul>
 <h3 id="getallfilesfrompath"><code>getAllFilesFromPath()</code></h3>
 <p>:::warning
